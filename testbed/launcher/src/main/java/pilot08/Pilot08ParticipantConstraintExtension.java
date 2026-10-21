@@ -26,8 +26,12 @@ import org.eclipse.edc.spi.system.ServiceExtensionContext;
  */
 public class Pilot08ParticipantConstraintExtension implements ServiceExtension {
 
-    static final String KEY = "pilot08:participant";
-    static final String CATALOG_SCOPE = "request.catalog";
+    // Full IRI: EDC expands policy left operands via JSON-LD, so the registered key
+    // must be the expanded form. The seed policy declares prefix pilot08 = this namespace.
+    static final String KEY = "https://pilot08.test/ns/participant";
+    // The catalog ACCESS policy is evaluated in CATALOGING_SCOPE = "catalog"
+    // (ContractDefinitionResolverImpl), not the DSP "request.catalog" scope. Register there.
+    static final String CATALOG_SCOPE = "catalog";
     static final String NEGOTIATION_SCOPE = "contract.negotiation";
 
     @Override
@@ -41,8 +45,10 @@ public class Pilot08ParticipantConstraintExtension implements ServiceExtension {
         var policyEngine = context.getService(PolicyEngine.class);
         var fn = new ParticipantConstraint();
         for (var scope : new String[]{CATALOG_SCOPE, NEGOTIATION_SCOPE}) {
-            bindings.bind("use", scope);   // evaluate ODRL "use" permissions in this scope
-            bindings.bind(KEY, scope);     // and the pilot08:participant constraint
+            // Bind the ODRL "use" action (both compact and expanded forms seen across versions)
+            bindings.bind("use", scope);
+            bindings.bind("http://www.w3.org/ns/odrl/2/use", scope);
+            bindings.bind(KEY, scope);     // and the pilot08 participant constraint left operand
             policyEngine.registerFunction(scope, Permission.class, KEY, fn);
         }
         context.getMonitor().info("[pilot08] participant constraint bound in scopes "
