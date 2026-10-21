@@ -322,3 +322,36 @@ Scope: `a15c08d` (version-conditional launcher, build and run fixes), `e96e1a6` 
 - **D4 (M):** stale wording in `ENV.md:7,48`, VERSIONS (no D5/D6 section), `docs/STATE.md`, and the `maven-modules.csv:22` "0.8.1" claim.
 
 **Verdict:** the four-rung SUT is now real, pinned and evidenced, so the build phase is done. It is still not fit for the CVE assertions. F1 and F3 are the gate: without them, -9202 and -4536 can only PASS. The pilot is on track, and the next work is fixture code, not infrastructure.
+
+---
+
+## Third follow-up (post-bbc7814), 2026-10-22: first CVE result
+
+Scope: `ac70308` (module CSV script, jar-sha guard), `e9518f7` (F1 fixture, F5 management auth), `ca04f9c` (-9202 test), `9c5f512` (-9202 results) and `dd3a579` (report). Read-only. Docker was not touched and nothing was downloaded.
+
+**Done and correct:**
+- **G1:** `scripts/03_check_modules.sh` generates `env/maven-modules.csv` for every launcher module plus `vault-filesystem` and `auth-tokenbased`.
+- **G2:** `31_run_vanilla.sh:16` aborts when no sha is recorded.
+- **F5:** `auth-tokenbased` is in. Management returns 401 without the key and 200 with it on all four rungs, so the smoke is now 24/24 on clean `ca04f9c`.
+- **F1:** the fixture is tracked (`testbed/launcher/src/.../Pilot08ParticipantConstraintExtension.java`) and bound in scope `catalog`, the scope where `ContractDefinitionResolver` evaluates access policies. The left operand is the expanded IRI and identity comes from `client_id`, which matches the iam-mock reading in Q1.
+- **The -9202 test design is sound:** it seeds a policy that admits only `alice`, requires the precondition (alice sees the dataset in the catalogue, mallory does not), and counts a leak only on HTTP 200 plus a `dcat:Dataset` body, so a 404 that echoes the id does not count.
+- Results carry the jar sha and a clean commit. No payloads are stored.
+
+| # | file:line | Issue | Sev | Required change |
+|---|---|---|---|---|
+| H1 | `results/cve-2024-9202.csv:2-3`; `PILOT-REPORT.md` status row "DONE, ADMITTED"; `9c5f512` | **The admission claim is premature.** The rule (`SCOPE.md:48`; VERSIONS.md "12-cell pattern … rejected otherwise") requires the flip to happen *exactly* at the fixing version **on the ladder**, so -9202 must read **FAIL / FAIL / FAIL / PASS** at 0.6.2 / 0.6.3 / 0.9.0 / 0.9.1. Only 0.9.0 and 0.9.1 were run. A PASS at 0.6.x, for example because the fixture or the single-dataset path behaves differently there, would reject the test. | **H** | Run `40_test_9202.sh` at 0.6.2 and 0.6.3, and commit all four rows. Change the report row and the commit claim to "provisional (2 of 4 cells)" until then. Mark -9202 "admitted" only if all four cells match. |
+| H2 | `scripts/40_test_9202.sh:31-36,41-44` | **There is no positive control on the single-dataset endpoint.** A 404 for mallory at 0.9.1 counts as PASS, but nothing shows that the endpoint returns the dataset to the *admitted* party on that rung. If the path, asset-id resolution or response shape changed at 0.9.1, PASS would be vacuous, the same flaw as -8642 under D6. | **H** | Add `alice_dataset_http` and `alice_dataset_leak`. Require alice = 200 plus `dcat:Dataset` on every rung, otherwise the verdict is `INVALID`. Record both columns. |
+| M1 | `40_test_9202.sh:28-30` | `mallory_sees_catalog=no` is derived by grepping for the asset id. If mallory's catalogue request errors (401, 500, timeout), the grep also yields `no`, and the "hidden" precondition holds for the wrong reason. | M | Require mallory's catalogue response to be HTTP 200 with a `dcat:Catalog` body before reading "hidden". Otherwise the verdict is `INVALID`. |
+| M2 | `results/cve-2024-9202.csv:1` vs `SCOPE.md` "Results CSVs record build version, invariant ID, pass/fail, and commit hash only" | The results CSV carries observation columns (`alice_sees_catalog`, `mallory_*`, `jar_sha256`). They are harmless (yes/no and HTTP codes, no payloads), but they deviate from the user's written rule. | M | Either move the observations to `env/9202-observations.csv` and keep `results/` to the four SCOPE columns plus `jar_sha256`, or ask the user to widen the SCOPE rule. Do not edit SCOPE.md yourself. |
+| M3 | `env/maven-modules.csv:37` (`vault-filesystem` no at 0.9.x) | F3 cannot use `vault-filesystem` uniformly: it is gone at 0.9.x. Mixing seeding mechanisms across rungs would add a confounder to the -4536 ladder. | M | Seed the canary (and, for 0.9.x, the data-plane token keys) from the fixture extension via `Vault.storeSecret` at boot, the same code on every rung. |
+| L1 | `03_check_modules.sh:23` | The "published through 0.8.1" note is hard-coded. The metadata it relies on is fetched but not stored. | L | Save the fetched `maven-metadata.xml` for `transfer-data-plane` under `env/`, or derive the note from it. |
+
+**Still open:**
+- **F3 (H):** canary seeding plus the token endpoint, and a full OAuth2 push transfer for -4536.
+- **G5 (M):** transfer smoke at 0.9.x.
+- **D1 (M):** dependency verification. `SCOPE.md:27` still claims it.
+- **D2 (M):** ENV clone SHA, Samples pin, Plugin Portal row.
+- **D3 (M):** egress probes on `pilot08v`; `Internal` checked before boot; untracked-file dirty marker.
+- **D4 (M):** stale wording in ENV, VERSIONS, STATE.
+
+**Verdict:** this is the first real CVE signal. The denied counterparty gets the hidden dataset at 0.9.0 and is blocked at 0.9.1, on pinned jars and a clean commit, and the fixture and test logic are sound. It is **not yet an admitted rediscovery**: two of the four ladder cells and the admitted-party positive control are missing (H1, H2), and both are cheap to add. KC1 also needs -4536, which depends on F3 and a working OAuth2 push transfer, the harder half. The pilot is on track.
