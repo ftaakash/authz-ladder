@@ -288,3 +288,37 @@ Scope: `e8e78a3`, `39b895e`, `c133950` (plus `fdb5c9d`, the user's SCOPE edit fo
 - The 0.9.x builds will fail until the module list is made version-conditional (F2).
 
 These are setup gaps, not method failures, so KC1 is still open and on track within the timebox.
+
+---
+
+## Second follow-up (post-26dbb3f), 2026-10-22
+
+Scope: `a15c08d` (version-conditional launcher, build and run fixes), `e96e1a6` (four-rung evidence) and `b2c1f62` (report status). Read-only. Docker was not touched and nothing was downloaded.
+
+**Done:**
+- **F2:** per-version module sets. All four rungs build, and 0.9.x gets Signaling, EDR, data-plane-iam and self-registration.
+- **F6:** `31_run_vanilla.sh:11` runs `pilot08-edc-$V.jar`, checks its sha256 and carries the sha into every smoke row.
+- **F7:** `vanilla-jars.csv` has a `commit` column, and the shadow jar uses the reproducible flags.
+- **Part of D3:** a `net_internal` row for `pilot08v`. The smoke was re-run per version on clean commit `a15c08d` (16/16 `ok=yes`, all four rungs).
+- **Report:** the PILOT-REPORT status table now names F1, F3 and F5 as gating the CVE tests.
+
+**Evidence chain:** `vanilla-jars.csv` and `vanilla-smoke.csv` agree on all four shas. The jars were built at `a15c08d`, and `e96e1a6` changes only evidence files.
+
+| # | file:line | Issue | Sev | Required change |
+|---|---|---|---|---|
+| G1 | `testbed/launcher/build.gradle.kts:4`; `a15c08d` message | Both claim "verified present on Maven Central in `env/maven-modules.csv`". The CSV has 22 rows and **none** of the 11 modules added in this commit: `provision-http`, `transfer-pull-http-dynamic-receiver`, `control-api-configuration`, `edr-store-core`, `edr-cache-api`, `edr-store-receiver`, `callback-event-dispatcher`, `callback-http-dispatcher`, `transfer-data-plane-signaling`, `data-plane-selector-control-api`, `data-plane-self-registration`, `data-plane-iam`, `data-plane-public-api-v2`. The successful build shows they resolved, but the stated evidence does not exist. | M | Regenerate `env/maven-modules.csv` from the launcher's actual dependency list (one row per module × version), with a script so it cannot drift again. Add rows for `vault-filesystem` and `auth-tokenbased` before F3/F5. |
+| G2 | `scripts/31_run_vanilla.sh:16` | `[ -n "$want" ] && …` means that when `vanilla-jars.csv` has no row for `$V`, the jar boots **unverified** and no error is raised. | M | Abort when `want` is empty: `[ -n "$want" ] \|\| { echo "no recorded sha for $V"; exit 1; }`, then compare. |
+| G3 | `e96e1a6` message | "The clean rebuild reproduced byte-identical shas to the prior build". The prior build's shas are not stored anywhere, so this is "observed in session, not archived". | L | Mark it as not archived in the report, or rebuild one version and add a second `vanilla-jars` row/column as proof. |
+| G4 | `31_run_vanilla.sh:18,29` | `net_internal` is recorded as a row, but the provider boots before it is checked, and a `false` value does not stop the run. No egress probe has run on `pilot08v`. | L | Check `Internal=true` before `docker run` and abort if not. Port the IP/DNS egress probes from `05_net_check.sh`, with the positive control, to `pilot08v`. |
+| G5 | 0.9.x rungs | The rungs boot, but nothing shows a transfer completes at 0.9.x. `data-plane-iam` also needs signer/verifier key aliases in the vault, which is still empty. -4536 at 0.9.x stays vacuous (F4) until a transfer smoke passes. | M | With F3's vault seeding, seed the data-plane token keys as well. Add a per-version transfer smoke row (HttpData push to the driver completes) before any -4536 cell counts. |
+
+**Still open from the first follow-up** (not touched by these commits):
+- **F1 (H):** catalog-scope constraint fixture.
+- **F3 (H):** canary vault seeding and the token endpoint.
+- **F5 (M):** management-API auth.
+- **D1 (M):** Gradle dependency verification. `SCOPE.md:27` still claims "checksum-verified", and `testbed/launcher/.gitignore` still ignores `gradle/`.
+- **D2 (M):** ENV.md clone SHA, Samples pin, and the Plugin Portal row.
+- **D3 rest (M):** egress probes and the `lib.sh:10` untracked-file marker.
+- **D4 (M):** stale wording in `ENV.md:7,48`, VERSIONS (no D5/D6 section), `docs/STATE.md`, and the `maven-modules.csv:22` "0.8.1" claim.
+
+**Verdict:** the four-rung SUT is now real, pinned and evidenced, so the build phase is done. It is still not fit for the CVE assertions. F1 and F3 are the gate: without them, -9202 and -4536 can only PASS. The pilot is on track, and the next work is fixture code, not infrastructure.
