@@ -13,8 +13,11 @@ Running log of the feasibility pilot. Every number traces to a script output und
 | In-network driver harness | DONE (smoke now driven from inside the net) |
 | SUT switch to vanilla EDC + `iam-mock` (D5, option B) | **DONE** — all 4 rungs (0.6.2/0.6.3/0.9.0/0.9.1) build, boot, smoke (`env/vanilla-jars.csv`, `env/vanilla-smoke.csv`) |
 | Identity stubs (DID:web / STS / BDRS) + consumer | superseded by D5: Tractus-X DCP/DIM deferred to KC2 (option A). iam-mock gives an authenticated counterparty (DSP + mock token → 200) |
-| Test fixtures: F1 bound constraint, F3 seeded vault, F5 mgmt auth | **NOT STARTED** — gate the CVE assertions |
-| KC1 regression tests (-4536, -9202) | **NOT STARTED** — await the F1/F3/F5 fixtures |
+| Test fixtures: F1 bound constraint, F5 mgmt auth | **DONE** — F1 registers + discriminates (alice sees / mallory hidden); F5 enforces mgmt key (401/200) |
+| F3 seeded canary vault | **NOT STARTED** — needed only for -4536 |
+| **KC1 test — CVE-2024-9202** (catalogue bypass, 0.9.0→0.9.1) | **DONE, ADMITTED** — 0.9.0 FAIL / 0.9.1 PASS (`results/cve-2024-9202.csv`) |
+| KC1 test — CVE-2024-4536 (vault scoping, 0.6.2→0.6.3) | **NOT STARTED** — needs F3 + a full OAuth2 push-transfer flow |
+| KC1 verdict (needs BOTH -9202 and -4536) | **PENDING** — 1 of 2 rediscovered |
 
 ## 1. Local-only network isolation — closed and verified
 
