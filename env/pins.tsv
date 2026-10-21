@@ -1,0 +1,6 @@
+# rung	tx_tag	edc_version	image	digest	runtime_jar
+R1	0.7.0	0.6.1	tractusx/edc-runtime-memory	sha256:c160bf5bfacb1e2858e6417445444994914197d4e5f209ea7021ed38d606e420	/app/edc-controlplane.jar
+R2	0.7.1	0.6.3	tractusx/edc-runtime-memory	sha256:15c8bf83f0dd881bbedb814a487ae1d8cd6c4744245b4ca550a32c1d8d9f2bde	/app/edc-controlplane.jar
+R3	0.7.5	0.7.2	tractusx/edc-runtime-memory	sha256:30c4e23e04de8e505ace1449b9370ffd7806ad84ba7a3285c4e6a8feb3443a88	/app/edc-controlplane.jar
+R4	0.7.6	0.7.2	tractusx/edc-runtime-memory	sha256:0dd67dee6be99a5d2e1a7cce02d579791a3398f7c231a07c17bf83fb4b2ae0fa	/app/edc-controlplane.jar
+R5	0.8.0	0.10.1	tractusx/edc-runtime-memory	sha256:38a4b219d2cc770e1d0635bccaffaaa823efb7b20d2ea3471544d7a9047183ac	/app/edc-runtime.jar

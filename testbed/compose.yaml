@@ -1,0 +1,45 @@
+# Pilot 08 testbed: one Tractus-X EDC runtime per participant, local only.
+# TX_TAG selects the rung (see env/pins.tsv). The `dsp` network is internal, so
+# nothing is published to the host; the harness reaches services by name from a
+# driver container joined to the network (see scripts/lib.sh `drv`).
+name: pilot08
+networks:
+  # internal: no gateway to the host/internet. SCOPE.md promises local-only
+  # operation; all images are already pulled by digest, so no egress is needed
+  # at runtime. Container-to-container traffic and Docker embedded DNS (name
+  # resolution on 127.0.0.11) still work. Verified by scripts/05_net_check.sh.
+  dsp:
+    internal: true
+services:
+  provider:
+    image: pilot08/edc-runtime-memory:${TX_TAG:?set TX_TAG}
+    networks: [dsp]
+    # No `ports:` — the network is internal, so isolation does not depend on
+    # Docker ignoring publishes. Reach the connector from the driver container
+    # (provider:8080 health, :8181 management, :8282 DSP). See net-isolation.csv.
+    environment:
+      EDC_PARTICIPANT_ID: BPNLPROVIDER0001
+      EDC_IAM_ISSUER_ID: did:web:identity%3A8000:provider
+      EDC_API_AUTH_KEY: pilot08-provider-mgmt
+      WEB_HTTP_DEFAULT_PORT: "8080"
+      WEB_HTTP_DEFAULT_PATH: /api
+      WEB_HTTP_MANAGEMENT_PORT: "8181"
+      WEB_HTTP_MANAGEMENT_PATH: /management
+      WEB_HTTP_PROTOCOL_PORT: "8282"
+      WEB_HTTP_PROTOCOL_PATH: /api/v1/dsp
+      WEB_HTTP_CONTROL_PORT: "8383"
+      WEB_HTTP_CONTROL_PATH: /control
+      WEB_HTTP_SIGNALING_PORT: "8484"
+      WEB_HTTP_SIGNALING_PATH: /signaling
+      WEB_HTTP_PUBLIC_PORT: "8585"
+      WEB_HTTP_PUBLIC_PATH: /public
+      EDC_DSP_CALLBACK_ADDRESS: http://provider:8282/api/v1/dsp
+      EDC_DATAPLANE_API_PUBLIC_BASEURL: http://provider:8585/public
+      EDC_IAM_STS_OAUTH_TOKEN_URL: http://identity:8000/sts/token
+      EDC_IAM_STS_OAUTH_CLIENT_ID: provider
+      EDC_IAM_STS_OAUTH_CLIENT_SECRET_ALIAS: sts-client-secret
+      EDC_IAM_STS_DIM_URL: http://identity:8000/dim
+      TX_IAM_IATP_BDRS_SERVER_URL: http://identity:8000/bdrs
+      EDC_TRANSFER_PROXY_TOKEN_SIGNER_PRIVATEKEY_ALIAS: token-signer
+      EDC_TRANSFER_PROXY_TOKEN_VERIFIER_PUBLICKEY_ALIAS: token-verifier
+      EDC_VAULT_SECRETS: ${PROVIDER_VAULT_SECRETS:?run scripts/20_up.sh}

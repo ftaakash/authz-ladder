@@ -1,0 +1,6 @@
+# gradle build output + wrapper binaries live here but are regenerated
+build/
+.gradle/
+gradle/
+gradlew
+gradlew.bat

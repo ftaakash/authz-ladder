@@ -1,0 +1,19 @@
+# R1 (Tractus-X 0.7.0 / EDC 0.6.1) /app/edc-controlplane.jar — IATP/DCP auth evidence
+# Generated 2026-10-21 by jar tf | grep. Supports PILOT-REPORT.md §2 (no mock IAM; remote DIM STS).
+## count of dcp|iatp entries:
+42
+## mock/dev IAM matches (expect only Jetty's unrelated DefaultIdentityService):
+org/eclipse/jetty/security/DefaultIdentityService.class
+## key DCP/STS classes:
+org/eclipse/tractusx/edc/policy/cx/membership/MembershipCredentialConstraintFunction.class
+org/eclipse/tractusx/edc/iam/iatp/identity/IatpIdentityExtractor.class
+org/eclipse/tractusx/edc/iam/iatp/scope/CredentialScopeExtractor.class
+org/eclipse/tractusx/edc/iam/iatp/sts/dim/DimSecureTokenService$1.class
+org/eclipse/tractusx/edc/iam/iatp/sts/dim/DimSecureTokenService.class
+org/eclipse/tractusx/edc/iam/iatp/sts/dim/DimSecureTokenServiceExtension.class
+org/eclipse/tractusx/edc/identity/mapper/BdrsClientMapperExtension.class
+org/eclipse/tractusx/edc/identity/mapper/BdrsClientExtension.class
+org/eclipse/tractusx/edc/identity/mapper/BdrsClientImpl$1.class
+org/eclipse/tractusx/edc/identity/mapper/BdrsClientImpl.class
+org/eclipse/tractusx/edc/identity/mapper/BdrsClientAudienceMapper.class
+org/eclipse/tractusx/edc/spi/identity/mapper/BdrsClient.class

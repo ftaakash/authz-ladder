@@ -1,0 +1,6 @@
+rung,tx_tag,edc_version,digest_match,classes,DatasetResolverImpl,DatasetFixExtension,ConsumerPullTransferTokenValidation,dpf_oauth2,commit
+R1,0.7.0,0.6.1,yes,57823,1,0,0,6,2cdd4ee
+R2,0.7.1,0.6.3,yes,57725,1,0,0,6,2cdd4ee
+R3,0.7.5,0.7.2,yes,58258,1,0,0,6,2cdd4ee
+R4,0.7.6,0.7.2,yes,58258,1,1,0,6,2cdd4ee
+R5,0.8.0,0.10.1,yes,37719,1,0,0,6,2cdd4ee

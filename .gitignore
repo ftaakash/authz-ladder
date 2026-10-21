@@ -1,0 +1,14 @@
+# Candidate (undisclosed) security findings: never commit until coordinated disclosure completes.
+**/candidate-findings.md
+**/CANDIDATE-*.md
+private/
+
+# Locally generated test keys (never commit private keys, even test ones)
+testbed/.secrets/
+
+# Build workspace: cloned upstream repos, gradle cache, fat jars (all regenerated)
+build/
+
+# Scratch / transient
+*.log
+*.tmp

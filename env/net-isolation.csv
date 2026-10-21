@@ -1,0 +1,8 @@
+tx_tag,check,expected,got,ok,commit
+0.7.0,network_internal_flag,true,true,yes,dd66831
+0.7.0,egress_probe_control,REACHED,REACHED,yes,dd66831
+0.7.0,egress_ip_1.1.1.1,BLOCKED,BLOCKED,yes,dd66831
+0.7.0,egress_dns_example.com,BLOCKED,BLOCKED,yes,dd66831
+0.7.0,embedded_dns_provider,RESOLVES,RESOLVES,yes,dd66831
+0.7.0,driver_to_provider_health,200,200,yes,dd66831
+0.7.0,host_published_ports,0,0,yes,dd66831

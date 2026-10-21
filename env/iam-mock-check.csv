@@ -1,0 +1,5 @@
+tag,commit_sha,module_path,present_in_source,maven_jar_present,method,date
+v0.6.2,f58c71ab1d5638fb1d226b592aca202a829e7761,extensions/common/iam/iam-mock,yes,yes,github_tree_read_at_tag + maven-metadata,2026-10-21
+v0.6.3,a2e28228175c94cddd14d9bcbd203ea1720829bc,extensions/common/iam/iam-mock,yes,yes,github_tree_read_at_tag + maven-metadata,2026-10-21
+v0.9.0,2de2e94d06ead5d4fd3c1f8ab1980f5b8ee9dfb1,extensions/common/iam/iam-mock,yes,yes,github_tree_read_at_tag + maven-metadata,2026-10-21
+v0.9.1,1bd6e683e6304f7e34e0d161cd750424dc2d4dae,extensions/common/iam/iam-mock,yes,yes,github_tree_read_at_tag + maven-metadata,2026-10-21

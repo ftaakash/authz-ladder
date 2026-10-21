@@ -1,0 +1,6 @@
+tx_tag,check,expected,got,ok,commit
+0.7.0,health_200,200,200,yes,dd66831
+0.7.0,mgmt_nokey_401,401,401,yes,dd66831
+0.7.0,mgmt_key_200,200,200,yes,dd66831
+0.7.0,dsp_catalog_noauth_401,401,401,yes,dd66831
+0.7.0,dsp_catalog_fakebearer_401,401,401,yes,dd66831

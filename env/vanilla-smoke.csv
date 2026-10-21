@@ -1,0 +1,4 @@
+edc_version,check,expected,got,ok,commit
+0.6.2,health_200,200,200,yes,fdb5c9d-dirty
+0.6.2,dsp_catalog_noauth_401,401,401,yes,fdb5c9d-dirty
+0.6.2,dsp_catalog_mocktoken_200,200,200,yes,fdb5c9d-dirty
