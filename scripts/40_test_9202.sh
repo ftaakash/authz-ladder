@@ -26,24 +26,32 @@ ds_as()  { docker run --rm --network "$NET" "$DRIVER_IMG" -s -o /dev/null -w '%{
 ds_body(){ docker run --rm --network "$NET" "$DRIVER_IMG" -s --max-time 8 http://provider:8282/api/v1/dsp/catalog/datasets/"$ASSET" -H "Authorization: $(tok "$1")" 2>/dev/null; }
 
 alice_cat="$(cat_as alice)"; mallory_cat="$(cat_as mallory)"
-alice_sees=no; echo "$alice_cat" | grep -q "$ASSET" && alice_sees=yes
-mallory_sees_catalog=no; echo "$mallory_cat" | grep -q "$ASSET" && mallory_sees_catalog=yes
-mallory_ds_code="$(ds_as mallory)"
-# Leak = the single-dataset endpoint actually RETURNS the dataset to the denied party.
-# Key off HTTP 200 + a real dcat:Dataset body; a 404 "not found" body also echoes the
-# asset id, so a plain id grep would false-positive on the patched (blocked) rung.
-mallory_ds_leak=no
-[ "$mallory_ds_code" = 200 ] && echo "$(ds_body mallory)" | grep -q 'dcat:Dataset' && mallory_ds_leak=yes
+# catalogue validity: a real 200 dcat:Catalog (else the request errored and "hidden" is meaningless, M1)
+alice_cat_ok=no;   echo "$alice_cat"   | grep -q 'dcat:Catalog' && alice_cat_ok=yes
+mallory_cat_ok=no; echo "$mallory_cat" | grep -q 'dcat:Catalog' && mallory_cat_ok=yes
+alice_sees=no;            echo "$alice_cat"   | grep -q "$ASSET" && alice_sees=yes
+mallory_sees_catalog=no;  echo "$mallory_cat" | grep -q "$ASSET" && mallory_sees_catalog=yes
+# single-dataset endpoint: leak iff HTTP 200 + a real dcat:Dataset body (a 404 body also echoes the id).
+alice_ds_code="$(ds_as alice)";   alice_ds_leak=no;   [ "$alice_ds_code" = 200 ] && echo "$(ds_body alice)"   | grep -q 'dcat:Dataset' && alice_ds_leak=yes
+mallory_ds_code="$(ds_as mallory)"; mallory_ds_leak=no; [ "$mallory_ds_code" = 200 ] && echo "$(ds_body mallory)" | grep -q 'dcat:Dataset' && mallory_ds_leak=yes
 
 # --- oracle ---
-# precondition (fixture works): alice sees it, mallory does NOT see it in the full catalogue.
-# vuln present (FAIL) iff mallory can still fetch it via the single-dataset endpoint.
+# Preconditions (else INVALID, not a CVE signal):
+#   both catalogues return 200 dcat:Catalog; alice sees the asset; mallory does NOT (fixture discriminates);
+#   positive control: alice CAN fetch it via the single-dataset endpoint on this rung (so a mallory 404 is a real block).
+# Given those, the CVE is present (FAIL) iff mallory can still fetch the hidden dataset via the endpoint.
 verdict=INVALID
-if [ "$alice_sees" = yes ] && [ "$mallory_sees_catalog" = no ]; then
+if [ "$alice_cat_ok" = yes ] && [ "$mallory_cat_ok" = yes ] \
+   && [ "$alice_sees" = yes ] && [ "$mallory_sees_catalog" = no ] && [ "$alice_ds_leak" = yes ]; then
   [ "$mallory_ds_leak" = yes ] && verdict=FAIL || verdict=PASS
 fi
+# results/: SCOPE columns only (version, invariant, verdict, commit, jar sha). Observations go to env/.
 out="$PILOT/results/cve-2024-9202.csv"; mkdir -p "$PILOT/results"
-[ -f "$out" ] || echo "edc_version,test,alice_sees_catalog,mallory_sees_catalog,mallory_dataset_http,mallory_dataset_leak,verdict,jar_sha256,commit" > "$out"
+[ -f "$out" ] || echo "edc_version,invariant,verdict,jar_sha256,commit" > "$out"
 grep -v "^$V," "$out" > "$out.tmp" 2>/dev/null; mv "$out.tmp" "$out"
-echo "$V,cve-2024-9202,$alice_sees,$mallory_sees_catalog,$mallory_ds_code,$mallory_ds_leak,$verdict,$sha,$COMMIT" >> "$out"
-echo "$V: alice_sees=$alice_sees mallory_catalog=$mallory_sees_catalog mallory_dataset_http=$mallory_ds_code leak=$mallory_ds_leak => $verdict"
+echo "$V,catalogue-visibility(CVE-2024-9202),$verdict,$sha,$COMMIT" >> "$out"
+obs="$PILOT/env/9202-observations.csv"
+[ -f "$obs" ] || echo "edc_version,alice_cat_200,mallory_cat_200,alice_sees,mallory_sees_catalog,alice_dataset_http,alice_dataset_leak,mallory_dataset_http,mallory_dataset_leak,verdict,commit" > "$obs"
+grep -v "^$V," "$obs" > "$obs.tmp" 2>/dev/null; mv "$obs.tmp" "$obs"
+echo "$V,$alice_cat_ok,$mallory_cat_ok,$alice_sees,$mallory_sees_catalog,$alice_ds_code,$alice_ds_leak,$mallory_ds_code,$mallory_ds_leak,$verdict,$COMMIT" >> "$obs"
+echo "$V: aliceCat=$alice_cat_ok malCat=$mallory_cat_ok aliceSees=$alice_sees malSees=$mallory_sees_catalog aliceDS=$alice_ds_code/$alice_ds_leak malDS=$mallory_ds_code/$mallory_ds_leak => $verdict"
