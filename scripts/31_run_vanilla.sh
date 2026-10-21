@@ -13,7 +13,8 @@ jar="$PILOT/testbed/launcher/build/libs/pilot08-edc-$V.jar"
 # Verify its sha256 against the recorded build before booting (abort on mismatch).
 want="$(grep "^$V," "$PILOT/env/vanilla-jars.csv" 2>/dev/null | cut -d, -f2)"
 got="$(sha256sum "$jar" | cut -d' ' -f1)"
-[ -n "$want" ] && [ "$want" != "$got" ] && { echo "sha256 mismatch for $V: want $want got $got"; exit 1; }
+[ -n "$want" ] || { echo "no recorded sha for $V in env/vanilla-jars.csv — build it first"; exit 1; }
+[ "$want" != "$got" ] && { echo "sha256 mismatch for $V: want $want got $got"; exit 1; }
 export RUN_SHA="$got"
 run="$PILOT/build/run"; mkdir -p "$run"; cp "$jar" "$run/app.jar"; cp "$PILOT/testbed/launcher/config/provider.properties" "$run/"
 docker network inspect "$NET" >/dev/null 2>&1 || docker network create --internal "$NET" >/dev/null
