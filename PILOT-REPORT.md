@@ -11,9 +11,10 @@ Running log of the feasibility pilot. Every number traces to a script output und
 | R1 boots, smoke 5/5 | DONE (`env/boot-smoke.csv`; R1 / tx 0.7.0 only) |
 | **Local-only network isolation** | **DONE, verified** (`env/net-isolation.csv`; R1 only) |
 | In-network driver harness | DONE (smoke now driven from inside the net) |
-| SUT switch to vanilla EDC + `iam-mock` (D5, option B) | IN PROGRESS — gates the identity/consumer work |
-| Identity stubs (DID:web / STS / BDRS) + consumer | superseded by D5: Tractus-X DCP/DIM deferred to KC2 (option A) |
-| KC1 regression tests (-4536, -9202) | **NOT STARTED** — awaits the vanilla build |
+| SUT switch to vanilla EDC + `iam-mock` (D5, option B) | **DONE** — all 4 rungs (0.6.2/0.6.3/0.9.0/0.9.1) build, boot, smoke (`env/vanilla-jars.csv`, `env/vanilla-smoke.csv`) |
+| Identity stubs (DID:web / STS / BDRS) + consumer | superseded by D5: Tractus-X DCP/DIM deferred to KC2 (option A). iam-mock gives an authenticated counterparty (DSP + mock token → 200) |
+| Test fixtures: F1 bound constraint, F3 seeded vault, F5 mgmt auth | **NOT STARTED** — gate the CVE assertions |
+| KC1 regression tests (-4536, -9202) | **NOT STARTED** — await the F1/F3/F5 fixtures |
 
 ## 1. Local-only network isolation — closed and verified
 
