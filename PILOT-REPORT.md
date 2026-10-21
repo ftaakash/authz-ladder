@@ -15,9 +15,9 @@ Running log of the feasibility pilot. Every number traces to a script output und
 | Identity stubs (DID:web / STS / BDRS) + consumer | superseded by D5: Tractus-X DCP/DIM deferred to KC2 (option A). iam-mock gives an authenticated counterparty (DSP + mock token → 200) |
 | Test fixtures: F1 bound constraint, F5 mgmt auth | **DONE** — F1 registers + discriminates (alice sees / mallory hidden); F5 enforces mgmt key (401/200) |
 | F3 seeded canary vault | **NOT STARTED** — needed only for -4536 |
-| **KC1 test — CVE-2024-9202** (catalogue bypass, 0.9.0→0.9.1) | **DONE, ADMITTED** — 0.9.0 FAIL / 0.9.1 PASS (`results/cve-2024-9202.csv`) |
+| **KC1 test — CVE-2024-9202** (catalogue bypass) | **PROVISIONAL** — clean flip at the fixing version: 0.9.0 **FAIL** / 0.9.1 **PASS** (selective policy, fixture discriminates, alice positive control passes). 0.6.2/0.6.3 **INVALID** — policy & contract-def POSTs 404 (0.6.x management-API path differs; `env/cve-2024-9202-observations.csv` seed codes). Full-ladder FAIL/FAIL/FAIL/PASS pending a 0.6.x seeding fix. |
 | KC1 test — CVE-2024-4536 (vault scoping, 0.6.2→0.6.3) | **NOT STARTED** — needs F3 + a full OAuth2 push-transfer flow |
-| KC1 verdict (needs BOTH -9202 and -4536) | **PENDING** — 1 of 2 rediscovered |
+| KC1 verdict (needs BOTH -9202 and -4536) | **PENDING** — -9202 flips at its fixing version (provisional); -4536 not started |
 
 ## 1. Local-only network isolation — closed and verified
 
