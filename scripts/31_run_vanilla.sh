@@ -34,5 +34,8 @@ Q='{"@context":{"@vocab":"https://w3id.org/edc/v0.0.1/ns/"},"@type":"QuerySpec"}
 DSP='{"@context":{"dspace":"https://w3id.org/dspace/v0.8/"},"@type":"dspace:CatalogRequestMessage","dspace:filter":{}}'
 TOK='{"region":"eu","clientId":"consumer","audience":"provider"}'
 row health_200              200 "$(drvn http://provider:8080/api/check/health)"
+# F5: management API must require the api key (setup calls use it; assertions never touch :8181).
+row mgmt_nokey_401          401 "$(drvn -X POST http://provider:8181/management/v3/assets/request -H 'Content-Type: application/json' -d "$Q")"
+row mgmt_key_200            200 "$(drvn -X POST http://provider:8181/management/v3/assets/request -H 'Content-Type: application/json' -H 'X-Api-Key: pilot08-provider-mgmt' -d "$Q")"
 row dsp_catalog_noauth_401  401 "$(drvn -X POST http://provider:8282/api/v1/dsp/catalog/request -H 'Content-Type: application/json' -d "$DSP")"
 row dsp_catalog_mocktoken_200 200 "$(drvn -X POST http://provider:8282/api/v1/dsp/catalog/request -H 'Content-Type: application/json' -H "Authorization: $TOK" -d "$DSP")"

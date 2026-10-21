@@ -20,6 +20,12 @@ val isV06 = edc.startsWith("0.6")
 fun edc(name: String) = "org.eclipse.edc:$name:$edc"
 
 dependencies {
+    // compile deps for the pilot08 test-fixture extension (src/main/java) — SPI only,
+    // same coordinates at every rung. These are also on the runtime classpath.
+    implementation(edc("policy-engine-spi"))
+    implementation(edc("policy-model"))
+    implementation(edc("core-spi"))
+
     // base + control plane + DSP + management + iam-mock (common to both lines)
     runtimeOnly(edc("boot"))
     runtimeOnly(edc("connector-core"))
@@ -28,6 +34,7 @@ dependencies {
     runtimeOnly(edc("dsp"))
     runtimeOnly(edc("http"))
     runtimeOnly(edc("iam-mock"))
+    runtimeOnly(edc("auth-tokenbased"))   // F5: management API-key auth (edc.api.auth.key)
     runtimeOnly(edc("api-observability"))
     runtimeOnly(edc("configuration-filesystem"))
     runtimeOnly(edc("control-plane-api"))
