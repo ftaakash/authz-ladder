@@ -14,9 +14,12 @@ mdrv() { docker run --rm --network "$NET" "$DRIVER_IMG" -s -w '\n%{http_code}' -
 mgmt() { mdrv -X POST "http://provider:8181/management/v3/$1" -H 'Content-Type: application/json' -H "X-Api-Key: $MK" -d "$2"; }
 
 # --- seed: asset + access policy (admit only alice) + contract definition ---
-mgmt assets '{"@context":{"@vocab":"https://w3id.org/edc/v0.0.1/ns/"},"@id":"'"$ASSET"'","properties":{"name":"restricted"},"dataAddress":{"@type":"DataAddress","type":"HttpData","baseUrl":"http://sink:9/x"}}' >/dev/null
-mgmt policydefinitions '{"@context":{"@vocab":"https://w3id.org/edc/v0.0.1/ns/"},"@id":"pol-alice","policy":{"@context":["http://www.w3.org/ns/odrl.jsonld",{"pilot08":"https://pilot08.test/ns/"}],"@type":"Set","permission":[{"action":"use","constraint":[{"leftOperand":"pilot08:participant","operator":"eq","rightOperand":"alice"}]}]}}' >/dev/null
-mgmt contractdefinitions '{"@context":{"@vocab":"https://w3id.org/edc/v0.0.1/ns/"},"@id":"cd-9202","accessPolicyId":"pol-alice","contractPolicyId":"pol-alice","assetsSelector":[{"@type":"Criterion","operandLeft":"https://w3id.org/edc/v0.0.1/ns/id","operator":"=","operandRight":"'"$ASSET"'"}]}' >/dev/null
+# Capture each POST's HTTP code so the record shows whether seeding succeeded per rung.
+code_of() { tail -1 <<<"$1"; }
+seed_asset="$(code_of "$(mgmt assets '{"@context":{"@vocab":"https://w3id.org/edc/v0.0.1/ns/"},"@id":"'"$ASSET"'","properties":{"name":"restricted"},"dataAddress":{"@type":"DataAddress","type":"HttpData","baseUrl":"http://sink:9/x"}}')")"
+seed_policy="$(code_of "$(mgmt policydefinitions '{"@context":{"@vocab":"https://w3id.org/edc/v0.0.1/ns/"},"@id":"pol-alice","policy":{"@context":["http://www.w3.org/ns/odrl.jsonld",{"pilot08":"https://pilot08.test/ns/"}],"@type":"Set","permission":[{"action":"use","constraint":[{"leftOperand":"pilot08:participant","operator":"eq","rightOperand":"alice"}]}]}}')")"
+seed_cd="$(code_of "$(mgmt contractdefinitions '{"@context":{"@vocab":"https://w3id.org/edc/v0.0.1/ns/"},"@id":"cd-9202","accessPolicyId":"pol-alice","contractPolicyId":"pol-alice","assetsSelector":[{"@type":"Criterion","operandLeft":"https://w3id.org/edc/v0.0.1/ns/id","operator":"=","operandRight":"'"$ASSET"'"}]}')")"
+echo "seed codes: asset=$seed_asset policy=$seed_policy cd=$seed_cd"
 
 # --- DSP queries as alice (admitted) and mallory (denied) ---
 CAT='{"@context":{"dspace":"https://w3id.org/dspace/v0.8/"},"@type":"dspace:CatalogRequestMessage","dspace:filter":{}}'
@@ -50,8 +53,9 @@ out="$PILOT/results/cve-2024-9202.csv"; mkdir -p "$PILOT/results"
 [ -f "$out" ] || echo "edc_version,invariant,verdict,jar_sha256,commit" > "$out"
 grep -v "^$V," "$out" > "$out.tmp" 2>/dev/null; mv "$out.tmp" "$out"
 echo "$V,catalogue-visibility(CVE-2024-9202),$verdict,$sha,$COMMIT" >> "$out"
-obs="$PILOT/env/9202-observations.csv"
-[ -f "$obs" ] || echo "edc_version,alice_cat_200,mallory_cat_200,alice_sees,mallory_sees_catalog,alice_dataset_http,alice_dataset_leak,mallory_dataset_http,mallory_dataset_leak,verdict,commit" > "$obs"
+# observations keyed by version+commit+jar_sha256 so each row joins to its result row (M2).
+obs="$PILOT/env/cve-2024-9202-observations.csv"
+[ -f "$obs" ] || echo "edc_version,jar_sha256,commit,seed_asset,seed_policy,seed_cd,alice_cat_200,mallory_cat_200,alice_sees,mallory_sees_catalog,alice_dataset_http,alice_dataset_leak,mallory_dataset_http,mallory_dataset_leak,verdict" > "$obs"
 grep -v "^$V," "$obs" > "$obs.tmp" 2>/dev/null; mv "$obs.tmp" "$obs"
-echo "$V,$alice_cat_ok,$mallory_cat_ok,$alice_sees,$mallory_sees_catalog,$alice_ds_code,$alice_ds_leak,$mallory_ds_code,$mallory_ds_leak,$verdict,$COMMIT" >> "$obs"
+echo "$V,$sha,$COMMIT,$seed_asset,$seed_policy,$seed_cd,$alice_cat_ok,$mallory_cat_ok,$alice_sees,$mallory_sees_catalog,$alice_ds_code,$alice_ds_leak,$mallory_ds_code,$mallory_ds_leak,$verdict" >> "$obs"
 echo "$V: aliceCat=$alice_cat_ok malCat=$mallory_cat_ok aliceSees=$alice_sees malSees=$mallory_sees_catalog aliceDS=$alice_ds_code/$alice_ds_leak malDS=$mallory_ds_code/$mallory_ds_leak => $verdict"
