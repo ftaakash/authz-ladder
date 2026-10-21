@@ -185,3 +185,106 @@ Severity: **H** blocks a valid KC1 result or breaks a SCOPE rule. **M** is evide
 - The written decision says "source build", but the work uses Maven artifacts.
 
 **Timeline:** on day 1 of a 3-week timebox, the pilot is **on track**, but the build is currently blocked (Gradle loopback). No CVE assertion exists yet, so KC1 has no result.
+
+---
+
+## Follow-up review (post-5abf5dc), 2026-10-22
+
+Scope: `e8e78a3`, `39b895e`, `c133950` (plus `fdb5c9d`, the user's SCOPE edit for D6), and the uncommitted diff in `scripts/30_build_vanilla.sh`. Read-only. Docker was not touched and nothing was downloaded. iam-mock, policy and vault behaviour was read from the local v0.6.2 source clone (`build/connector-062`, `f58c71a`); line refs point to that tree.
+
+### Q1 — iam-mock and participant identity
+
+- `MockIdentityService.verifyJwtToken` (`extensions/common/iam/iam-mock/.../MockIdentityService.java`) accepts **any** JSON token without checking it. It returns the claims `region` and `client_id` taken from the token itself.
+- `ParticipantAgentServiceImpl` takes the participant identity from claim `client_id` (`DEFAULT_IDENTITY_CLAIM_KEY`, `spi/.../ParticipantAgentService.java:27`; overridable with `edc.agent.identity.key`).
+- **So counterparties are distinguishable:** a token with `clientId: X` and one with `clientId: Y` yield different `ParticipantAgent` identities. The 0.6.2 runtime can tell them apart. Self-asserted identity is acceptable here, because both CVEs are post-authentication (D5).
+- **The gap is on the policy side.** Vanilla 0.6.2 registers no constraint function in the `catalog` scope (`ContractDefinitionResolver.CATALOGING_SCOPE`). The only core function, contract expiry, is bound to `transfer` (`ContractCoreExtension.java:182-186`).
+- `ScopeFilter` (`policy-engine-lib/.../ScopeFilter.java:132-138`) **silently drops** any constraint whose left operand is not bound to the scope. An "admit X, deny Y" access policy written with an unregistered operand therefore becomes "admit everyone". The -9202 test would then PASS on every rung (no FAIL at 0.6.2–0.9.0), so it fails admission.
+
+| # | Issue | Sev | Required change |
+|---|---|---|---|
+| F1 | No catalog-scope constraint function exists, so a policy cannot deny counterparty Y. The -9202 oracle cannot FAIL. | **H** | Add a small, tracked **test-fixture extension** to the launcher, e.g. `testbed/launcher/fixture/`. It registers and binds an `AtomicConstraintFunction` for one left operand (e.g. `pilot08:participant`, eq against `ParticipantAgent.getIdentity()`) in scopes `catalog` and `contract.negotiation`. Build it against each version's SPI (the policy-engine API changed between 0.6 and 0.9), keep identical semantics, and record it in DECISIONS as part of the SUT. Before any CVE assertion, add a smoke row per version: catalog for X lists the dataset; catalog for Y does not. That row proves the deny works before -9202 is measured. |
+
+### Q2 — Module coverage per version
+
+**-9202 (catalogue):**
+- The `dsp` module (catalog protocol and `DatasetResolverImpl`) and `control-plane-core` are present at all four versions (`env/maven-modules.csv`).
+- Coverage is OK once F1 exists.
+
+**-4536 (OAuth2 data sink):**
+- `data-plane-http-oauth2` is present at all four versions.
+- At 0.6.x the provider-push flow comes from `transfer-data-plane` (`ProviderPushTransferDataFlowController`), which is present only at 0.6.x.
+- At 0.9.x the launcher has **no** signalling transfer path. `data-plane-control-api` is absent there (`maven-modules.csv:21` says `no`).
+- Two consequences:
+  1. `build.gradle.kts:47` adds `data-plane-control-api` unconditionally, so **the 0.9.0 and 0.9.1 builds will fail to resolve**.
+  2. Even after fixing that, a 0.9.x transfer needs the signalling modules (`transfer-data-plane-signaling`, `data-plane-signaling-client`, and self-registration or selector registration). Without them, -4536 at 0.9.x would be a vacuous PASS (no transfer runs).
+- The admission flip for -4536 is 0.6.2→0.6.3, where the module set is identical, so the flip itself is sound. The 0.9.x cells only need to stay PASS, but they should be behavioural.
+- **Vault:** the default vault is an empty `InMemoryVault` (`boot-lib/.../InMemoryVault.java`; `BootServicesExtension.java:100-110`). 0.6.2 has no secrets management API and no seeding. With no canary secret in the provider vault, the vulnerable build cannot leak anything, and -4536 would PASS at 0.6.2 (a false PASS).
+- `provider.properties:16-17` also name `token-signer` and `token-verifier` aliases that do not exist in the empty vault.
+
+| # | Issue | Sev | Required change |
+|---|---|---|---|
+| F2 | `build.gradle.kts:47` makes `data-plane-control-api` unconditional, but it is not published at 0.9.0/0.9.1. Those builds will fail. | **H** | Derive each version's module list from `env/maven-modules.csv`, with explicit per-line conditions. Add the 0.9.x signalling modules after checking them in `maven-modules.csv`. Then build 0.6.3, 0.9.0 and 0.9.1, and run the per-version smoke. |
+| F3 | Without seeding, the provider vault is empty. A -4536 test cannot FAIL at 0.6.2. | **H** | Seed a **canary** secret (random per run, never written to `results/`) into the provider vault at every version. Use either `vault-filesystem` (check it in `maven-modules.csv`) or the fixture extension from F1. The -4536 assertion records only whether the driver's token endpoint received *any* request carrying the canary (FAIL) or not (PASS), never the value. Add the token endpoint to the driver on the internal network. |
+| F4 | At 0.9.x there is no transfer path, so -4536 PASS there would be vacuous. | M | Same fix as F2. Record in VERSIONS.md that the 0.9.x -4536 cells are behavioural only once a signalling transfer completes; otherwise mark them `n/a`, not PASS. |
+
+### Q3 — Unauthenticated management API on 0.6.2
+
+- **Local-only and scope rules: not affected.** The provider runs on an `--internal` network with no published ports (`31_run_vanilla.sh:13,15`), so only containers on that network can reach `:8181`.
+- **Test validity:** not affected *if* the management API is used only for fixture setup (assets, policies, contract definitions, canary seeding) and every CVE assertion goes through the DSP port `:8282` with a mock token. If an assertion ever reads data through `:8181`, a FAIL means nothing, because the counterparty in the threat model has no management access.
+- **Comparability:** the KC2 Tractus-X smoke expects management 401/200. The vanilla SUT should match, so the two testbeds behave the same.
+
+| # | Issue | Sev | Required change |
+|---|---|---|---|
+| F5 | The management API is open, and nothing enforces that assertions avoid it. | M | Add `auth-tokenbased` (check it in `maven-modules.csv`) with `edc.api.auth.key`, plus management 401/200 smoke rows. In the harness, keep setup calls (management) and assertion calls (DSP only) in separate functions, so no result row can come from `:8181`. |
+
+### Q4 — The uncommitted checksum change (`30_build_vanilla.sh:16-22`)
+
+**Correct:**
+- The header is written once.
+- Dedupe per version works: `grep -v "^$V,"` keeps the header, so it exits 0 under `pipefail`. The unescaped dots in `$V` are harmless.
+- The row format matches the header.
+- The jar is copied to a versioned name before hashing.
+
+**Problems:**
+- **(a)** `31_run_vanilla.sh:10` runs `pilot08-edc-launcher-all.jar`, the *last built* jar, not `pilot08-edc-$V.jar`. After building 0.9.1, `31_run_vanilla.sh 0.6.2` would test 0.9.1 and label it 0.6.2. **H.**
+- **(b)** The CSV has no `commit` column, so a jar is not tied to the launcher recipe. The dirty marker is also not recorded.
+- **(c)** Shadow jars embed timestamps, so the sha changes on every rebuild. That is fine as long as runs verify against the CSV, but it is not reproducible.
+- **(d)** `env/vanilla-jars.csv` does not exist yet, because 0.6.2 has not been rebuilt with this script.
+
+**Verdict:** safe to commit (pilot file, pre-approved, no secrets) once (b) is added. Fix (a) in the same commit.
+
+| # | Issue | Sev | Required change |
+|---|---|---|---|
+| F6 | The run script ignores `$V` when choosing the jar. | **H** | In `31_run_vanilla.sh` use `pilot08-edc-$V.jar`. Before boot, verify its sha256 against the `$V` row of `env/vanilla-jars.csv` and abort on mismatch. Write that sha into each smoke/result row, or into a run header. |
+| F7 | `vanilla-jars.csv` lacks `commit`. | M | Use header `edc_version,sha256,bytes,commit,date` and append `$COMMIT` (with the dirty marker). Add `tasks.shadowJar { isPreserveFileTimestamps = false; isReproducibleFileOrder = true }` so rebuilds hash identically. Commit together with F6, then rebuild 0.6.2 to create the CSV. |
+
+### Q5 — Status of the earlier prioritised list (as of `c133950`)
+
+| P | Item | Status | Note |
+|---|---|---|---|
+| 1 | 6.1 -8642 vacuous | **done** | D6, resolved by the user in SCOPE (`fdb5c9d`): -8642 excluded and KC1 rests on -4536 and -9202. Minor: `maven-modules.csv:22` says "last release 0.8.1" but has no 0.7/0.8 columns. Add a `source_url` or the version list as evidence. |
+| 2 | 6.2 ENV.md download log | **partial** | Table added (gradle image by digest, 1182 MB; plugin; Maven; clones). Open: the Connector clone row has no SHA (`f58c71a…` is known). The Samples clone is still unpinned at `main` (`199eda0`). The plugin row still says "pending user OK", but SCOPE now approves the Plugin Portal. Clones of 0.6.3/0.9.x are not logged (none were made; SHAs come from `ls-remote`, which is fine). `distributionSha256Sum` is moot because the wrapper is no longer used. |
+| 3 | 6.3 recipe tracked; dependency verification; jar sha | **partial** | The recipe is tracked in `testbed/launcher/` and the pilot `.gitignore` is committed. **Gradle dependency verification is absent**, yet `SCOPE.md:27` (the user's text) now says "dependencies checksum-verified", so that claim is currently false. `testbed/launcher/.gitignore:4` ignores `gradle/`, which is exactly where `gradle/verification-metadata.xml` must live, so it would be silently untracked. Jar sha: see Q4. |
+| 4 | 1.1 "built from source" | **partial** | Fixed in DECISIONS (D6), SCOPE (user) and ENV. Still stale: `DECISIONS.md:9` (D5 text still says "built from source", acceptable if D6 is read as amending it), the `build.gradle.kts:1-6` header ("at a pinned tag", "transfer-data-plane so -8642 … present"), `PILOT-REPORT.md:83,112-113`, and `docs/STATE.md` (no new entry yet; the D5 entry says "built from source"). |
+| 5 | 6.5 maven-modules.csv | **done** | `env/maven-modules.csv` exists. It needs rows for the modules F2, F3 and F5 add (signalling, `vault-filesystem`, `auth-tokenbased`). |
+| 6 | 6.6 container build | **done** | Builder pinned by digest and logged. It runs on the default network, not `pilot08_dsp`. The location change is recorded in ENV.md. |
+| 7 | 4.1/4.2 vanilla isolation; dirty marker | **open** | `31_run_vanilla.sh:12` creates `pilot08v` but reuses an existing one without checking `Internal=true`. No `05_net_check` equivalent has run on `pilot08v`. `lib.sh:10` still ignores untracked files. `env/vanilla-smoke.csv` is stamped `fdb5c9d-dirty` and must be re-run on a clean commit. |
+| 8 | 5.1 commits outside `pilots/` | **done** | Approved after the fact by the user. `fdb5c9d` (SCOPE.md) is inside `pilots/`. |
+| 9 | 6.4 iam-mock SHAs | **done** | `env/iam-mock-check.csv` now has per-tag SHAs and Maven presence. |
+| 10 | 3.1/3.2/6.7 docs | **open** | VERSIONS.md has no D5/D6 section. ENV.md still says "Route actually used: A" (`ENV.md:7`) and "JDK not needed" (`:48`). The PILOT-REPORT status table (`:14-16`) predates the 0.6.2 boot and D6. |
+
+### Follow-up verdict
+
+**Progress:**
+- The 0.6.2 SUT boots on an internal network.
+- A mock-token counterparty gets a real `dcat:Catalog`.
+- The user resolved D6 cleanly.
+- Scope rules held: build egress happens only in the builder container; the runtime network is internal.
+
+**The 0.6.2 testbed is not yet fit for writing the -4536 and -9202 assertions:**
+- -9202 needs a catalog-scope deny that actually takes effect (F1).
+- -4536 needs a seeded canary secret and a token endpoint (F3).
+- Every run must be pinned to the right jar (F6).
+- The 0.9.x builds will fail until the module list is made version-conditional (F2).
+
+These are setup gaps, not method failures, so KC1 is still open and on track within the timebox.
