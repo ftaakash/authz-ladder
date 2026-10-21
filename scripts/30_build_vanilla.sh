@@ -13,4 +13,11 @@ MSYS_NO_PATHCONV=1 docker run --rm \
   -v pilot08-gradle-cache:/home/gradle/.gradle \
   "$GRADLE_IMG" gradle --console=plain --no-daemon shadowJar -Pedc="$V"
 jar="$SRC/build/libs/pilot08-edc-launcher-all.jar"
-[ -f "$jar" ] && echo "built $V -> $jar ($(wc -c < "$jar") bytes)" || { echo "build failed: no jar"; exit 1; }
+[ -f "$jar" ] || { echo "build failed: no jar"; exit 1; }
+# Record the fat-jar sha256 so every KC1 result ties to an exact binary (D6).
+vjar="$SRC/build/libs/pilot08-edc-$V.jar"; cp "$jar" "$vjar"
+sha="$(sha256sum "$vjar" | cut -d' ' -f1)"
+csv="$PILOT/env/vanilla-jars.csv"; [ -f "$csv" ] || echo "edc_version,sha256,bytes,commit,date" > "$csv"
+grep -v "^$V," "$csv" > "$csv.tmp" 2>/dev/null; mv "$csv.tmp" "$csv"
+echo "$V,$sha,$(wc -c < "$vjar"),$COMMIT,$(date +%F)" >> "$csv"
+echo "built $V -> $vjar sha256=$sha"
