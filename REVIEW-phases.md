@@ -355,3 +355,36 @@ Scope: `ac70308` (module CSV script, jar-sha guard), `e9518f7` (F1 fixture, F5 m
 - **D4 (M):** stale wording in ENV, VERSIONS, STATE.
 
 **Verdict:** this is the first real CVE signal. The denied counterparty gets the hidden dataset at 0.9.0 and is blocked at 0.9.1, on pinned jars and a clean commit, and the fixture and test logic are sound. It is **not yet an admitted rediscovery**: two of the four ladder cells and the admitted-party positive control are missing (H1, H2), and both are cheap to add. KC1 also needs -4536, which depends on F3 and a working OAuth2 push transfer, the harder half. The pilot is on track.
+
+---
+
+## Fourth follow-up (post-941c8d6), 2026-10-22
+
+Scope: `efc1fb5`, `907d85e`, `a544693`, `564b4be`. Read-only. Docker was not touched and nothing was downloaded. Management-API paths were checked in the local v0.6.2 source clone.
+
+**Done and correct:**
+- **H2:** the admitted party (alice) must fetch the dataset through the single-dataset endpoint, or the verdict is `INVALID`.
+- **M1:** both catalogue responses must contain `dcat:Catalog`.
+- **M2:** `results/cve-2024-9202.csv` keeps only the SCOPE columns plus `jar_sha256`. The observations are in `env/cve-2024-9202-observations.csv`, joinable on version, commit and sha.
+- **H1, handled honestly:** the report now says **PROVISIONAL**, and all four rungs are recorded.
+- **Evidence chain:** results, observations, jars and smoke (24/24) all carry clean commit `a544693`, and the jar shas match across all three files.
+
+**Current ladder:** 0.6.2 `INVALID` / 0.6.3 `INVALID` / 0.9.0 `FAIL` / 0.9.1 `PASS`. At 0.9.x, the precondition, the positive control and the flip all hold, so the 0.9.0→0.9.1 transition is a clean, controlled signal.
+
+| # | file:line | Issue | Sev | Required change |
+|---|---|---|---|---|
+| J1 | `scripts/40_test_9202.sh:14,20-21` | **Root cause of the 0.6.x `INVALID`, confirmed in source.** v0.6.2 serves `@Path("/v2/policydefinitions")` and `@Path("/v2/contractdefinitions")`; only assets are `/v3`. `mgmt()` hard-codes `/v3/` for every resource, so the policy and contract-definition seeds 404 at 0.6.x (observations show `seed_policy`/`seed_cd = 404`), no access policy exists, and alice cannot see the asset. This is a harness bug, not a SUT difference. | **H** | Make the path per version: `v2` for `policydefinitions` and `contractdefinitions` at 0.6.x, `v3` at 0.9.x. Read the 0.6.3 paths from that tag rather than assuming. Re-run 0.6.2 and 0.6.3. -9202 is admitted only if the ladder reads FAIL/FAIL/FAIL/PASS, as `SCOPE.md:48` and VERSIONS.md require. |
+| J2 | `40_test_9202.sh:46-50` | Seeding failure is caught only indirectly (through `alice_sees=no`). An `INVALID` row does not say *why*. | M | Gate the verdict explicitly on `seed_asset`, `seed_policy` and `seed_cd` each being 2xx. Add an `invalid_reason` column to the observations so each `INVALID` explains itself without rereading the codes. |
+| J3 | `40_test_9202.sh:6` | The header still says "Admitted only if it flips FAIL->PASS at 0.9.0 -> 0.9.1". That is the old, weaker rule. | L | Reword to "admitted only if 0.6.2/0.6.3/0.9.0/0.9.1 read FAIL/FAIL/FAIL/PASS". |
+| J4 | `env/cve-2024-9202-observations.csv:2-3` | The observations show something worth recording: at 0.6.x, with **no** contract definition at all, mallory still gets HTTP 200 with a `dcat:Dataset` from the single-dataset endpoint. That matches the CVE mechanism (no offer filtering on the single-dataset path) and Tractus-X's `dataset-bugfix` (empty `hasPolicy` → 404). | L (note) | Do not count it, because these rows are `INVALID`. Mention it in VERSIONS.md as supporting context once J1 produces valid 0.6.x rows. |
+
+**Still open:**
+- **F3 (H):** canary seeding, the token endpoint, and the OAuth2 push transfer for -4536. Seed through the fixture, per M3.
+- **G5 (M):** transfer smoke at 0.9.x.
+- **D1 (M):** Gradle dependency verification. `SCOPE.md:27` still claims it, and the launcher `.gitignore` still hides `gradle/`.
+- **D2 (M):** ENV clone SHA, Samples pin, Plugin Portal row.
+- **D3 (M):** egress probes on `pilot08v`; check `Internal` before boot; untracked-file dirty marker.
+- **D4 (M):** stale ENV, VERSIONS and STATE wording.
+- **L1:** archive the `transfer-data-plane` metadata.
+
+**Verdict:** the -9202 test is now well controlled, and the pilot reports its status honestly as provisional. What stands between it and admission is a one-line harness fix (J1), not a question of method. -4536 (F3) is the critical path for KC1. The pilot is on track.
