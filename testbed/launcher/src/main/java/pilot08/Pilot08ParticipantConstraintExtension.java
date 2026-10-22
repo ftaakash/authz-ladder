@@ -7,6 +7,7 @@ import org.eclipse.edc.policy.engine.spi.RuleBindingRegistry;
 import org.eclipse.edc.policy.model.Operator;
 import org.eclipse.edc.policy.model.Permission;
 import org.eclipse.edc.spi.agent.ParticipantAgent;
+import org.eclipse.edc.spi.security.Vault;
 import org.eclipse.edc.spi.system.ServiceExtension;
 import org.eclipse.edc.spi.system.ServiceExtensionContext;
 
@@ -53,6 +54,17 @@ public class Pilot08ParticipantConstraintExtension implements ServiceExtension {
         }
         context.getMonitor().info("[pilot08] participant constraint bound in scopes "
                 + CATALOG_SCOPE + ", " + NEGOTIATION_SCOPE);
+
+        // F3: seed a per-run canary secret into the provider vault, if configured. Uniform
+        // across rungs (vault-filesystem is absent at 0.9.x). Used by the CVE-2024-4536 test:
+        // a counterparty names this alias as oauth2:clientSecretKey and sees whether the
+        // provider dereferences it and sends the VALUE to a counterparty-controlled tokenUrl.
+        var canaryAlias = context.getSetting("pilot08.canary.alias", null);
+        var canaryValue = context.getSetting("pilot08.canary.value", null);
+        if (canaryAlias != null && canaryValue != null) {
+            context.getService(Vault.class).storeSecret(canaryAlias, canaryValue);
+            context.getMonitor().info("[pilot08] seeded canary secret under alias " + canaryAlias);
+        }
     }
 
     /** Admits the request iff the counterparty's client_id claim matches the policy's right value. */
