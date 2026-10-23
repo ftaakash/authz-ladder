@@ -13,7 +13,7 @@ source "$(dirname "$0")/lib.sh"   # set -euo pipefail, require_docker, COMMIT, J
 redact() { sed "s/$CANARY/<redacted>/g"; }
 V="${1:?usage: 42_test_4536_dsp.sh <edc-version>}"
 IMG="gradle@sha256:963d59f7f22767da4efbcf46b661361b61af5fb88b0309da1071c4234c647eba"
-RCV="alpine:3.20"; NET="pilot08v"; ALIAS="pilot08-canary"; DSPP="dataspace-protocol-http"
+NET="pilot08v"; ALIAS="pilot08-canary"; DSPP="dataspace-protocol-http"
 EDCNS="https://w3id.org/edc/v0.0.1/ns/"; DRV="$DRIVER_IMG"
 case "$V" in 0.6*) PV=v2 ;; *) PV=v3 ;; esac   # policy/cd/catalog/negotiation/transfer/dataplanes version
 PK="pilot08-provider-mgmt"; CK="pilot08-consumer-mgmt"; ASSET="asset-4536"
@@ -28,10 +28,14 @@ trap 'docker rm -f pilot08v-provider pilot08v-consumer pilot08v-receiver >/dev/n
 docker network inspect "$NET" >/dev/null 2>&1 || docker network create --internal "$NET" >/dev/null
 [ "$(docker network inspect "$NET" --format '{{.Internal}}')" = true ] || { echo "network $NET not internal"; exit 1; }
 docker rm -f pilot08v-provider pilot08v-consumer pilot08v-receiver >/dev/null 2>&1
-docker run -d --name pilot08v-receiver --network "$NET" --network-alias receiver "$RCV" sh -c \
-  'while true; do printf "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: 42\r\nConnection: close\r\n\r\n{\"access_token\":\"x\",\"token_type\":\"Bearer\"}" | timeout 15 nc -l -p 9300 >> /cap.txt 2>&1; echo "===END===" >> /cap.txt; done' >/dev/null
+# Receiver: a concurrent JDK HttpServer (not a single-shot `nc` loop, which dropped the sink write
+# that arrives after the source GET / token POST). Logs every request to /cap.txt, replies 200.
+run="$PILOT/build/run"; mkdir -p "$run/p" "$run/c" "$run/r"
+cp "$PILOT/testbed/receiver/Receiver.java" "$run/r/Receiver.java"
+MSYS_NO_PATHCONV=1 docker run -d --name pilot08v-receiver --network "$NET" --network-alias receiver \
+  -v "$run/r":/work -w /work "$IMG" java /work/Receiver.java >/dev/null
+for _ in $(seq 1 60); do docker logs pilot08v-receiver 2>&1 | grep -q 'receiver-ready' && break; sleep 1; done
 
-run="$PILOT/build/run"; mkdir -p "$run/p" "$run/c"
 cp "$jar" "$run/p/app.jar"; cp "$PILOT/testbed/launcher/config/provider.properties" "$run/p/"
 cp "$jar" "$run/c/app.jar"; cp "$PILOT/testbed/launcher/config/consumer.properties" "$run/c/"
 MSYS_NO_PATHCONV=1 docker run -d --name pilot08v-provider --network "$NET" --network-alias provider -v "$run/p":/work -w /work "$IMG" \
@@ -91,7 +95,7 @@ offer="$(printf '%s' "$catbody" | "$JQ" -r '[.["dcat:dataset"]]|flatten|.[]|sele
 push_offered=no; printf '%s' "$catbody" | grep -qF 'HttpData-PUSH' && push_offered=yes
 echo "seed a=$seed_asset p=$seed_policy cd=$seed_cd ; dp_reg=$dp_reg ; catalog=$cat_code push_offered=$push_offered offer=${offer:0:28}" | redact
 
-negId=""; agr=""; negstate=""; agr_on_provider=no; trId=""; tstate=""
+negId=""; agr=""; negstate=""; agr_on_provider=no; trId=""; tstate=""; terr=""
 if [ -n "$offer" ]; then
   NEG='{"@context":{"@vocab":"'"$EDCNS"'"},"@type":"ContractRequest","counterPartyAddress":"http://provider:8282/api/v1/dsp","protocol":"'"$DSPP"'","policy":{"@context":"http://www.w3.org/ns/odrl.jsonld","@type":"Offer","@id":"'"$offer"'","assigner":"provider","target":"'"$ASSET"'"}}'
   rn="$(cmgmt "$PV" contractnegotiations "$NEG")"; negId="$(body "$rn" | "$JQ" -r '.["@id"]//empty' 2>/dev/null || true)"
@@ -104,7 +108,16 @@ fi
 if [ "$agr_on_provider" = yes ]; then
   TR='{"@context":{"@vocab":"'"$EDCNS"'"},"@type":"TransferRequest","counterPartyAddress":"http://provider:8282/api/v1/dsp","contractId":"'"$agr"'","assetId":"'"$ASSET"'","protocol":"'"$DSPP"'","transferType":"HttpData-PUSH","dataDestination":{"type":"HttpData","baseUrl":"http://receiver:9300/sink","oauth2:clientId":"consumer","oauth2:clientSecretKey":"'"$ALIAS"'","oauth2:tokenUrl":"http://receiver:9300/token"}}'
   rt="$(cmgmt "$PV" transferprocesses "$TR")"; trId="$(body "$rt" | "$JQ" -r '.["@id"]//empty' 2>/dev/null || true)"
-  for _ in $(seq 1 45); do ts="$(body "$(cget "$PV" transferprocesses/"$trId")")"; tstate="$(jfield "$ts" state)"; case "$tstate" in COMPLETED|TERMINATED|STARTED) break;; esac; sleep 2; done
+  # Wait for a terminal state (COMPLETED/TERMINATED) OR for the receiver to actually log the sink
+  # write — do NOT break on STARTED, because the PUSH to the sink happens as the transfer moves
+  # STARTED -> COMPLETED, and stopping at STARTED can miss it (coordinator note on the first ladder).
+  for _ in $(seq 1 60); do
+    ts="$(body "$(cget "$PV" transferprocesses/"$trId")")"; tstate="$(jfield "$ts" state)"
+    docker exec pilot08v-receiver sh -c 'grep -qiE "POST /sink|PUT /sink" /cap.txt 2>/dev/null' && break
+    case "$tstate" in COMPLETED|TERMINATED) break;; esac
+    sleep 2
+  done
+  terr="$(jfield "$ts" errorDetail)"   # recorded as an observation when the transfer failed
 fi
 sleep 6
 cap="$(docker exec pilot08v-receiver sh -c 'cat /cap.txt 2>/dev/null' 2>/dev/null || true)"
@@ -125,15 +138,16 @@ elif [ -z "$trId" ]; then reason="no-transfer-id"
 elif [ "$src_get" != yes ]; then reason="source-not-read[state=$tstate]"
 elif [ "$leak" = yes ]; then verdict=FAIL
 elif [ "$sink_write" = yes ]; then verdict=PASS
-else reason="sink-write-not-observed[positive-control-failed;state=$tstate]"; fi
+else reason="sink-write-not-observed[positive-control-failed;state=$tstate;err=${terr:0:80}]"; fi
 
 out="$PILOT/results/cve-2024-4536.csv"; mkdir -p "$PILOT/results"
 [ -f "$out" ] || echo "edc_version,invariant,verdict,jar_sha256,commit" > "$out"
 grep -v "^$V," "$out" > "$out.tmp" 2>/dev/null; mv "$out.tmp" "$out"
 echo "$V,vault-scoping[CVE-2024-4536],$verdict,$sha,$COMMIT" >> "$out"
 obs="$PILOT/env/cve-2024-4536-observations.csv"
-hdr="edc_version,jar_sha256,commit,seed_asset,seed_policy,seed_cd,dp_reg,catalog,push_offered,offer,neg_state,agreement_on_provider,transfer_state,src_get,sink_write,token_post,canary_value,canary_in_log,verdict,invalid_reason"
+hdr="edc_version,jar_sha256,commit,seed_asset,seed_policy,seed_cd,dp_reg,catalog,push_offered,offer,neg_state,agreement_on_provider,transfer_state,transfer_error,src_get,sink_write,token_post,canary_value,canary_in_log,verdict,invalid_reason"
+terrsafe="$(printf '%s' "$terr" | redact | tr ',\n' ';;' | head -c 120)"
 [ -f "$obs" ] || echo "$hdr" > "$obs"
 grep -v "^$V," "$obs" > "$obs.tmp" 2>/dev/null; mv "$obs.tmp" "$obs"
-echo "$V,$sha,$COMMIT,$seed_asset,$seed_policy,$seed_cd,$dp_reg,$cat_code,$push_offered,$([ -n "$offer" ] && echo yes||echo no),${negstate:-NA},$agr_on_provider,${tstate:-NA},$src_get,$sink_write,$token_post,$canary,$canary_in_log,$verdict,$reason" >> "$obs"
+echo "$V,$sha,$COMMIT,$seed_asset,$seed_policy,$seed_cd,$dp_reg,$cat_code,$push_offered,$([ -n "$offer" ] && echo yes||echo no),${negstate:-NA},$agr_on_provider,${tstate:-NA},${terrsafe:-NA},$src_get,$sink_write,$token_post,$canary,$canary_in_log,$verdict,$reason" >> "$obs"
 echo "$V: dp=$dp_reg push_offered=$push_offered neg=$negstate agr_prov=$agr_on_provider tstate=${tstate:-NA} src_get=$src_get sink=$sink_write token=$token_post canary=$canary => $verdict ${reason:+[$reason]}" | redact
