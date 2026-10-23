@@ -42,8 +42,15 @@ for n in provider consumer; do for _ in $(seq 1 60); do docker logs "pilot08v-$n
 seeded=no; docker logs pilot08v-provider 2>&1 | grep -q 'seeded canary secret' && seeded=yes
 
 req() { docker run --rm --network "$NET" "$DRV" -s -w '\nHTTPCODE:%{http_code}' --max-time 25 "$@" 2>/dev/null || true; }
-code() { printf '%s' "$1" | grep -oaE 'HTTPCODE:[0-9]+' | tail -1 | cut -d: -f2; }
+# abort-proof: always emit a code (000 when the call produced no response) so set -e/pipefail
+# never kills the script mid-flow and a real reason is always recorded.
+code() { local c; c="$(printf '%s' "$1" | grep -oaE 'HTTPCODE:[0-9]+' | tail -1 | cut -d: -f2)"; echo "${c:-000}"; }
 body() { printf '%s' "$1" | sed 's/HTTPCODE:[0-9]*$//'; }
+hc() { docker run --rm --network "$NET" "$DRV" -s -o /dev/null -w '%{http_code}' --max-time 6 "http://$1:8080/api/check/health" 2>/dev/null || echo 000; }
+phealth="$(hc provider)"; chealth="$(hc consumer)"
+pstat="$(docker inspect pilot08v-provider --format '{{.State.Running}}/{{.State.ExitCode}}' 2>/dev/null || true)"
+cstat="$(docker inspect pilot08v-consumer --format '{{.State.Running}}/{{.State.ExitCode}}' 2>/dev/null || true)"
+echo "health: provider=$phealth consumer=$chealth; provider=$pstat consumer=$cstat"
 pmgmt() { req -X POST "http://provider:8181/management/$1/$2" -H 'Content-Type: application/json' -H "X-Api-Key: $PK" -d "$3"; }
 cmgmt() { req -X POST "http://consumer:8181/management/$1/$2" -H 'Content-Type: application/json' -H "X-Api-Key: $CK" -d "$3"; }
 cget()  { req "http://consumer:8181/management/$1/$2" -H "X-Api-Key: $CK"; }
@@ -79,13 +86,13 @@ fi
 if [ "$agr_on_provider" = yes ]; then
   TR='{"@context":{"@vocab":"'"$EDCNS"'"},"@type":"TransferRequest","counterPartyAddress":"http://provider:8282/api/v1/dsp","contractId":"'"$agr"'","assetId":"'"$ASSET"'","protocol":"'"$DSPP"'","transferType":"HttpData-PUSH","dataDestination":{"type":"HttpData","baseUrl":"http://receiver:9300/sink","oauth2:clientId":"consumer","oauth2:clientSecretKey":"'"$ALIAS"'","oauth2:tokenUrl":"http://receiver:9300/token"}}'
   rt="$(cmgmt "$PV" transferprocesses "$TR")"; trId="$(body "$rt" | "$JQ" -r '.["@id"]//empty' 2>/dev/null || true)"
-  for _ in $(seq 1 45); do ts="$(body "$(cget "$PV" transferprocesses/"$trId")")"; tstate="$(printf '%s' "$ts" | "$JQ" -r '.["state"]//empty' 2>/dev/null || true); case "$tstate" in COMPLETED|TERMINATED|STARTED) break;; esac; sleep 2; done
+  for _ in $(seq 1 45); do ts="$(body "$(cget "$PV" transferprocesses/"$trId")")"; tstate="$(printf '%s' "$ts" | "$JQ" -r '.["state"]//empty' 2>/dev/null || true)"; case "$tstate" in COMPLETED|TERMINATED|STARTED) break;; esac; sleep 2; done
 fi
 sleep 6
 cap="$(docker exec pilot08v-receiver sh -c 'cat /cap.txt 2>/dev/null' 2>/dev/null || true)"
-src_get=no;   printf '%s' "$cap" | grep -qiE '(GET|POST) /data'  && src_get=yes || true
+src_get=no;   printf '%s' "$cap" | grep -qiE 'GET /data|POST /data'  && src_get=yes || true
 token_post=no;printf '%s' "$cap" | grep -qiE 'POST /token'       && token_post=yes || true
-sink_write=no;printf '%s' "$cap" | grep -qiE '(POST|PUT) /sink'  && sink_write=yes || true
+sink_write=no;printf '%s' "$cap" | grep -qiE 'POST /sink|PUT /sink'  && sink_write=yes || true
 canary=no;    printf '%s' "$cap" | grep -qF "$CANARY"            && canary=yes || true
 canary_in_log=no; docker logs pilot08v-provider 2>&1 | grep -qF "$CANARY" && canary_in_log=yes || true
 
@@ -93,22 +100,22 @@ leak=no; { [ "$token_post" = yes ] || [ "$canary" = yes ]; } && leak=yes
 verdict=INVALID; reason=""
 if [ "$seeded" != yes ]; then reason="canary-not-seeded"
 elif [ "$canary_in_log" = yes ]; then reason="canary-in-provider-log"
-elif [ -z "$offer" ]; then reason="no-offer(catalog=$cat_code)"
-elif [ "$negstate" != FINALIZED ]; then reason="negotiation-not-finalized($negstate)"
+elif [ -z "$offer" ]; then reason="no-offer[catalog=$cat_code]"
+elif [ "$negstate" != FINALIZED ]; then reason="negotiation-not-finalized[$negstate]"
 elif [ "$agr_on_provider" != yes ]; then reason="no-agreement-on-provider"
 elif [ -z "$trId" ]; then reason="no-transfer-id"
-elif [ "$src_get" != yes ]; then reason="source-not-read(state=$tstate)"
+elif [ "$src_get" != yes ]; then reason="source-not-read[state=$tstate]"
 elif [ "$leak" = yes ]; then verdict=FAIL
 elif [ "$sink_write" = yes ]; then verdict=PASS
-else reason="sink-write-not-observed(positive-control-failed,state=$tstate)"; fi
+else reason="sink-write-not-observed[positive-control-failed;state=$tstate]"; fi
 
 out="$PILOT/results/cve-2024-4536.csv"; mkdir -p "$PILOT/results"
 [ -f "$out" ] || echo "edc_version,invariant,verdict,jar_sha256,commit" > "$out"
 grep -v "^$V," "$out" > "$out.tmp" 2>/dev/null; mv "$out.tmp" "$out"
-echo "$V,vault-scoping(CVE-2024-4536),$verdict,$sha,$COMMIT" >> "$out"
+echo "$V,vault-scoping[CVE-2024-4536],$verdict,$sha,$COMMIT" >> "$out"
 obs="$PILOT/env/cve-2024-4536-observations.csv"
 hdr="edc_version,jar_sha256,commit,seed_asset,seed_policy,seed_cd,dp_reg,catalog,push_offered,offer,neg_state,agreement_on_provider,transfer_state,src_get,sink_write,token_post,canary_value,canary_in_log,verdict,invalid_reason"
 [ -f "$obs" ] || echo "$hdr" > "$obs"
 grep -v "^$V," "$obs" > "$obs.tmp" 2>/dev/null; mv "$obs.tmp" "$obs"
 echo "$V,$sha,$COMMIT,$seed_asset,$seed_policy,$seed_cd,$dp_reg,$cat_code,$push_offered,$([ -n "$offer" ] && echo yes||echo no),${negstate:-NA},$agr_on_provider,${tstate:-NA},$src_get,$sink_write,$token_post,$canary,$canary_in_log,$verdict,$reason" >> "$obs"
-echo "$V: dp=$dp_reg push_offered=$push_offered neg=$negstate agr_prov=$agr_on_provider tstate=${tstate:-NA} src_get=$src_get sink=$sink_write token=$token_post canary=$canary => $verdict ${reason:+($reason)}" | redact
+echo "$V: dp=$dp_reg push_offered=$push_offered neg=$negstate agr_prov=$agr_on_provider tstate=${tstate:-NA} src_get=$src_get sink=$sink_write token=$token_post canary=$canary => $verdict ${reason:+[$reason]}" | redact
