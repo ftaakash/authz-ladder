@@ -67,7 +67,32 @@ loopback interface (so host-side gradle fails its daemon handshake). Build has e
 | `eclipse-edc/Connector` clone @ v0.6.2 | github.com | tag v0.6.2 (recipe source, not under test) | shallow | 2026-10-21 |
 | `eclipse-edc/Samples` clone @ main | github.com | (unpinned; recipe reference only — to pin or remove) | shallow | 2026-10-21 |
 
-Fat jar per version: `testbed/launcher/build/libs/pilot08-edc-launcher-all.jar` (sha256 to be recorded per version in `env/`). 0.6.2 built OK (`scripts/30_build_vanilla.sh 0.6.2`).
+Fat jar per version: `testbed/launcher/build/libs/pilot08-edc-launcher-all.jar`; per-version sha256 recorded in `env/vanilla-jars.csv` (append-only, keyed by version+sha+commit).
+
+### Dependency verification (D1 / D8)
+
+Gradle dependency verification is enabled: `testbed/launcher/gradle/verification-metadata.xml`
+(tracked) pins **sha1+sha256** for every resolved dependency (1416 artifacts across the four
+rungs + the shadow plugin). Builds via `scripts/30_build_vanilla.sh` are strict — a changed or
+missing artifact fails the build. This is **not** trust-on-first-use: `scripts/32_gradle_verify.sh`
+cross-checks every recorded sha1 against the **publisher's own `.sha1`** and enforces + tamper-tests:
+
+| check | result |
+|---|---|
+| artifacts recorded (sha1+sha256) | 1416 |
+| sha1 cross-checked against publisher | 1416 / 1416, **0 mismatch, 0 missing** |
+| strict rebuild (no `--write`) all 4 rungs | pass |
+| negative control (flip one sha256 in a copy → build must fail) | detected |
+
+Cross-check sources (fetched `.sha1` only, inside the build container): `repo1.maven.org`
+(Eclipse EDC artifacts) and `plugins.gradle.org/m2` (the shadow plugin + its marker pom — the
+Plugin Portal hosts a different marker pom than Central at the same coordinates, so each artifact
+is accepted iff its recorded sha1 matches the source Gradle actually resolved it from). ~1416–2832
+`.sha1` fetches, 2026-10-23. Evidence: `env/gradle-verification.csv`.
+
+**Checksum-only.** PGP signature verification is intentionally skipped: it needs keyserver
+downloads, a new (un-approved) source. SCOPE's "dependencies checksum-verified" is satisfied by
+the sha1+sha256 pinning cross-checked against the publishers above.
 
 ## Network
 

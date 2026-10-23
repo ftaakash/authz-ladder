@@ -1,6 +1,8 @@
 # gradle build output + wrapper binaries live here but are regenerated
 build/
 .gradle/
-gradle/
+# gradle/ holds regenerated wrapper binaries, EXCEPT the tracked dependency-verification file
+gradle/*
+!gradle/verification-metadata.xml
 gradlew
 gradlew.bat
