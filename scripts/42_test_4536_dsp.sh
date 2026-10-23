@@ -20,10 +20,12 @@ PK="pilot08-provider-mgmt"; CK="pilot08-consumer-mgmt"; ASSET="asset-4536"
 jar="$PILOT/testbed/launcher/build/libs/pilot08-edc-$V.jar"
 [ -f "$jar" ] || { echo "no jar for $V — build it first"; exit 1; }
 sha="$(sha256sum "$jar" | cut -d' ' -f1)"
-want="$(grep "^$V," "$PILOT/env/vanilla-jars.csv" 2>/dev/null | cut -d, -f2)"
-[ -n "$want" ] || { echo "no recorded sha for $V in vanilla-jars.csv — build it first"; exit 1; }
-[ "$want" = "$sha" ] || { echo "jar sha mismatch for $V (built!=recorded) — rebuild"; exit 1; }
+# vanilla-jars.csv is append-only (multiple rows per version), so verify the jar we run is
+# RECORDED (its exact sha present), not equal to the first row.
+grep -qE "^$V,$sha," "$PILOT/env/vanilla-jars.csv" 2>/dev/null || { echo "jar sha $sha for $V not recorded in vanilla-jars.csv — rebuild"; exit 1; }
+_x=$-; set +x   # never let an -x trace print the canary value
 CANARY="pilot08-canary-$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+case $_x in *x*) set -x;; esac
 trap 'docker rm -f pilot08v-provider pilot08v-consumer pilot08v-receiver >/dev/null 2>&1 || true' EXIT
 
 docker network inspect "$NET" >/dev/null 2>&1 || docker network create --internal "$NET" >/dev/null
@@ -36,8 +38,10 @@ docker run -d --name pilot08v-receiver --network "$NET" --network-alias receiver
 run="$PILOT/build/run"; mkdir -p "$run/p" "$run/c"
 cp "$jar" "$run/p/app.jar"; cp "$PILOT/testbed/launcher/config/provider.properties" "$run/p/"
 cp "$jar" "$run/c/app.jar"; cp "$PILOT/testbed/launcher/config/consumer.properties" "$run/c/"
+_x=$-; set +x
 MSYS_NO_PATHCONV=1 docker run -d --name pilot08v-provider --network "$NET" --network-alias provider -v "$run/p":/work -w /work "$IMG" \
   java -Dedc.fs.config=/work/provider.properties -Dpilot08.canary.alias="$ALIAS" -Dpilot08.canary.value="$CANARY" -jar /work/app.jar >/dev/null
+case $_x in *x*) set -x;; esac
 MSYS_NO_PATHCONV=1 docker run -d --name pilot08v-consumer --network "$NET" --network-alias consumer -v "$run/c":/work -w /work "$IMG" \
   java -Dedc.fs.config=/work/consumer.properties -jar /work/app.jar >/dev/null
 for n in provider consumer; do for _ in $(seq 1 60); do docker logs "pilot08v-$n" 2>&1 | grep -q ' ready' && break; sleep 2; done; done

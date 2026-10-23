@@ -22,7 +22,9 @@ trap 'docker rm -f pilot08v-provider pilot08v-receiver >/dev/null 2>&1 || true' 
 jar="$PILOT/testbed/launcher/build/libs/pilot08-edc-$V.jar"
 [ -f "$jar" ] || { echo "no jar for $V"; exit 1; }
 sha="$(grep "^$V," "$PILOT/env/vanilla-jars.csv" | cut -d, -f2)"
+_x=$-; set +x
 CANARY="pilot08-canary-$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n')"   # per-run, never stored
+case $_x in *x*) set -x;; esac
 
 docker network inspect "$NET" >/dev/null 2>&1 || docker network create --internal "$NET" >/dev/null
 docker rm -f pilot08v-receiver pilot08v-provider >/dev/null 2>&1
@@ -33,7 +35,9 @@ docker run -d --name pilot08v-receiver --network "$NET" --network-alias receiver
 run="$PILOT/build/run"; mkdir -p "$run"; cp "$jar" "$run/app.jar"; cp "$PILOT/testbed/launcher/config/provider.properties" "$run/"
 MSYS_NO_PATHCONV=1 docker run -d --name pilot08v-provider --network "$NET" --network-alias provider \
   -v "$run":/work -w /work "$IMG" \
+_x=$-; set +x
   java -Dedc.fs.config=/work/provider.properties -Dpilot08.canary.alias="$ALIAS" -Dpilot08.canary.value="$CANARY" -jar /work/app.jar >/dev/null
+case $_x in *x*) set -x;; esac
 for _ in $(seq 1 60); do docker logs pilot08v-provider 2>&1 | grep -q ' ready' && break; sleep 2; done
 seeded=no; docker logs pilot08v-provider 2>&1 | grep -q 'seeded canary secret' && seeded=yes
 
