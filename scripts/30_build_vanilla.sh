@@ -17,7 +17,8 @@ jar="$SRC/build/libs/pilot08-edc-launcher-all.jar"
 # Record the fat-jar sha256 so every KC1 result ties to an exact binary (D6).
 vjar="$SRC/build/libs/pilot08-edc-$V.jar"; cp "$jar" "$vjar"
 sha="$(sha256sum "$vjar" | cut -d' ' -f1)"
+# Append-only, keyed by (version, sha, commit): keeps prior jar rows (e.g. the ones the
+# -9202 evidence cites) while recording each new build, so every result traces to its exact jar.
 csv="$PILOT/env/vanilla-jars.csv"; [ -f "$csv" ] || echo "edc_version,sha256,bytes,commit,date" > "$csv"
-grep -v "^$V," "$csv" > "$csv.tmp" 2>/dev/null; mv "$csv.tmp" "$csv"
-echo "$V,$sha,$(wc -c < "$vjar"),$COMMIT,$(date +%F)" >> "$csv"
+grep -qE "^$V,$sha,[0-9]+,$COMMIT," "$csv" || echo "$V,$sha,$(wc -c < "$vjar"),$COMMIT,$(date +%F)" >> "$csv"
 echo "built $V -> $vjar sha256=$sha"
