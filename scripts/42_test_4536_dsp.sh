@@ -46,6 +46,22 @@ req() { docker run --rm --network "$NET" "$DRV" -s -w '\nHTTPCODE:%{http_code}' 
 # never kills the script mid-flow and a real reason is always recorded.
 code() { local c; c="$(printf '%s' "$1" | grep -oaE 'HTTPCODE:[0-9]+' | tail -1 | cut -d: -f2)"; echo "${c:-000}"; }
 body() { printf '%s' "$1" | sed 's/HTTPCODE:[0-9]*$//'; }
+# jfield <json> <plainkey> -> scalar value. Robust to: array-wrapped single resource,
+# compact OR expanded ($EDCNS-prefixed) keys, [{"@value":…}] expansion, and jq failing to
+# parse at all (e.g. invisible/control bytes in the HTTP body) — then a grep fallback runs.
+# Keys are passed via --arg so no shell quoting leaks into the jq program.
+jfield() {
+  local v
+  v="$(printf '%s' "$1" | "$JQ" -r --arg k "$2" --arg ns "$EDCNS" '
+        (if type=="array" then .[0] else . end) as $o
+        | ($o[$k] // $o[($ns+$k)] // empty)
+        | (if type=="array" then (.[0]["@value"] // .[0]) else . end) // empty' 2>/dev/null || true)"
+  [ -n "$v" ] && { printf '%s' "$v"; return 0; }
+  # grep fallback; a missing key is a valid empty result, never an error (|| true so the
+  # pipeline's exit 1 under set -e/pipefail can't abort the caller's "$(jfield …)" assignment).
+  printf '%s' "$1" | grep -oE "\"([^\"]*[/#])?$2\":\"[^\"]*\"" | head -1 | sed -E 's/.*:"([^"]*)"$/\1/' || true
+  return 0
+}
 hc() { docker run --rm --network "$NET" "$DRV" -s -o /dev/null -w '%{http_code}' --max-time 6 "http://$1:8080/api/check/health" 2>/dev/null || echo 000; }
 phealth="$(hc provider)"; chealth="$(hc consumer)"
 pstat="$(docker inspect pilot08v-provider --format '{{.State.Running}}/{{.State.ExitCode}}' 2>/dev/null || true)"
@@ -79,14 +95,16 @@ negId=""; agr=""; negstate=""; agr_on_provider=no; trId=""; tstate=""
 if [ -n "$offer" ]; then
   NEG='{"@context":{"@vocab":"'"$EDCNS"'"},"@type":"ContractRequest","counterPartyAddress":"http://provider:8282/api/v1/dsp","protocol":"'"$DSPP"'","policy":{"@context":"http://www.w3.org/ns/odrl.jsonld","@type":"Offer","@id":"'"$offer"'","assigner":"provider","target":"'"$ASSET"'"}}'
   rn="$(cmgmt "$PV" contractnegotiations "$NEG")"; negId="$(body "$rn" | "$JQ" -r '.["@id"]//empty' 2>/dev/null || true)"
-  for _ in $(seq 1 45); do st="$(body "$(cget "$PV" contractnegotiations/"$negId")")"; agr="$(printf '%s' "$st" | "$JQ" -r '.["contractAgreementId"]//empty' 2>/dev/null || true); negstate="$(printf '%s' "$st" | "$JQ" -r '.["state"]//empty' 2>/dev/null || true); case "$negstate" in FINALIZED|TERMINATED) break;; esac; sleep 2; done
+  echo "neg POST code=$(code "$rn") negId=${negId:-none}"; [ -z "$negId" ] && echo "neg body: $(body "$rn" | head -c 200)" | redact
+  for _ in $(seq 1 45); do st="$(body "$(cget "$PV" contractnegotiations/"$negId")")"; agr="$(jfield "$st" contractAgreementId)"; negstate="$(jfield "$st" state)"; case "$negstate" in FINALIZED|TERMINATED) break;; esac; sleep 2; done
+  echo "neg final: state=[$negstate] agr=[${agr:0:8}]"
   # L1: the provider must have archived the agreement before the transfer, or processInitial terminates.
   if [ -n "$agr" ]; then for _ in $(seq 1 30); do [ "$(code "$(pget "$PV" contractagreements/"$agr")")" = 200 ] && { agr_on_provider=yes; break; }; sleep 2; done; fi
 fi
 if [ "$agr_on_provider" = yes ]; then
   TR='{"@context":{"@vocab":"'"$EDCNS"'"},"@type":"TransferRequest","counterPartyAddress":"http://provider:8282/api/v1/dsp","contractId":"'"$agr"'","assetId":"'"$ASSET"'","protocol":"'"$DSPP"'","transferType":"HttpData-PUSH","dataDestination":{"type":"HttpData","baseUrl":"http://receiver:9300/sink","oauth2:clientId":"consumer","oauth2:clientSecretKey":"'"$ALIAS"'","oauth2:tokenUrl":"http://receiver:9300/token"}}'
   rt="$(cmgmt "$PV" transferprocesses "$TR")"; trId="$(body "$rt" | "$JQ" -r '.["@id"]//empty' 2>/dev/null || true)"
-  for _ in $(seq 1 45); do ts="$(body "$(cget "$PV" transferprocesses/"$trId")")"; tstate="$(printf '%s' "$ts" | "$JQ" -r '.["state"]//empty' 2>/dev/null || true)"; case "$tstate" in COMPLETED|TERMINATED|STARTED) break;; esac; sleep 2; done
+  for _ in $(seq 1 45); do ts="$(body "$(cget "$PV" transferprocesses/"$trId")")"; tstate="$(jfield "$ts" state)"; case "$tstate" in COMPLETED|TERMINATED|STARTED) break;; esac; sleep 2; done
 fi
 sleep 6
 cap="$(docker exec pilot08v-receiver sh -c 'cat /cap.txt 2>/dev/null' 2>/dev/null || true)"
