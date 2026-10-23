@@ -3,9 +3,12 @@
 # Replays each local commit that touched pilots/08-dsp-authfuzz/ (paths made relative
 # to the pilot dir) with its original author, date and message; only the
 # "Co-Authored-By: Claude" trailer is removed. Normal push only, never force.
-# Never publishes undisclosed findings: aborts if a patch touches a candidate/private path.
-# Usage: ./90_publish.sh            (run after each completed phase, on a clean tree)
+# Never publishes undisclosed findings: aborts if a patch touches a candidate/private
+# path (C10), adds a result row for a build outside the admitted KC1 ladder, or names a
+# candidate/undisclosed/new violation. Pass --yes only once such a finding is disclosed.
+# Usage: ./90_publish.sh [--yes]    (run after each completed phase, on a clean tree)
 set -euo pipefail
+YES=no; [ "${1:-}" = "--yes" ] && YES=yes
 PILOT="$(cd "$(dirname "$0")/.." && pwd)"   # no lib.sh: publishing needs no Docker
 ROOT="$(git -C "$PILOT" rev-parse --show-toplevel)"
 REL="pilots/08-dsp-authfuzz"
@@ -26,6 +29,23 @@ if ! ls "$tmp"/*.patch >/dev/null 2>&1; then echo "$head" > "$marker"; echo "no 
 # Scope guard (SCOPE.md: candidate findings never enter public history).
 if grep -l -i -E '^diff --git a/.*(candidate-findings|CANDIDATE-|/private/)' "$tmp"/*.patch; then
   echo "refusing: a patch touches a candidate/private path"; exit 1
+fi
+# Content guard (C10/L8): a KC2/new-violations phase produces undisclosed findings, which must
+# never auto-publish. The scan is scoped to EVIDENCE/notes files (results/, env/, or a candidate/
+# private path) via each hunk's "+++ b/<path>" header — scripts and docs are skipped so this
+# guard's own wording here cannot self-match. Within those files, unless --yes is given (finding
+# disclosed), an added result row (…,FAIL,… / …,LEAK,…) for a build outside the admitted KC1 ladder,
+# or an added line naming a candidate/undisclosed/new violation, aborts the publish.
+if [ "$YES" = no ]; then
+  bad="$(awk '
+    /^diff --git / { inscope=0 }
+    /^\+\+\+ b\// { p=substr($0,7); inscope=(p ~ /(^|\/)(results|env)\// || p ~ /candidate|CANDIDATE|\/private\//) }
+    inscope && /^\+[^+]/ {
+      l=substr($0,2)
+      if (l ~ /,(FAIL|LEAK),/ && l !~ /^(0\.6\.2|0\.6\.3|0\.9\.0|0\.9\.1),/) print "FAIL/LEAK row outside ladder: " l
+      if (tolower(l) ~ /candidate|undisclosed|new violation/)            print "candidate/undisclosed content: " l
+    }' "$tmp"/*.patch)"
+  if [ -n "$bad" ]; then echo "refusing to auto-publish (pass --yes once disclosed):"; echo "$bad" | head -5; exit 1; fi
 fi
 sed -i -E '/^Co-Authored-By: Claude.*$/Id' "$tmp"/*.patch
 

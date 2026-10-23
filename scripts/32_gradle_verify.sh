@@ -34,14 +34,15 @@ mism="$(MSYS_NO_PATHCONV=1 docker run --rm -v "$PILOT/build":/b:ro pilot08/curl:
   m=0; miss=0; n=0;
   while read g name ver art sha; do
     n=$((n+1)); path=$(echo "$g" | tr "." "/");
-    # The recorded checksum must match the publisher at the source Gradle actually used:
-    # EDC artifacts come from Maven Central, the shadow plugin + its marker from the Gradle
-    # Plugin Portal (which hosts a DIFFERENT pom than Central at the same coordinates). Accept
-    # a match against EITHER published .sha1; only a value matching neither is a real mismatch.
+    # The recorded checksum must match the publisher Gradle actually resolved the artifact from.
+    # EDC artifacts come from Maven Central and MUST match there. The Gradle Plugin Portal hosts a
+    # DIFFERENT pom than Central at the same coordinates, so it is accepted as a publisher ONLY for
+    # the shadow plugin + its marker (group com.gradleup.shadow*, L6); for every other artifact a
+    # Portal-only match is NOT accepted and counts as a real mismatch.
     c=$(curl -s --max-time 15 "https://repo1.maven.org/maven2/$path/$name/$ver/$art.sha1" | tr -d " \r\n\t");
     [ "$c" = "$sha" ] && continue;
-    p=$(curl -s --max-time 15 "https://plugins.gradle.org/m2/$path/$name/$ver/$art.sha1" | tr -d " \r\n\t");
-    [ "$p" = "$sha" ] && continue;
+    p="";
+    case "$g" in com.gradleup.shadow*) p=$(curl -s --max-time 15 "https://plugins.gradle.org/m2/$path/$name/$ver/$art.sha1" | tr -d " \r\n\t"); [ "$p" = "$sha" ] && continue;; esac;
     if [ -z "$c" ] && [ -z "$p" ]; then miss=$((miss+1)); echo "MISSING $g:$name:$ver:$art" >&2;
     else m=$((m+1)); echo "MISMATCH $g:$name:$ver:$art recorded=$sha central=${c:-none} portal=${p:-none}" >&2; fi
   done < /b/verify-list.txt

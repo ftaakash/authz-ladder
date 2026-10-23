@@ -62,10 +62,11 @@ loopback interface (so host-side gradle fails its daemon handshake). Build has e
 |---|---|---|---|---|
 | gradle build image `gradle:8.10-jdk21` | `docker.io/library/gradle` | `sha256:963d59f7f22767da4efbcf46b661361b61af5fb88b0309da1071c4234c647eba` | 1182 MB | 2026-10-21 |
 | Gradle 8.10 distribution | services.gradle.org | bundled in the gradle image | — | 2026-10-21 |
-| shadow plugin `com.gradleup.shadow:8.3.5` | Gradle Plugin Portal | 8.3.5 | small | 2026-10-21 (⚠ new source — pending user OK) |
+| shadow plugin `com.gradleup.shadow:8.3.5` | Gradle Plugin Portal | 8.3.5 | small | 2026-10-21 (source approved by user, D6 / SCOPE standing approvals) |
 | EDC module jars (per `env/maven-modules.csv`) | Maven Central (`repo1.maven.org`) | at tags 0.6.2/0.6.3/0.9.0/0.9.1 | ~0.3–0.8 GB | 2026-10-21 |
-| `eclipse-edc/Connector` clone @ v0.6.2 | github.com | tag v0.6.2 (recipe source, not under test) | shallow | 2026-10-21 |
-| `eclipse-edc/Samples` clone @ main | github.com | (unpinned; recipe reference only — to pin or remove) | shallow | 2026-10-21 |
+| `eclipse-edc/Connector` clone @ v0.6.2 | github.com | tag v0.6.2 = `f58c71ab1d5638fb1d226b592aca202a829e7761` (recipe reference, not under test) | shallow | 2026-10-21 |
+| `eclipse-edc/Connector` clone @ v0.9.1 | github.com | tag v0.9.1 = `1bd6e683e6304f7e34e0d161cd750424dc2d4dae` (recipe reference, not under test) | shallow | 2026-10-21 |
+| `eclipse-edc/Samples` clone (pinned) | github.com | `199eda08057963126f2119a75893439821fe04bb` (recipe reference only; **not** referenced by the launcher build — SUT is assembled from Maven Central jars) | shallow | 2026-10-21 |
 
 Fat jar per version: `testbed/launcher/build/libs/pilot08-edc-launcher-all.jar`; per-version sha256 recorded in `env/vanilla-jars.csv` (append-only, keyed by version+sha+commit).
 

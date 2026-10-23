@@ -9,7 +9,7 @@
 - **Introduced:** 0.2.1 · **Last affected:** 0.6.2 · **Fixed:** **0.6.3**
 - **Fix commit:** `a4e6018d2c0457fba6f672fafa6c590513c45d1b` (release tag `v0.6.3`); introduced `5803513f0c4cc795c0d1d069f7039c8ca1bd8f7e`
 - **Mechanism:** consumer-supplied key name resolves a secret against the **provider's** vault; secret is sent to a consumer-controlled token URL. Invariant = *vault scoping* (a counterparty cannot name which secret the provider dereferences).
-- **⚠ Fix nature = feature removal.** The OAuth2-protected data-sink path was **disabled entirely**, not patched. So on the patched build the invariant holds *vacuously* — the harness assertion must PASS when the endpoint/feature is **absent**, not error out. (finder: sovity GmbH)
+- **⚠ Fix nature = feature removal, but the patched PASS is *not* vacuous (D7b).** 0.6.2 registers both the OAuth2 data-**sink** and data-**source** decorators; 0.6.3 removes the **sink** decorator (commit `a4e6018`), leaving the source. The DSP-driven test (`scripts/42_test_4536_dsp.sh`) puts the consumer-named `oauth2:clientSecretKey` + consumer `tokenUrl` on the transfer **destination** (PUSH sink). On 0.6.3 the connector **still performs the sink write** — this is the positive control — it simply no longer authenticates it with the vault-resolved secret, so no secret leaves the provider. Because the sink-write behaviour persists and only the disclosing auth is gone, the 0.6.3 PASS measures a real behavioural fix, not an absent feature. This is why -4536's removal-fix PASS **counts** toward KC1 whereas -8642's (D6) does not: -8642's whole module is gone at the patched version, so its PASS would be vacuous. (finder: sovity GmbH)
 
 ### CVE-2024-9202 — single-dataset request skips catalogue filtering (CWE-862)
 - **Package:** `github.com/eclipse-edc/connector` · **GHSA:** *not located in search; tracked via NVD/OSV, CNA = Eclipse Foundation* (verify the GHSA page before citing it in the paper)
@@ -47,7 +47,27 @@ A test whose results don't match this exact 12-cell pattern is **rejected** as n
 
 **v0.6.2 is the triple-vulnerable anchor** — build the first harness drafts against it.
 
-## Open items before any download (need user OK for pulls)
+## How this ladder is actually run for KC1 (D5–D8) — supersedes the MVD/Route-A notes below
+
+The pinning above still defines the oracle, but the **route** to the builds changed. See [DECISIONS.md](DECISIONS.md):
+
+- **D5/D6 — SUT.** KC1 runs on **vanilla Eclipse EDC + `iam-mock`**, each rung **assembled from the released
+  Maven Central artifacts** at its pinned version (not built from source, and not Tractus-X). The launcher recipe
+  is `testbed/launcher/`; per-rung jar sha256 in `env/vanilla-jars.csv`. The Tractus-X "Route A reality check"
+  section below and the "Open items before any download" (MVD mapping/reachability) are **superseded for KC1**;
+  they remain only as the deferred-KC2 (option A) record.
+- **D6 — -8642 does not count.** `transfer-data-plane` (the -8642 module) is published only through 0.8.1 and is
+  **absent** from 0.9.0/0.9.1 where -8642 is "fixed", so its patched PASS is vacuous and does not admit the test.
+  KC1 therefore rests on **-4536 and -9202, both must flip** (≥2-of-3, no margin).
+- **D7 — -4536 is DSP-driven** with an `iam-mock` consumer connector, and its removal-fix PASS **counts** (the
+  sink write persists as a positive control — see the -4536 note above). Admissible test: `scripts/42_test_4536_dsp.sh`.
+- **D8 — dependencies checksum-verified.** Gradle dependency verification (sha1+sha256, 1416 artifacts)
+  cross-checked against the publishers; see [ENV.md](ENV.md) §Dependency verification.
+
+KC1 admission on the vanilla ladder (0.6.2 → 0.6.3 → 0.9.0 → 0.9.1): **-4536** flips FAIL→PASS at 0.6.2→0.6.3;
+**-9202** flips FAIL→PASS at 0.9.0→0.9.1 (FAIL at 0.6.2/0.6.3/0.9.0). The 12-cell pattern above still governs admission.
+
+## Open items before any download (need user OK for pulls) — ⚠ SUPERSEDED for KC1 by D5 (kept for KC2/option A)
 
 1. **MVD ↔ EDC version mapping.** The MinimumViableDataspace tracks specific Connector releases; confirm which MVD tag pins EDC 0.6.2 / 0.6.3 / 0.9.0 / 0.9.1, or whether some builds need the raw Connector `samples` instead. *(not yet checked — UNVERIFIED)*
 2. **Reachability in MVD.** -9202 (catalogue) and -8642 (transfer, needs http-proxy-consumer-pull + transfer-data-plane) are plausibly reachable in the MVD; **-4536** (OAuth2 data sink) may not be wired in the MVD and could require the Connector OAuth2 sample. *(UNVERIFIED)*
@@ -61,7 +81,7 @@ A test whose results don't match this exact 12-cell pattern is **rejected** as n
 
 ---
 
-## Route A reality check (2026-10-21, after registry + source inspection)
+## Route A reality check (2026-10-21, after registry + source inspection) — ⚠ SUPERSEDED for KC1 by D5 (kept for KC2/option A)
 
 The vanilla-EDC ladder above (0.6.2 → 0.6.3 → 0.9.0 → 0.9.1) **cannot be run from prebuilt images**:
 Eclipse publishes no images for Connector releases. Prebuilt connectors exist only as Tractus-X EDC,
