@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # CVE-2024-4536 regression test — OAuth2 data-plane secret disclosure (vault scoping).
+# NOT admissible (D7): data-plane-control-API probe, superseded by scripts/42_test_4536_dsp.sh.
 # Invariant: a counterparty cannot choose which provider-vault secret the provider
 # dereferences. Vulnerable path: Oauth2CredentialsRequestFactory.createSharedSecretRequest
 # resolves oauth2:clientSecretKey from the provider vault (unscoped) and posts the VALUE
@@ -66,11 +67,11 @@ elif [ "$leak" = yes ]; then verdict=FAIL
 elif [ "$df_processed" = yes ]; then verdict=PASS
 else reason="dataflow-not-executed(http=$trig_code)"; fi
 
-out="$PILOT/results/cve-2024-4536.csv"; mkdir -p "$PILOT/results"
+out="$PILOT/env/cve-2024-4536-dataplane-probe.csv"; mkdir -p "$PILOT/results"
 [ -f "$out" ] || echo "edc_version,invariant,verdict,jar_sha256,commit" > "$out"
 grep -v "^$V," "$out" > "$out.tmp" 2>/dev/null; mv "$out.tmp" "$out"
 echo "$V,vault-scoping(CVE-2024-4536),$verdict,$sha,$COMMIT" >> "$out"
-obs="$PILOT/env/cve-2024-4536-observations.csv"
+obs="$PILOT/env/cve-2024-4536-dataplane-probe-obs.csv"
 [ -f "$obs" ] || echo "edc_version,jar_sha256,commit,canary_seeded,control_ready,dataflow_http,df_processed,leak_attempt,leak_value,verdict,invalid_reason" > "$obs"
 grep -v "^$V," "$obs" > "$obs.tmp" 2>/dev/null; mv "$obs.tmp" "$obs"
 echo "$V,$sha,$COMMIT,$seeded,$rdy,$trig_code,$df_processed,$attempt,$value,$verdict,$reason" >> "$obs"

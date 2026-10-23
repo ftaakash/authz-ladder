@@ -7,7 +7,11 @@ PINS="$PILOT/env/pins.tsv"
 COMMIT="$(git -C "$PILOT" rev-parse --short HEAD)"
 # Dirty-tree marker so results never claim a clean commit they did not run on.
 # Evidence outputs (env/*.csv, results/) are excluded: writing them is not a code change.
-git -C "$PILOT" diff --quiet HEAD -- . ':(exclude)env/*.csv' ':(exclude)results' || COMMIT="${COMMIT}-dirty"
+# Tracked changes AND untracked files (e.g. a new, uncommitted script) both mark dirty.
+_dirty=no
+git -C "$PILOT" diff --quiet HEAD -- . ':(exclude)env/*.csv' ':(exclude)results' || _dirty=yes
+[ -n "$(git -C "$PILOT" ls-files --others --exclude-standard -- . ':(exclude)env/*.csv' ':(exclude)results' 2>/dev/null)" ] && _dirty=yes
+[ "$_dirty" = yes ] && COMMIT="${COMMIT}-dirty"
 local_tag() { echo "pilot08/edc-runtime-memory:$1"; }
 pins() { grep -v '^#' "$PINS"; }
 
