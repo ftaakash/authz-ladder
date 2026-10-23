@@ -433,3 +433,54 @@ Scope: `1a73e3f`, `2605adc`, `60171df`, `452a7e1`, plus the uncommitted work: `s
 - **-4536:** the mechanism is real. At 0.6.2 the provider dereferenced a consumer-named vault alias and sent the value to a consumer-chosen URL; at 0.6.3 the sink path is gone. But there is **no admissible cell yet**. The rows are stale and dirty (C2), PASS has no positive control (C1), 0.9.x cannot run (C3), and the boundary and removal questions need a user decision (C4, C6).
 - **On track:** yes. It is fixable within the timebox: about one rebuild plus four reruns once C1–C3 land, plus a consumer connector if D7 = (a).
 - **Kill condition 1 cannot be decided yet.** It needs the user's D7 (C4 + C6), then a clean four-cell -4536 ladder and a -9202 re-run on the same jar set.
+
+---
+
+## Review 6 (post-15ae379), 2026-10-23
+
+Scope: `3fe9676` (F3 fixture, D7, source-vector note, `41_test_4536.sh`), `063723e` (consumer config), the untracked `scripts/42_test_4536_dsp.sh`, and the pilot transcript up to its failed exit-4 run. Read-only: Docker was not touched, nothing was downloaded, nothing was pushed. Management paths were checked in the local v0.6.2 and v0.9.1 source clones.
+
+**Done and correct:**
+- **D7 is a real user decision.** The pilot asked through AskUserQuestion; the user chose (a) a DSP-driven test and (b) that a removal-fix PASS counts when there is a positive control. Both are recorded in `DECISIONS.md`.
+- **C5:** `vanilla-jars.csv` and `vanilla-smoke.csv` were restored, so the -9202 evidence chain is intact again.
+- **C4 rationale:** archived in `env/cve-2024-4536-source-vector-note.md`.
+- **The fixture is committed.**
+- **`42_test_4536_dsp.sh` follows the right design:**
+  - an iam-mock consumer sends a counterparty-controlled `dataDestination` over DSP;
+  - PASS requires a receiver-seen sink write (positive control);
+  - it aborts if `pilot08v` is not internal;
+  - the receiver has `Content-Length: 42` plus `Connection: close`;
+  - containers are removed at the end of a normal run.
+- **The stale -4536 rows are gone.** `results/` holds only -9202.
+
+| # | file:line | Issue | Sev | Required change |
+|---|---|---|---|---|
+| K1 | `42_test_4536_dsp.sh:50` (`cm catalogrequest`) | **Wrong catalog path on every rung.** v0.6.2 serves `@Path("/v2/catalog")` + `@Path("/request")`, and v0.9.1 serves `/v3/catalog/request`. `/management/vN/catalogrequest` returns 404, so the offer is empty. Under `set -euo pipefail` (from `lib.sh`), the `grep` pipeline in the `offer=$(…)` assignment then fails and kills the script with no row and no reason written. This is the most likely cause of the exit-4 run. | **H** | Use `catalog/request`. Make every probe assignment non-fatal (`|| true`), so that each failure becomes an `INVALID` row with a reason (`no-offer`, `no-agreement`, `no-transfer-id`). Never exit silently. |
+| K2 | `42:73-79`; disk vs `env/vanilla-jars.csv` | **The jar sha is read from the CSV, not from the jar that runs.** The 0.6.x jars on disk are `78d1cb99…`/`ee1f4220…`, built at `60171df-dirty`, but the CSV says `82c1dd6d…`/`ef253e7d…`, so every 0.6.x row would cite the wrong jar. The 0.9.x jars predate the canary seeding, so they will always give `canary-not-seeded`. | **H** | Rebuild all four jars at a clean commit that contains the fixture. **Append** rows to `vanilla-jars.csv` (keep the -9202 rows). In 42, compute `sha256sum` of the jar actually copied into the run directory, and abort unless that (version, sha) pair is recorded (the same guard as G2 in `31_run_vanilla.sh:16`). |
+| K3 | `42:72` | **Provenance marker.** 42 recomputes `COMMIT` itself and, like `lib.sh:10`, ignores untracked files. 42 is untracked right now, so a run today would be stamped clean `063723e`, a commit that does not contain the script that produced the row. | **H** | Delete the local recomputation and use `lib.sh`'s `COMMIT`. Fix `lib.sh:10` to treat untracked files as dirty (C8b). Commit 42 before any run whose rows are kept. |
+| K4 | `42:69` (`leak_attempt` from the provider log) | C1 is only half done. FAIL still accepts a provider-log grep for `http://receiver:9300/token`. A provider that logs the incoming TransferRequest or DSP message body (which contains the tokenUrl) would produce a false FAIL on 0.6.3 and break the flip. | **H** | FAIL = receiver-seen `POST /token` (`token_post`) and/or the canary in the receiver capture (`leak_value`). Keep the log grep as an observation column only. Also record `src_get` (receiver saw `GET /data`). |
+| K5 | `42:45-47` (`pm … >/dev/null`), `42:52-54` | **Seeding and DSP steps are not gated on their HTTP codes,** the J2 lesson from -9202. A 4xx on the asset, policy or contract definition turns into "no agreement" with no explanation. The offer is pulled out with a fragile regex and falls back to the literal `offer`. | M | Capture `-w '%{http_code}'` for seed_asset, seed_policy and seed_cd, and for catalog, negotiation and transfer. Gate the verdict on 2xx and record the codes in observations. Parse the offer with `jq` (`"$JQ"` from `lib.sh`): the `odrl:hasPolicy` `@id` of the dataset whose `@id` is `asset-4536`. |
+| K6 | `42:62` (`sleep 12`), receiver `42:28-29` | Fixed waits. The transfer is asynchronous (negotiation already polls, the transfer does not), and the serial `nc` handles one connection at a time. | M | Poll `GET transferprocesses/{id}` until COMPLETED/TERMINATED (record the final state), then poll `/cap.txt` for the expected requests, with a timeout. Record `transfer_state`. |
+| K7 | 0.9.x rungs; `provider.properties:16-17` | G5 is still open. The provider and consumer configs name `token-signer`/`token-verifier` aliases, but nothing seeds those keys. At 0.9.x, `data-plane-iam` and self-registration may need them, so the 0.9.x cells may come out `INVALID` (no sink write) for setup reasons. | M | Seed the key pair through the fixture (same code on every rung), the same way as the canary. Treat the positive control as the 0.9.x transfer smoke. |
+| K8 | `42` error paths | Canary hygiene. Containers are removed only on the success path. On any `set -e` exit, the provider keeps the canary in `docker inspect`. There is still no `canary_in_provider_log` check (C9). | M | `trap 'docker rm -f pilot08v-provider pilot08v-consumer pilot08v-receiver >/dev/null 2>&1' EXIT`. Add `canary_in_provider_log` (yes/no, never printed); `yes` → `INVALID`. |
+| K9 | `41_test_4536.sh` (committed) | The retired probe still writes to `results/cve-2024-4536.csv` and still says "Leak signal (reliable, from provider logs)". Running it would overwrite admissible rows. | M | Retarget its output to `env/cve-2024-4536-dataplane-probe.csv` (never `results/`). Add a header line: "NOT admissible (D7). Superseded by 42_test_4536_dsp.sh." |
+| K10 | `VERSIONS.md:12` | Still says the patched PASS holds "vacuously … when the feature is **absent**", which contradicts D7(b): the PASS counts *because* the sink write still happens. | M | Reword it to D7(b): a removal fix whose PASS requires the positive control (sink write ran, no token POST, no canary). |
+| K11 | `PILOT-REPORT.md:17,19,20,60` | Still stale: F3 and -4536 are "NOT STARTED", and there is no D7. C11/C12 are not done. | M | Update after the first clean ladder, or now with "IN PROGRESS, no admissible cells". Add D7 and the env note to the evidence index. |
+| K12 | carried over | C10 (publish guard content check), D1 (SCOPE "checksum-verified"), D2 (ENV rows), D3 (egress probes on `pilot08v`), D4 (STATE.md, VERSIONS D5–D7 section) are untouched. | M | As in Review 5. C10 must land before KC2 starts. |
+
+**Run procedure (applies to every admissible run from now on):**
+1. Commit every script, fixture and config the run uses. `git status` must show nothing outside `env/` and `results/`. The run fails if `COMMIT` ends in `-dirty`.
+2. Build the jars only from that clean commit. Append the (version, sha, commit) rows. Each test checks the sha of the jar it actually runs against those rows.
+3. Run all four rungs **in one batch**, one rung per background job, from the same commit and the same jar set. Never mix rows from different commits or jar sets in one ladder.
+4. Every step records its HTTP code, and every failure becomes `INVALID` with a reason. A script must never exit without writing its row.
+5. Verdicts come only from receiver-side or API-response evidence. Log greps are observations.
+6. After the batch: commit `results/` and `env/` together in one evidence commit whose message quotes the ladder. Do not claim admission in the message unless all four cells match the predicted pattern **and** every PASS has its positive control.
+7. Then re-run `40_test_9202.sh` on the same jar set (C5 follow-up), so that KC1 is decided on one jar set and one commit.
+8. Do not run `90_publish.sh` while anything is uncommitted or dirty. Publishing stays the user's call per phase.
+9. If something fails, diagnose from the captured codes and observations before changing the test, and write down why each change is made **before** re-running. Do not change the vector or oracle after seeing a result without recording the reason in `DECISIONS.md` (as was done for D7).
+
+**Verdict:**
+- **Direction:** correct. The DSP-driven design matches D5/D7, and the user decided D7 properly.
+- **Readiness:** 42 does not yet run end to end. The catalog path is wrong (K1), the jar sha is untraced (K2), the provenance stamp would be false (K3), and FAIL can still come from a log echo (K4). All four are small fixes.
+- **KC1:** cannot be decided yet. It needs a clean four-cell -4536 ladder that passes the procedure above, plus a -9202 re-run on the same jars.
+- **Timebox:** on track. The 0.9.x key seeding (K7) is the main remaining risk.
