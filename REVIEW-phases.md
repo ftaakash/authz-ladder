@@ -484,3 +484,26 @@ Scope: `3fe9676` (F3 fixture, D7, source-vector note, `41_test_4536.sh`), `06372
 - **Readiness:** 42 does not yet run end to end. The catalog path is wrong (K1), the jar sha is untraced (K2), the provenance stamp would be false (K3), and FAIL can still come from a log echo (K4). All four are small fixes.
 - **KC1:** cannot be decided yet. It needs a clean four-cell -4536 ladder that passes the procedure above, plus a -9202 re-run on the same jars.
 - **Timebox:** on track. The 0.9.x key seeding (K7) is the main remaining risk.
+
+---
+
+## Review 7 (post-2388a19), 2026-10-23 (abbreviated: the reviewer hit its usage limit)
+
+Scope: `1634216`, `d305006`, `8306336`, `e62e056`, `1110855`, and the uncommitted `42_test_4536_dsp.sh` and `vanilla-jars.csv`. Read-only. 0.6.2 source checked in `build/connector-062`.
+
+**Done:**
+- K1 (catalog path), K3 (dirty marker counts untracked files), K4 (receiver-side verdict), K5 (HTTP codes + jq offer), K8 (EXIT trap, `canary_in_log`), K9 (41 rerouted).
+- D8 dependency verification is sound. 1416 artifacts, sha1 cross-checked against the publisher (0 mismatches), strict builds on all four rungs, tamper control detected. Jar shas reproduce identically across clean rebuilds. SCOPE's "checksum-verified" now holds (checksum-only, no PGP; ENV says so).
+- Canary scan: across all Claude task-output files on this host, 0 files contain a `pilot08-canary-<32 hex>` value (pattern count only; no value printed).
+
+| # | file:line | Issue | Sev | Required change |
+|---|---|---|---|---|
+| L1 | `42` transfer at 0.6.2 | **The transfer terminates with "Policy not found for contract: " (empty id), after a run where the transfer started at `REQUESTED`.** At 0.6.2: (a) `ProviderPushTransferDataFlowController` handles `HttpData-PUSH` through the **embedded** data-plane client, but `transferTypesFor(asset)` and `select()` only see **registered** `DataPlaneInstance`s. None is registered at 0.6.x (there is no self-registration module before 0.9), so the catalog offers no `HttpData-PUSH` distribution. (b) The transfer must only start once the agreement exists on **both** sides. | **H** | **Exact flow:** seed asset/policy/cd. At 0.6.x **register the provider data plane:** `POST /management/v2/dataplanes` with `{"@context":{"edc":EDCNS},"@id":"dp-provider","edc:url":"http://provider:8383/control/transfer","edc:allowedSourceTypes":["HttpData"],"edc:allowedDestTypes":["HttpData"],"edc:allowedTransferTypes":["HttpData-PUSH"]}` (body shape from `system-tests/e2e-transfer-test/.../TransferEndToEndParticipant.java:88-103`). Then gate on 200, catalog → offer → negotiate → wait until consumer state is **FINALIZED** and `contractAgreementId` is non-empty → verify on the provider with `GET /management/v2/contractagreements/{id}` = 200 → transfer with `transferType: "HttpData-PUSH"` (both lines) and the OAuth2 sink → poll until STARTED/COMPLETED/TERMINATED. Record `dp_reg`, `neg_state` and `agreement_on_provider` in observations. **At 0.9.x:** self-registration registers the data plane via signaling. Seed the `token-signer`/`token-verifier` keys through the fixture (K7), otherwise `data-plane-iam` fails. If the agreement still is not found, dump the transfer request JSON-LD (without the canary) and compare with the e2e test. |
+| L2 | `42:63,98-99` | **Canary `set +x` guards are incomplete.** Unguarded expansions: `cap="$(…)"` (holds `client_secret=<canary>` at 0.6.2), every `printf '%s' "$cap"`, `grep -qF "$CANARY"` (twice), and the stdout `docker logs … tail -3` diagnostic. | **H** | At the top of 42: `case $- in *x*) echo "refusing to run under -x"; exit 1;; esac`. Remove the per-line guards. Pipe every diagnostic print through a redactor (`sed "s/$CANARY/<redacted>/g"`). Record the 548-trace incident in `ENV.md` (no value): "task output scanned 2026-10-23, 0 files matched". |
+| L3 | `env/vanilla-jars.csv` (uncommitted) | Every rebuild appends 4 identical rows, including `d305006-dirty`, and the sha guard accepts a sha recorded only at a dirty commit. | M | Guard: require the (version, sha) pair recorded with a **clean** commit. Do not append a row when (version, sha) already exists clean; record reproducibility once instead. |
+| L4 | `VERSIONS.md:12`, `PILOT-REPORT.md` | K10/K11 not done: "vacuously" wording, -4536 "NOT STARTED", no D7/D8 in the report. | M | As in Review 6. |
+| L5 | `90_publish.sh` | C10 content guard not done. | M | Before KC2. |
+
+**Plan check:** the -4536 ladder must read FAIL/PASS/PASS/PASS, with every PASS showing `sink_write=yes` and `token_post=no`, and FAIL showing `token_post` or `canary`. Then re-run `40_test_9202.sh` on the same jar set, one batch from one clean commit (P1–P7). The plan is otherwise sound.
+
+**Verdict:** the fixes are on track and D8 is closed. -4536 is blocked on L1 (data-plane registration at 0.6.x, plus waiting for the agreement), which is a concrete fix. KC1 is still undecided.
