@@ -1,0 +1,5 @@
+edc_version,build_ok,artifacts_recorded,sha1_checked,sha1_crosscheck_ok,sha1_mismatches,sha1_missing,tamper_detected,commit
+0.6.2,yes,1416,1416,yes,0,0,yes,8306336
+0.6.3,yes,1416,1416,yes,0,0,yes,8306336
+0.9.0,yes,1416,1416,yes,0,0,yes,8306336
+0.9.1,yes,1416,1416,yes,0,0,yes,8306336

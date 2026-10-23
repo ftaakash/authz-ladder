@@ -18,6 +18,7 @@ V="${1:?usage: 41_test_4536.sh <edc-version>}"
 IMG="gradle@sha256:963d59f7f22767da4efbcf46b661361b61af5fb88b0309da1071c4234c647eba"
 RCV="alpine:3.20"   # local, busybox nc, and (unlike the edc image) no java ENTRYPOINT to swallow our sh -c
 NET="pilot08v"; ALIAS="pilot08-canary"; TOKEN_HOST="receiver:9300"
+trap 'docker rm -f pilot08v-provider pilot08v-receiver >/dev/null 2>&1 || true' EXIT
 jar="$PILOT/testbed/launcher/build/libs/pilot08-edc-$V.jar"
 [ -f "$jar" ] || { echo "no jar for $V"; exit 1; }
 sha="$(grep "^$V," "$PILOT/env/vanilla-jars.csv" | cut -d, -f2)"
