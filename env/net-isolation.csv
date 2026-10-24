@@ -6,3 +6,9 @@ pilot08_dsp,0.7.0,egress_dns_example.com,BLOCKED,BLOCKED,yes,dd66831
 pilot08_dsp,0.7.0,embedded_dns_provider,RESOLVES,RESOLVES,yes,dd66831
 pilot08_dsp,0.7.0,driver_to_provider_health,200,200,yes,dd66831
 pilot08_dsp,0.7.0,host_published_ports,0,0,yes,dd66831
+pilot08v,0.6.2,network_internal_flag,true,true,yes,28c84de
+pilot08v,0.6.2,egress_probe_control,REACHED,REACHED,yes,28c84de
+pilot08v,0.6.2,egress_ip_1.1.1.1,BLOCKED,BLOCKED,yes,28c84de
+pilot08v,0.6.2,egress_dns_example.com,BLOCKED,BLOCKED,yes,28c84de
+pilot08v,0.6.2,driver_to_provider_health,200,200,yes,28c84de
+pilot08v,0.6.2,host_published_ports,0,0,yes,28c84de
