@@ -542,3 +542,49 @@ A PASS cell without `sink_write=yes` is `INVALID`, never PASS (D6/D7b). If 0.6.2
 - **Remaining for -4536:** gate the transfer on a provider-confirmed agreement (L1), make the canary trace-proof (L2), and run the exact per-rung flow (L3). These are concrete fixes, not method risk.
 - **Open user decision:** none.
 - **KC1:** still undecided. It is decided by the batch in steps 3–5.
+
+---
+
+## Review 8 (post-a69b8fd), 2026-10-24
+
+Scope: `5c8f261`, `f7ab769`, `b38f9a9`, `659c835`, `c11d50a`, plus the uncommitted `results/cve-2024-4536.csv` and `env/cve-2024-4536-observations.csv`, and the pilot transcript up to its session-limit stop. Read-only: no Docker, no downloads, no pushes.
+
+**-4536 ladder (uncommitted, clean `c11d50a`, recorded jars):** 0.6.2 **FAIL** / 0.6.3 **PASS** / 0.9.0 **PASS** / 0.9.1 **PASS**. It matches the Review 7 per-cell oracle on every cell:
+- **Every cell:** seeds 200, `dp_reg` yes (0.6.x) / self (0.9.x), catalog 200, `push_offered` yes, `neg_state` FINALIZED, `agreement_on_provider` yes, `src_get` yes, `canary_in_log` no.
+- **0.6.2:** `token_post` = yes, `canary_value` = yes, `sink_write` = yes, COMPLETED. The vulnerable path does not abort after the token call; it completes the authenticated sink write.
+- **0.6.3 / 0.9.x:** `sink_write` = yes (positive control), `token_post` = no, `canary_value` = no.
+- **Jar shas:** match clean-commit rows in `vanilla-jars.csv`.
+- **Result:** the flip happens exactly at 0.6.3, and every PASS has its positive control. **Subject to H1–H2 below, -4536 meets the admission rule.**
+
+**Done and correct:**
+- **L1:** the transfer is gated on a provider-archived agreement.
+- **L2:** the script refuses `-x`, and `redact()` is applied to every diagnostic.
+- **L3:** per-rung data-plane registration, `push_offered`, and `edc.hostname`.
+- **L5:** the guard in `42` accepts only a sha recorded at a clean commit.
+- **L6:** the Portal is accepted only for shadow artifacts.
+- **L7:** VERSIONS has the D7(b) wording and a D5–D8 section.
+- **L9:** ENV clone SHAs, Samples pinned.
+- **Receiver:** the concurrent JDK `HttpServer` (`testbed/receiver/Receiver.java`) fixed the dropped sink write. That was a real harness defect, and the positive control was **not** relaxed.
+- **Canary hygiene:** the pilot re-scanned task outputs and found them clean.
+
+| # | file:line | Issue | Sev | Required change |
+|---|---|---|---|---|
+| H1 | `scripts/31_run_vanilla.sh:14-17` | **The -9202 "boot failed" is a sha-guard bug, not a resource wall.** `vanilla-jars.csv` is now append-only (13 rows, several per version), so `want="$(grep "^$V," … \| cut -d, -f2)"` returns **multiple lines**. `[ "$want" != "$got" ]` is then always true, and 31 exits "sha256 mismatch". `40_test_9202.sh:17` swallows that output (`>/dev/null 2>&1`) and prints "boot failed". The pilot's resource-exhaustion explanation is wrong, and running the ladders separately will **not** fix it. | **H** | Replace lines 14-17 with the same presence check as 42: `got=$(sha256sum "$jar" \| cut -d' ' -f1)`, then `grep -qE "^$V,$got,[0-9]+,[0-9a-f]{7}," env/vanilla-jars.csv \|\| { echo "jar sha $got for $V not recorded at a clean commit"; exit 1; }`. Make `40_test_9202.sh:16` use the same clean-commit regex. Stop `40:17` discarding 31's output: `… 2>&1 \| tail -5` on failure. `41_test_4536.sh:24` has the same multi-row bug; fix it as well, or mark 41 retired. |
+| H2 | `results/`, `env/` (uncommitted) | The -4536 evidence is still uncommitted, and **-9202 has not been re-run on this jar set**. `results/cve-2024-9202.csv` cites the old jars (`82c1…`, `ef25…`, `2b93…`, `2066…`), and none of those jars exist on disk any more. KC1 must be decided on one jar set. | **H** | After H1, and with HEAD still at `c11d50a` (the untracked evidence files are excluded from the dirty marker, so the stamp stays clean), run `40_test_9202.sh` for 0.6.2, 0.6.3, 0.9.0 and 0.9.1 sequentially. It must reproduce FAIL/FAIL/FAIL/PASS with seeds 2xx, alice's positive control and mallory hidden. Then make **one** evidence commit with both results CSVs and both observation files, quoting both ladders. Write "KC1 PASSED (2 of 3; -8642 not counted per D6)" only if both ladders hold. If -9202 does not reproduce, report that and do not claim KC1. |
+| M1 | `scripts/90_publish.sh` (L8) | The content guard scans only `results/` and `env/` hunks. It skips commit messages and docs, so a candidate finding written into `PILOT-REPORT.md`, `VERSIONS.md`, a review file or a commit message would still publish. KC2 makes this real. | M | Also scan every changed `*.md` hunk and each commit message (the patch header up to the first `diff --git`). Exclude only lines in `90_publish.sh` itself, which is what triggers self-matches. Document that `--yes` is the user's call per publish. |
+| M2 | `PILOT-REPORT.md:17-20,56-60` | The report is still stale (K11/L7 report part): F3 and -4536 "NOT STARTED", KC1 "-4536 not started", §2 framed as Tractus-X, no D7/D8. | M | Do this after the evidence commit, in a separate report commit. Status: F3 DONE. -4536 ADMITTED with its ladder, commit and the observation columns that make up the oracle. -9202 re-confirmed on the new jar set. KC1 verdict with D6 noted. Evidence index: both results/observation CSVs, `gradle-verification.csv`, the source-vector note, `Receiver.java`, D7/D8. Every number must trace to a CSV. |
+| L1 | `results/cve-2024-4536.csv` invariant label | `vault-scoping[CVE-2024-4536]` uses brackets, while -9202 uses `catalogue-visibility(CVE-2024-9202)`. | L | Use one style before the evidence commit (parentheses, as committed for -9202). |
+| L2 | `42:122` | A residual `sleep 6` comes after the poll loop. It is harmless (the poll already gates on the sink write), but it is not a gate. | L | Keep it or drop it, and note it as settle time. No re-run needed for this alone. |
+
+**What to do next, in order:**
+1. **Fix H1** in 31/40 (and 41). Commit on a clean tree. This makes HEAD a new commit; that is fine because only scripts not used by 42 change. Re-run the -4536 ladder from the new HEAD too, so both ladders cite one commit. It is cheap and avoids a mixed-commit KC1.
+2. **Run** -4536 (×4), then -9202 (×4), sequentially, from that one clean commit, on the same four jars.
+3. **Make one evidence commit** with the ladders in the message, and claim KC1 only per H2.
+4. **Make the report commit** (M2) and fix the label (L1).
+5. **Fix M1** before any KC2 work.
+6. **Publishing is the user's call** after steps 3–4. Run `90_publish.sh` only on a clean tree and only when the user asks.
+
+**Verdict:**
+- **-4536:** the mechanism and oracle are now sound, and the ladder reads FAIL/PASS/PASS/PASS with every control in place. That is a clean rediscovery on its own evidence.
+- **KC1 is not yet decidable.** The -9202 re-run on the same jar set is blocked by a one-line sha-guard bug (H1), not by resources.
+- **Timeline:** once H1 is fixed, KC1 can be decided in the next batch.
