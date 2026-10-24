@@ -58,7 +58,7 @@ if MSYS_NO_PATHCONV=1 docker run --rm -v "$tmp":/work -w /work -v "$CACHE":/home
 rm -rf "$tmp"; echo "  tamper detected: $tamper_detected"
 
 echo "== (e) record kc2/env/gradle-verification.csv =="
-out="$PILOT/kc2/env/gradle-verification.csv"; echo "launcher,edc_version,build_ok,artifacts_recorded,sha1_checked,sha1_crosscheck_ok,sha1_mismatches,sha1_missing,tamper_detected,commit" > "$out"
+out="$PILOT/kc2/env/gradle-verification.csv"; [ -f "$out" ] && head -1 "$out" | grep -q launcher || echo "launcher,edc_version,build_ok,artifacts_recorded,sha1_checked,sha1_crosscheck_ok,sha1_mismatches,sha1_missing,tamper_detected,commit" > "$out"
 echo "kc2/identity,$V,$enforce_ok,$recorded,${checked:-0},$crosscheck_ok,${mcount:-NA},${misscount:-NA},$tamper_detected,$COMMIT" >> "$out"
 cat "$out"
 [ "$crosscheck_ok" = yes ] && [ "$enforce_ok" = yes ] && [ "$tamper_detected" = yes ] && echo "VERIFICATION OK" || { echo "VERIFICATION INCOMPLETE"; exit 1; }
