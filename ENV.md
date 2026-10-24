@@ -168,8 +168,25 @@ sha1 cross-checked against Maven Central 568/568, 0 mismatch, strict builds + ta
 - The **vanilla EDC 0.18.1** target is one minor **ahead** of the 0.17.0 identity stack. The DCP wire protocol (presentation/STS) is versioned by the DCP spec, not the EDC build, so 0.17.0↔0.18.1 may interoperate — but this is **UNVERIFIED**; if the smoke fails, a second identity stack pinned at 0.18.1 is the fallback (one-line change to `-Pedc`).
 - IdentityHub has **no superuser/first-participant bootstrap** in the BOM (checked in source + the built jar): a `did:web` document only resolves once a participant context + keypair is created via the identity API. So demonstrating did:web resolution requires minimal participant seeding — see the phase-2 checkpoint note.
 
+### KC2 phase-2 milestone — identity bring-up and did:web resolution
+
+`kc2/scripts/30_up_identity.sh` brings up two IdentityHubs (provider-ih, consumer-ih), one IssuerService
+and one BDRS on the internal network, and records `kc2/env/identity-smoke.csv`. Read the CSV as **two
+groups**, not a single "cross-resolution" tally:
+- **readiness (4):** provider-ih and consumer-ih each seeded + ready, issuer booted, BDRS booted.
+- **crossres (8):** the two DID documents are **served on the internal network and resolved host-to-host
+  between the IdentityHubs** — `curl` exec'd *inside* consumer-ih fetches the provider DID (200) and
+  *inside* provider-ih fetches the consumer DID (200); each document's `id` equals its configured DID,
+  carries an **Ed25519** public key, and contains **no private-key member** (`publicKeyJwk.d` absent).
+
+This is did:web document resolution between the services over the isolated network; it is **not** a DCP
+token exchange or catalogue request (those are the deferred handshake). Every row carries the IdentityHub
+jar sha256 and a clean commit; the script refuses to run a jar not recorded at a clean commit.
+
 ### KC2 testbed network
 
-`pilot08k2_dsp` is `internal: true`. Isolation verified in `kc2/env/net-isolation.csv` (5/5: internal flag,
-positive control 200 to an in-net peer, egress to `1.1.1.1` and `example.com` both BLOCKED, 0 host ports).
+`pilot08k2_dsp` is `internal: true`. Isolation in `kc2/env/net-isolation.csv` has a `services_up` column:
+the `identity-stack` rows are measured with all four identity services up (not just the peer), and add an
+egress probe **exec'd from inside an IdentityHub container** (IP `1.1.1.1` and DNS both BLOCKED) with the
+in-net peer reachable from that same container as the positive control; internal flag true; 0 host ports.
 Container/network prefix `pilot08k2-` / `pilot08k2_`, separate from `pilot08_dsp` and `pilot08v`.
