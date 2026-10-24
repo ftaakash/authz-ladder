@@ -145,3 +145,5 @@ Reasons:
 - (c) **Defer**: leave KC3 open until DSP kill condition 2 has a result, then choose (a) or (b).
 
 Building anything under (a) needs explicit approval (SCOPE.md: "The MCP harness is not built unless the user approves").
+
+**Decision (user, 2026-10-24): (c) Defer.** KC3 stays open until DSP kill condition 2 has a result; then choose rework or drop. No MCP harness is built. Logged as D10 in [DECISIONS.md](DECISIONS.md).
