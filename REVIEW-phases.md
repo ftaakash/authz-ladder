@@ -588,3 +588,37 @@ Scope: `5c8f261`, `f7ab769`, `b38f9a9`, `659c835`, `c11d50a`, plus the uncommitt
 - **-4536:** the mechanism and oracle are now sound, and the ladder reads FAIL/PASS/PASS/PASS with every control in place. That is a clean rediscovery on its own evidence.
 - **KC1 is not yet decidable.** The -9202 re-run on the same jar set is blocked by a one-line sha-guard bug (H1), not by resources.
 - **Timeline:** once H1 is fixed, KC1 can be decided in the next batch.
+
+---
+
+## Review 9 (post-d1eb49b), 2026-10-24: hung KC1 batch
+
+Scope: `4df5f58` (H1 sha-guard fix, wider publish guard), `08ac056` (D9: manual per-phase push, publish script retired), the pilot's batch runner `run_both.sh` (in the pilot's scratchpad, untracked), its output, and the live process table. Read-only: I did not touch Docker or kill any process.
+
+**Done and correct:**
+- **H1 fixed:** the clean-commit sha guard is now in 31 and 40.
+- **D9 recorded and pushed by hand:** authz-ladder `8198bc9..3d384ff`. Every commit has author and committer ftaakash and no Co-Authored-By trailer. The "Co-Authored-By" in `08ac056`'s body is prose describing the rule, not a trailer.
+- **0.6.2 cell:** written at 18:28 and correct (FAIL: token_post and canary yes, sink write yes, FINALIZED, agreement on provider).
+
+**What happened:**
+- Docker's engine pipe was down when the batch started ("failed to connect to the docker API … dockerDesktopLinuxEngine").
+- `lib.sh:require_docker` launched `Docker Desktop.exe … &` **from inside `42_test_4536_dsp.sh`**. Under Git Bash/MSYS, the script process (PID 574) cannot exit while that native child (PID 576) lives.
+- So 0.6.2 finished and wrote its row, but PID 574 never terminated. `run_both.sh` pipes each test into `| tail -2`, which waits for EOF and has blocked since 18:28. The 0.6.3–0.9.1 and -9202 cells never ran.
+
+| # | file:line | Issue | Sev | Required change |
+|---|---|---|---|---|
+| N1 | `scripts/lib.sh` `require_docker` | **A test script must never start Docker.** Starting Docker Desktop as a background child ties the test process's lifetime to Docker Desktop (MSYS keeps the parent alive). Any caller that pipes or waits on the test then hangs. This is also the likely cause of the earlier unexplained exit-4 and hangs after "engine auto-start via lib.sh". | **H** | `require_docker` should only check: `docker info >/dev/null 2>&1 \|\| { echo "docker engine not available, start Docker Desktop and re-run" >&2; exit 3; }`. Remove the auto-start. Start Docker once, outside any test, before a batch. If it must be scripted, detach it fully, e.g. `powershell -NoProfile -Command "Start-Process -FilePath '<Docker Desktop.exe>'"`, then wait for `docker info`. |
+| N2 | `run_both.sh` (pilot scratchpad) | **The runner deletes committed evidence.** `rm -f results/cve-2024-9202.csv env/cve-2024-9202-observations.csv` removed the tracked -9202 files, and they are now `D` in the working tree. If the rerun fails and the tree is committed, the -9202 admission evidence is lost. The tests already replace their own version's row, so the `rm` is unnecessary. | **H** | `git restore pilots/08-dsp-authfuzz/results/cve-2024-9202.csv pilots/08-dsp-authfuzz/env/cve-2024-9202-observations.csv` now. Never `rm` tracked evidence. |
+| N3 | runner location and design | The batch driver is an untracked file outside the repo, so it is neither reproducible nor covered by the dirty marker. `\| tail -2` hides every diagnostic, and there is no per-rung timeout. | M | Commit it as `scripts/50_kc1_batch.sh`. **Pre-flight:** check `docker info`, check that `pilot08v` is internal, check the tree is clean (no `-dirty`), record HEAD. **Per rung:** `timeout 900 bash scripts/42_… "$V" > build/logs/4536-$V.log 2>&1` (the logs are already canary-redacted; `build/` is gitignored), record the exit code, and on non-zero print `tail -5` of the log. **Abort** if HEAD changes mid-batch. Clean the `pilot08v` containers between rungs. Never delete evidence files. |
+| N4 | batch vs D9 push | `08ac056` was committed and pushed **during** the batch (the batch started at `4df5f58`). Later rungs would have stamped `08ac056`, giving a mixed-commit ladder. | M | Rule: no commits or pushes while a batch runs. Commit `50_kc1_batch.sh` and N1 first, then run the whole batch (-4536 ×4, then -9202 ×4) from that one HEAD. |
+
+**Pilot steps, in order:**
+1. **Stop the stuck run.** Stop your background task `bzj0beeqn`; its processes are runner 551/552, 42 PID 574 and its child 576. Docker Desktop may close with it, which is fine. Then `docker ps -aq --filter name=pilot08v | xargs -r docker rm -f` once Docker is up.
+2. **Restore the -9202 files** (N2).
+3. **Land N1 and N3 in one commit** and push it per D9.
+4. **Prepare the batch.** Start Docker Desktop yourself (detached) and wait for `docker info`.
+5. **Run the batch.** Run `50_kc1_batch.sh` from that HEAD, with no commits during the run.
+6. **Commit and push the evidence**, with both ladders in the message and the KC1 claim per Review 8 H2. Then push per D9.
+7. **Commit and push the report** (Review 8 M2), then push per D9.
+
+**Verdict:** this is a harness and environment hang, not a test result. The 0.6.2 cell is valid, but it must be re-run inside the clean batch so that all eight cells share one commit. Once N1–N4 land, KC1 is decided by the next batch.
