@@ -19,6 +19,8 @@ Running log of the feasibility pilot. Every number traces to a script output und
 | **KC1 test — CVE-2024-4536** (vault scoping, DSP-driven) | **ADMITTED** — full ladder **FAIL/PASS/PASS/PASS** (0.6.2/0.6.3/0.9.0/0.9.1), flips at 0.6.2→0.6.3, clean commit `559c51f` (`results/cve-2024-4536.csv`; evidence commit `7396b84`). 0.6.2 leaks the provider-vault secret to the counterparty token URL (`neg_state=FINALIZED`, `agreement_on_provider=yes`, `token_post=yes`, `canary_value=yes`); 0.6.3+ perform the sink write with **no** token / **no** canary (`sink_write=yes` positive control, D7b). Canary value never stored. |
 | **KC1 verdict** (needs BOTH -9202 and -4536) | **PASSED (2 of 3; -8642 not counted per D6)** — both tests flip FAIL→PASS exactly at their fixing version, matching the per-cell oracle. Kill condition 1 does **not** fire; the DSP half proceeds (next: KC2). |
 
+**KC1 claim scope:** the SUT is **Eclipse EDC (vanilla, assembled from Maven Central release artifacts, with `iam-mock`)** at the four pinned versions — **not** Tractus-X (D5/D6). The paper claim is "rediscovers known flaws in Eclipse EDC"; Tractus-X returns only at KC2 (option A).
+
 ## 1. Local-only network isolation — closed and verified
 
 The gap: the testbed network was a default bridge, so containers had outbound internet
@@ -55,6 +57,8 @@ stamped with the commit they ran on; they must be re-run on a clean commit again
 
 ## 2. KC1 counterparty authentication — RESOLVED via `iam-mock` (D5)
 
+*Historical — superseded by D5–D7. Kept as the record of why the DCP/DIM stack (option A) was not needed for KC1.*
+
 > **Update 2026-10-24 — superseded.** The analysis below (written against the Tractus-X
 > distribution) correctly identified that both invariants sit behind the DSP auth boundary and
 > that Tractus-X 0.7.x needs a full DCP/DIM identity stack. The user chose **option B** (D5): KC1
@@ -90,6 +94,8 @@ map (easy), a **DIM/STS wallet that mints Self-Issued tokens and VPs** (hard), a
 
 ## 3. Decision needed before KC1 can run
 
+*Historical — superseded by D5–D7. The user chose option B (`iam-mock`); this options table records the decision that was open at the time.*
+
 | Option | What it is | Cost | Effect on the claim |
 |---|---|---|---|
 | **A. Build the local DCP/DIM identity stack** | Emulate did:web + BDRS + a DIM-style STS wallet (VP + MembershipCredential) + trusted issuer, as a new `identity` service (compose only has the provider's env pointing at `http://identity:8000/…`; no such service exists yet) | High (multi-session; JWT/VP signing, credential seeding) | Highest fidelity; keeps "connectors that pass the official suites" framing intact |
@@ -121,6 +127,8 @@ Every number above traces to a file under `env/` or `results/`; anything observe
 - Decisions: [DECISIONS.md](DECISIONS.md) (D1–D9). §3 resolved to **B** (D5) — see §4. -4536 DSP-driven + removal-fix-counts (D7); dependency verification (D8); per-phase manual push, no co-author (D9).
 
 ## 4. Resolution of §3 (2026-10-21)
+
+*Historical — superseded by D5–D7. The KC1 result (both ladders admitted) is in the status table above; this section records how §3 was resolved.*
 
 User chose **B** (logged as D5 in [DECISIONS.md](DECISIONS.md)); the "Recommendation: A" above is superseded.
 KC1 runs on vanilla EDC + `iam-mock` at the four pinned tags in [VERSIONS.md](VERSIONS.md); A is deferred to KC2.
