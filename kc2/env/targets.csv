@@ -1,2 +1,2 @@
 name,version,bundled_edc,digest,digest_match,runtime_jar,jar_sha256,classes,commit
-tractusx/edc-runtime-memory,0.13.0,0.17.0,sha256:bc54335da7b30985154d8d9285a1646e022c97a3cdea6eb1f81b9defaff26ec4,yes,/app/edc-runtime.jar,987ffdd735fe99c6572f621bde9e8c4a5beaa0b2d298d0d5859fc8327330db0a,41551,4304c68-dirty
+tractusx/edc-runtime-memory,0.13.0,0.17.0,sha256:bc54335da7b30985154d8d9285a1646e022c97a3cdea6eb1f81b9defaff26ec4,yes,/app/edc-runtime.jar,987ffdd735fe99c6572f621bde9e8c4a5beaa0b2d298d0d5859fc8327330db0a,41551,3d31e9e
