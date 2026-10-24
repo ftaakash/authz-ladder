@@ -622,3 +622,36 @@ Scope: `4df5f58` (H1 sha-guard fix, wider publish guard), `08ac056` (D9: manual 
 7. **Commit and push the report** (Review 8 M2), then push per D9.
 
 **Verdict:** this is a harness and environment hang, not a test result. The 0.6.2 cell is valid, but it must be re-run inside the clean batch so that all eight cells share one commit. Once N1–N4 land, KC1 is decided by the next batch.
+
+---
+
+## Review 10 (post-34183ca), 2026-10-24: KC1 verdict check
+
+Scope: `559c51f` (lib.sh never starts Docker, `50_kc1_batch.sh`), `7396b84` (KC1 evidence), `3805146` (report), `2c3aa4e` (smoke refresh), the per-rung logs in `build/logs/`, the public mirror (read-only), and the live process table. Read-only.
+
+**KC1 verdict confirmed: PASSED (2 of 3; -8642 not counted per D6, so no margin).**
+- **One commit, one jar set:** all 8 cells come from clean `559c51f` on the same four jars (`78d1…`, `ee1f…`, `b83b…`, `0f54…`), each recorded at a clean commit. `50_kc1_batch.sh` refuses a dirty tree, aborts if HEAD moves, and never deletes evidence.
+- **-4536:** FAIL / PASS / PASS / PASS.
+  - Every cell has seeds 200, catalog 200, an offer, `neg_state` FINALIZED, `agreement_on_provider` yes, `src_get` yes and `canary_in_log` no.
+  - 0.6.2 has `token_post` = yes and `canary_value` = yes.
+  - 0.6.3, 0.9.0 and 0.9.1 have `sink_write` = yes (positive control) with no token and no canary.
+  - The flip is exactly at 0.6.3.
+- **-9202:** FAIL / FAIL / FAIL / PASS, re-confirmed on the new jars.
+  - Seeds are 200 on every rung, alice sees the dataset and fetches it (positive control) everywhere, and mallory is hidden from the catalogue.
+  - mallory gets 200 plus the dataset on the affected rungs and 404 at 0.9.1.
+- **Canary:** 0 of the 8 batch logs contain a canary value.
+- **Report:** the `PILOT-REPORT.md` status rows trace to these CSVs and the evidence commit.
+- **Public mirror:** `7332ccb` = local `2c3aa4e`, and the marker is in sync. Every commit has author and committer ftaakash and none has a `Co-Authored-By:` trailer.
+
+| # | file:line | Issue | Sev | Required change |
+|---|---|---|---|---|
+| P1 | process table | **The old hung runner is still alive:** `run_both.sh` (PIDs 551/552) and `42_test_4536_dsp.sh 0.6.2` (PID 574, holding the Docker Desktop child 576), all from 18:27. If Docker Desktop restarts or exits, PID 574 ends, `\| tail -2` unblocks, and the runner **resumes**. It would then run 42 for 0.6.3–0.9.1 and 40 for all four rungs, overwriting the committed result rows with rows stamped at a later commit, and creating `pilot08v` containers. | **H** | Kill the runner and its stale test now: `kill 552 551 574` from Git Bash (or `taskkill` by their Windows PIDs). Check with `ps -ef \| grep -E "run_both\|42_test"`, then `git status` (it must stay clean). |
+| P2 | `env/net-isolation.csv` vs `pilot08v` | **D3 is still open:** the egress probe and its positive control were archived for R1/`pilot08_dsp` only. The KC1 runs used `pilot08v`, which is checked `Internal=true` but has never been probed. SCOPE's local-only claim for KC1 rests on a flag, not a measurement. | M | Port the `05_net_check.sh` probes (positive control to a peer container, IP `1.1.1.1`, DNS `example.com`, published ports = 0) to `pilot08v`. Append them to `env/net-isolation.csv` with a `network` column, commit, and push per D9. |
+| P3 | `PILOT-REPORT.md` §2–§4 | The historical sections still read as current: "KC1 blocker", "Decision needed", and the Tractus-X framing. The KC1 claim must read "Eclipse EDC (vanilla, Maven Central artifacts, iam-mock)", not Tractus-X (D5/D6). | L | Add a one-line "historical (superseded by D5–D7)" header to §2–§4, and one sentence in the status table giving the KC1 claim scope. |
+
+**Next phases need the user's decision; the pilot must not start any of them on its own:**
+1. **KC2** (new invariant violations on current EDC/Tractus-X). It needs option A, the local DCP/DIM identity stack, and it will produce undisclosed candidate findings. Those must go in gitignored notes and be held out of the per-phase push.
+2. **The MCP scoping step** (SCOPE "MCP half", step 6). This is reading only: list which idea-01 scenarios the MCP conformance-draft auth scenarios already cover. No harness is built without approval.
+3. **`docs/STATE.md`** lies outside `pilots/`, so changing it needs the user's OK ("built from source" → "assembled from Maven Central artifacts").
+
+**Verdict:** kill condition 1 is decided, PASSED on clean, controlled, traceable evidence, and the DSP half continues. Before anything else, kill the orphaned runner (P1). Then close D3 (P2). After that the pilot waits for the user's choice of next phase.
