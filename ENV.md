@@ -150,3 +150,26 @@ Notes:
 | Download | Source | Digest / version | Size | Date |
 |---|---|---|---|---|
 | `tractusx/edc-runtime-memory:0.13.0` (local tag `pilot08k2/edc-runtime-memory:0.13.0`) | `docker.io/tractusx` | `sha256:bc54335d…26ec4` | 167 MB | 2026-10-24 |
+
+### KC2 identity stack — versions & compatibility (phase 2)
+
+Assembled per D11. Jars/scripts tracked under `kc2/`; jar sha256 in `kc2/env/identity-jars.csv`
+(clean commit `77b124e`), dependency verification in `kc2/env/gradle-verification.csv` (568 artifacts,
+sha1 cross-checked against Maven Central 568/568, 0 mismatch, strict builds + tamper control).
+
+| Component | Version | Bundled EDC | vs. Tractus-X 0.13.0 connector (EDC 0.17.0) |
+|---|---|---|---|
+| IdentityHub (`identityhub-bom`) | 0.17.0 | 0.17.0 | **exact match** |
+| IssuerService (`issuerservice-bom`) | 0.17.0 | 0.17.0 | **exact match** |
+| BDRS (`tractusx/bdrs-server-memory`) | 0.6.0 | 0.16.0 | one EDC minor behind — DID resolution + membership-VP exchange only; compatibility to be shown by the smoke, UNVERIFIED |
+
+**Compatibility observations (to confirm at the handshake phase):**
+- The identity stack matches the **Tractus-X 0.13.0** target's bundled EDC exactly (0.17.0). Good for that target.
+- The **vanilla EDC 0.18.1** target is one minor **ahead** of the 0.17.0 identity stack. The DCP wire protocol (presentation/STS) is versioned by the DCP spec, not the EDC build, so 0.17.0↔0.18.1 may interoperate — but this is **UNVERIFIED**; if the smoke fails, a second identity stack pinned at 0.18.1 is the fallback (one-line change to `-Pedc`).
+- IdentityHub has **no superuser/first-participant bootstrap** in the BOM (checked in source + the built jar): a `did:web` document only resolves once a participant context + keypair is created via the identity API. So demonstrating did:web resolution requires minimal participant seeding — see the phase-2 checkpoint note.
+
+### KC2 testbed network
+
+`pilot08k2_dsp` is `internal: true`. Isolation verified in `kc2/env/net-isolation.csv` (5/5: internal flag,
+positive control 200 to an in-net peer, egress to `1.1.1.1` and `example.com` both BLOCKED, 0 host ports).
+Container/network prefix `pilot08k2-` / `pilot08k2_`, separate from `pilot08_dsp` and `pilot08v`.
