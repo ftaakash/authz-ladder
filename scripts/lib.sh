@@ -21,12 +21,9 @@ pins() { grep -v '^#' "$PINS"; }
 NET="${NET:-pilot08_dsp}"
 DRIVER_IMG="${DRIVER_IMG:-pilot08/curl:8.11.1}"
 drv() { docker run --rm --network "$NET" "$DRIVER_IMG" "$@"; }
-# Start the local Docker engine if it is down (Docker Desktop on this host), wait up to 3 min.
-DOCKER_DESKTOP="${DOCKER_DESKTOP:-/c/Users/Administrator/AppData/Local/Programs/DockerDesktop/Docker Desktop.exe}"
+# A test script must NEVER start Docker: launching Docker Desktop.exe & from inside a script
+# leaves a native MSYS child the script cannot outlive, which hangs the whole run (N1). Only check.
 require_docker() {
-  docker info >/dev/null 2>&1 && return 0
-  [ -x "$DOCKER_DESKTOP" ] && "$DOCKER_DESKTOP" >/dev/null 2>&1 &
-  for _ in $(seq 1 60); do docker info >/dev/null 2>&1 && return 0; sleep 3; done
-  echo "docker engine not available" >&2; return 1
+  docker info >/dev/null 2>&1 || { echo "docker engine not available, start Docker Desktop and re-run" >&2; exit 3; }
 }
 require_docker
