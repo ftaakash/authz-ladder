@@ -1,9 +1,9 @@
 service,check,expected,got,ok,commit
-provider-ih,seed_ready,ready,ready,yes,caf0632-dirty
-consumer-ih,seed_ready,ready,ready,yes,caf0632-dirty
-issuer,boot_ready,ready,ready,yes,caf0632-dirty
-bdrs,boot_ready,ready,ready,yes,caf0632-dirty
-did,provider_did_200,200,200,yes,caf0632-dirty
-did,consumer_did_200,200,200,yes,caf0632-dirty
-did,provider_vm_Ed25519,Ed25519,Ed25519,yes,caf0632-dirty
-did,consumer_vm_Ed25519,Ed25519,Ed25519,yes,caf0632-dirty
+provider-ih,seed_ready,ready,ready,yes,308bb74
+consumer-ih,seed_ready,ready,ready,yes,308bb74
+issuer,boot_ready,ready,ready,yes,308bb74
+bdrs,boot_ready,ready,ready,yes,308bb74
+did,provider_did_200,200,200,yes,308bb74
+did,consumer_did_200,200,200,yes,308bb74
+did,provider_vm_Ed25519,Ed25519,Ed25519,yes,308bb74
+did,consumer_vm_Ed25519,Ed25519,Ed25519,yes,308bb74
