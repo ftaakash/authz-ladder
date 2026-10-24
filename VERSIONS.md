@@ -124,3 +124,16 @@ Tractus-X 0.7.x control planes include DCP identity (`tx-iatp`, `tx-iatp-sts-dim
 connectors need a local identity stack (DID:web documents, STS, BDRS, trusted issuer). No mock-IAM module was
 found in `edc-runtime-memory`. The plan is for the local test driver to serve these locally. **UNVERIFIED**
 until the first runtime boots.
+
+---
+
+## KC2 targets — current releases (2026-10-24)
+
+KC2 asks whether **current** releases violate the invariant catalogue. Targets = latest stable release of each line (pins and digests in [ENV.md](ENV.md) §KC2 targets, `kc2/pins.tsv`):
+
+| Target | Version | Bundled EDC | Relation to the KC1 CVEs |
+|---|---|---|---|
+| Tractus-X EDC (`edc-runtime-memory`) | **0.13.0** | **0.17.0** | after every KC1 fix version (0.6.3, 0.9.0, 0.9.1) |
+| Vanilla Eclipse EDC | **0.18.1** | 0.18.1 | after every KC1 fix version |
+
+Excluded: EDC `1.0.0-RC*` (pre-release) and Tractus-X `0.14.0-SNAPSHOT` images. Both targets are expected to PASS the KC1 regression tests; any FAIL there would be a regression and is handled under the KC2 confidentiality rule (results under `private/` only).

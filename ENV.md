@@ -129,3 +129,24 @@ Class-level check of each runtime jar (`jar tf`). Reproduce with `scripts/00_pul
 
 The fat jars carry no `META-INF/maven/org.eclipse.edc/*/pom.properties`, so the bundled EDC version is taken
 from each tag's `gradle/libs.versions.toml` (not re-verified from the binary).
+
+## KC2 targets — current releases (pinned 2026-10-24)
+
+KC2 tests the **latest stable** release of each line (GitHub releases API, 2026-10-24; pre-releases
+such as EDC `v1.0.0-RC5` and `0.14.0-SNAPSHOT` images excluded). Pins: `kc2/pins.tsv`; pull + jar
+evidence: `kc2/scripts/00_pull_targets.sh` → `kc2/env/targets.csv`. KC2 runs on its own networks and
+containers (prefix `pilot08k2-`), separate from `pilot08_dsp` and `pilot08v`.
+
+| Target | Version | Bundled EDC | Pin | Source commit |
+|---|---|---|---|---|
+| Tractus-X EDC `tractusx/edc-runtime-memory` | 0.13.0 (2026-08-27) | 0.17.0 (from tag `gradle/libs.versions.toml`; not re-verified in the binary) | `sha256:bc54335da7b30985154d8d9285a1646e022c97a3cdea6eb1f81b9defaff26ec4` (index digest; amd64 167 MB) | tag `0.13.0` = `964d33d7ed942369f624aacbc45037a1f79fc7be` |
+| Vanilla Eclipse EDC (Maven Central) | 0.18.1 (2026-09-25) | 0.18.1 | BOMs `controlplane-dcp-bom` pom sha1 `0cff29e5…`, `dataplane-base-bom` pom sha1 `9afd6ad1…` (full in `kc2/pins.tsv`); fat-jar sha256 recorded when assembled | tag `v0.18.1` = `3a22ff4aa90213a564309b5a05851e6d7f27f9ff` |
+
+Notes:
+- The latest Tractus-X release bundles EDC **0.17.0**, one minor behind vanilla 0.18.1, so the two targets are not the same EDC code.
+- Both repos carry DSP TCK test modules at these tags (Tractus-X `edc-tests/e2e/dsp-tck-tests`, dsp-tck 1.0.0; EDC `system-tests/tck`). That the **released builds pass the DSP TCK** is taken from upstream CI and is **UNVERIFIED** locally.
+- Tractus-X 0.13.0 jar (`/app/edc-runtime.jar`, sha256 in `kc2/env/targets.csv`): no `iam-mock`; DCP via `org/eclipse/edc/iam/decentralizedclaims` (90 entries), a remote STS (`RemoteSecureTokenService`) and the Tractus-X DIV STS (`DivSecureTokenService`, successor of the DIM STS), BDRS client (`BdrsClientImpl`), `MembershipCredential` constraint. So KC2 needs the local identity stack (option A).
+
+| Download | Source | Digest / version | Size | Date |
+|---|---|---|---|---|
+| `tractusx/edc-runtime-memory:0.13.0` (local tag `pilot08k2/edc-runtime-memory:0.13.0`) | `docker.io/tractusx` | `sha256:bc54335d…26ec4` | 167 MB | 2026-10-24 |
