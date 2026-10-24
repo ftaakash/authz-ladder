@@ -3,7 +3,7 @@
 Running log of the feasibility pilot. Every number traces to a script output under
 `results/` or `env/`; unverified items are marked UNVERIFIED. Defensive scope: see [SCOPE.md](SCOPE.md).
 
-## Status at 2026-10-21
+## Status at 2026-10-24
 
 | Milestone | State |
 |---|---|
@@ -14,10 +14,10 @@ Running log of the feasibility pilot. Every number traces to a script output und
 | SUT switch to vanilla EDC + `iam-mock` (D5, option B) | **DONE** — all 4 rungs (0.6.2/0.6.3/0.9.0/0.9.1) build, boot, smoke (`env/vanilla-jars.csv`, `env/vanilla-smoke.csv`) |
 | Identity stubs (DID:web / STS / BDRS) + consumer | superseded by D5: Tractus-X DCP/DIM deferred to KC2 (option A). iam-mock gives an authenticated counterparty (DSP + mock token → 200) |
 | Test fixtures: F1 bound constraint, F5 mgmt auth | **DONE** — F1 registers + discriminates (alice sees / mallory hidden); F5 enforces mgmt key (401/200) |
-| F3 seeded canary vault | **NOT STARTED** — needed only for -4536 |
-| **KC1 test — CVE-2024-9202** (catalogue bypass) | **ADMITTED** — full ladder **FAIL/FAIL/FAIL/PASS** (0.6.2/0.6.3/0.9.0/0.9.1), `results/cve-2024-9202.csv` commit ffa967e. Seeding 200 on every rung (policy/contract-def on /v2 at 0.6.x, /v3 at 0.9.x), fixture discriminates everywhere, alice positive control passes; single-dataset endpoint leaks the policy-hidden dataset to the denied party on every affected build, blocked (404) at the fix. |
-| KC1 test — CVE-2024-4536 (vault scoping, 0.6.2→0.6.3) | **NOT STARTED** — needs F3 + a full OAuth2 push-transfer flow |
-| KC1 verdict (needs BOTH -9202 and -4536) | **PENDING** — -9202 admitted (1 of 2); -4536 not started |
+| F3 seeded canary vault | **DONE** — the provider seeds a per-run canary secret into its vault (settings `pilot08.canary.alias/value`), consumed by the -4536 test. The value is never stored (redacted in all logs/CSVs; `canary_in_log=no` on every rung). |
+| **KC1 test — CVE-2024-9202** (catalogue bypass) | **ADMITTED** — full ladder **FAIL/FAIL/FAIL/PASS** (0.6.2/0.6.3/0.9.0/0.9.1), re-confirmed on the same four recorded jars at clean commit `559c51f` (`results/cve-2024-9202.csv`; evidence commit `7396b84`). Seeding 200 on every rung, fixture discriminates (alice sees / mallory hidden), alice positive control passes; the single-dataset endpoint leaks the policy-hidden dataset to the denied party (HTTP 200) on every affected build, blocked (404) at the fix. |
+| **KC1 test — CVE-2024-4536** (vault scoping, DSP-driven) | **ADMITTED** — full ladder **FAIL/PASS/PASS/PASS** (0.6.2/0.6.3/0.9.0/0.9.1), flips at 0.6.2→0.6.3, clean commit `559c51f` (`results/cve-2024-4536.csv`; evidence commit `7396b84`). 0.6.2 leaks the provider-vault secret to the counterparty token URL (`neg_state=FINALIZED`, `agreement_on_provider=yes`, `token_post=yes`, `canary_value=yes`); 0.6.3+ perform the sink write with **no** token / **no** canary (`sink_write=yes` positive control, D7b). Canary value never stored. |
+| **KC1 verdict** (needs BOTH -9202 and -4536) | **PASSED (2 of 3; -8642 not counted per D6)** — both tests flip FAIL→PASS exactly at their fixing version, matching the per-cell oracle. Kill condition 1 does **not** fire; the DSP half proceeds (next: KC2). |
 
 ## 1. Local-only network isolation — closed and verified
 
@@ -53,7 +53,16 @@ the driver is 5/5 (`env/boot-smoke.csv`): health 200, management no-key 401, man
 **DSP catalog no-auth 401, fake-bearer 401**. Both CSVs hold one run each, on R1 (tx 0.7.0) only, and are
 stamped with the commit they ran on; they must be re-run on a clean commit against the vanilla SUT (D5).
 
-## 2. KC1 blocker — counterparty authentication needs a full DCP/DIM identity stack
+## 2. KC1 counterparty authentication — RESOLVED via `iam-mock` (D5)
+
+> **Update 2026-10-24 — superseded.** The analysis below (written against the Tractus-X
+> distribution) correctly identified that both invariants sit behind the DSP auth boundary and
+> that Tractus-X 0.7.x needs a full DCP/DIM identity stack. The user chose **option B** (D5): KC1
+> runs on **vanilla Eclipse EDC + `iam-mock`**, where an authenticated counterparty reaches the DSP
+> layer without a DCP/DIM wallet. This is now done and proven — both ladders completed end to end
+> with a mocked identity layer (an authenticated hostile counterparty is exactly what the oracle
+> needs), so the "blocker" below no longer gates KC1. The DCP/DIM stack (option A) is deferred to
+> KC2. The section is kept as the record of why option A was not needed for KC1.
 
 Both in-scope invariants are reachable **only** through the DSP protocol API:
 - **-9202** (catalogue visibility): the single-dataset DSP request path in `DatasetResolverImpl`.
@@ -95,13 +104,21 @@ captured at clone). So two locally-built EDC connectors can complete DSP flows w
 
 ## Evidence index
 Every number above traces to a file under `env/` or `results/`; anything observed but not stored is marked "not archived".
+- **`results/cve-2024-4536.csv`** — -4536 ladder verdicts (version, invariant, verdict, jar sha256, commit)
+- **`env/cve-2024-4536-observations.csv`** — per-rung -4536 observations (neg state, agreement, transfer state/error, src_get, sink_write, token_post, canary, verdict)
+- **`results/cve-2024-9202.csv`** — -9202 ladder verdicts (same columns)
+- **`env/cve-2024-9202-observations.csv`** — per-rung -9202 observations (catalogue 200s, alice/mallory visibility, single-dataset HTTP + leak)
+- **`env/vanilla-jars.csv`** — the four KC1 jars (version, sha256, bytes, clean commit) both ladders ran on
+- **`env/gradle-verification.csv`** — dependency verification (1416 artifacts sha1+sha256 cross-checked; D8)
+- **`testbed/receiver/Receiver.java`** — the concurrent test receiver that captures the -4536 source/token/sink requests
+- `env/cve-2024-4536-dataplane-probe*.csv` — the retired source-vector probe (`scripts/41_test_4536.sh`, non-admissible, D7); kept as a stepping stone
 - `env/net-isolation.csv` — local-only verification incl. positive control (R1 only)
 - `env/boot-smoke.csv` — boot sanity through the driver, 5 checks incl. fake-bearer (R1 only)
 - `env/image-check.csv` — per-rung jar/class evidence
 - `env/jar-iatp.txt` — R1 IATP/DCP class listing (42 entries, no mock IAM, DIM STS)
 - `env/iam-mock-check.csv` — `iam-mock` present at the four vanilla ladder tags
 - `results/logs/` — pull + boot logs (**not in git**: `*.log` is ignored at repo root; un-ignoring needs a root `.gitignore` change)
-- Decisions: [DECISIONS.md](DECISIONS.md) (D1–D5). §3 resolved to **B** (D5) — see §4.
+- Decisions: [DECISIONS.md](DECISIONS.md) (D1–D9). §3 resolved to **B** (D5) — see §4. -4536 DSP-driven + removal-fix-counts (D7); dependency verification (D8); per-phase manual push, no co-author (D9).
 
 ## 4. Resolution of §3 (2026-10-21)
 
