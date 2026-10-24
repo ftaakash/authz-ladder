@@ -3,3 +3,4 @@
 image	tractusx/edc-runtime-memory	0.13.0	0.17.0	docker.io	sha256:bc54335da7b30985154d8d9285a1646e022c97a3cdea6eb1f81b9defaff26ec4
 maven	org.eclipse.edc:controlplane-dcp-bom	0.18.1	0.18.1	repo1.maven.org	pom.sha1:0cff29e5d7fc7309c1a948d027d5422660fe2b3c
 maven	org.eclipse.edc:dataplane-base-bom	0.18.1	0.18.1	repo1.maven.org	pom.sha1:9afd6ad161b606562f6295db8f457f641e1056c0
+image	tractusx/bdrs-server-memory	0.6.0	0.16.0	docker.io	sha256:157696da8d5365e675c3e994f4b52e32ef5cbb392ae1b7ccd0c0ee57331601fe
