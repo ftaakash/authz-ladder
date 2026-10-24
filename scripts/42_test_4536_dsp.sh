@@ -119,7 +119,7 @@ if [ "$agr_on_provider" = yes ]; then
   done
   terr="$(jfield "$ts" errorDetail)"   # recorded as an observation when the transfer failed
 fi
-sleep 6
+sleep 6   # settle: let any in-flight data-plane push reach the receiver before reading /cap.txt
 cap="$(docker exec pilot08v-receiver sh -c 'cat /cap.txt 2>/dev/null' 2>/dev/null || true)"
 src_get=no;   printf '%s' "$cap" | grep -qiE 'GET /data|POST /data'  && src_get=yes || true
 token_post=no;printf '%s' "$cap" | grep -qiE 'POST /token'       && token_post=yes || true
@@ -143,7 +143,7 @@ else reason="sink-write-not-observed[positive-control-failed;state=$tstate;err=$
 out="$PILOT/results/cve-2024-4536.csv"; mkdir -p "$PILOT/results"
 [ -f "$out" ] || echo "edc_version,invariant,verdict,jar_sha256,commit" > "$out"
 grep -v "^$V," "$out" > "$out.tmp" 2>/dev/null; mv "$out.tmp" "$out"
-echo "$V,vault-scoping[CVE-2024-4536],$verdict,$sha,$COMMIT" >> "$out"
+echo "$V,vault-scoping(CVE-2024-4536),$verdict,$sha,$COMMIT" >> "$out"
 obs="$PILOT/env/cve-2024-4536-observations.csv"
 hdr="edc_version,jar_sha256,commit,seed_asset,seed_policy,seed_cd,dp_reg,catalog,push_offered,offer,neg_state,agreement_on_provider,transfer_state,transfer_error,src_get,sink_write,token_post,canary_value,canary_in_log,verdict,invalid_reason"
 terrsafe="$(printf '%s' "$terr" | redact | tr ',\n' ';;' | head -c 120)"

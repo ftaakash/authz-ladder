@@ -5,7 +5,9 @@
 # "Co-Authored-By: Claude" trailer is removed. Normal push only, never force.
 # Never publishes undisclosed findings: aborts if a patch touches a candidate/private
 # path (C10), adds a result row for a build outside the admitted KC1 ladder, or names a
-# candidate/undisclosed/new violation. Pass --yes only once such a finding is disclosed.
+# candidate/undisclosed/new violation in an evidence file, a changed .md, or a commit message.
+# --yes bypasses the content guard and is ALWAYS the user's call, decided per publish (a finding
+# is disclosed) — it is never passed automatically.
 # Usage: ./90_publish.sh [--yes]    (run after each completed phase, on a clean tree)
 set -euo pipefail
 YES=no; [ "${1:-}" = "--yes" ] && YES=yes
@@ -30,22 +32,33 @@ if ! ls "$tmp"/*.patch >/dev/null 2>&1; then echo "$head" > "$marker"; echo "no 
 if grep -l -i -E '^diff --git a/.*(candidate-findings|CANDIDATE-|/private/)' "$tmp"/*.patch; then
   echo "refusing: a patch touches a candidate/private path"; exit 1
 fi
-# Content guard (C10/L8): a KC2/new-violations phase produces undisclosed findings, which must
-# never auto-publish. The scan is scoped to EVIDENCE/notes files (results/, env/, or a candidate/
-# private path) via each hunk's "+++ b/<path>" header — scripts and docs are skipped so this
-# guard's own wording here cannot self-match. Within those files, unless --yes is given (finding
-# disclosed), an added result row (…,FAIL,… / …,LEAK,…) for a build outside the admitted KC1 ladder,
-# or an added line naming a candidate/undisclosed/new violation, aborts the publish.
+# Content guard (C10/L8/M1): a KC2/new-violations phase produces undisclosed findings, which must
+# never auto-publish. Unless --yes is given (finding disclosed, user's call), abort if a patch:
+#   - adds a result row (…,FAIL,… / …,LEAK,…) for a build outside the admitted KC1 ladder, in an
+#     EVIDENCE file (results/ or env/) or a candidate/private path; or
+#   - adds a line naming a candidate/undisclosed/new violation in an evidence file, a changed *.md,
+#     or a commit message (the patch header before the first "diff --git").
+# Only this script's own hunk (scripts/90_publish.sh) is excluded, so the guard's wording here
+# cannot self-match; all other scripts/docs are in scope for the keyword scan via .md / message.
 if [ "$YES" = no ]; then
   bad="$(awk '
-    /^diff --git / { inscope=0 }
-    /^\+\+\+ b\// { p=substr($0,7); inscope=(p ~ /(^|\/)(results|env)\// || p ~ /candidate|CANDIDATE|\/private\//) }
-    inscope && /^\+[^+]/ {
+    FNR==1 { inmsg=1; inscope=0; md=0; self=0 }                      # each patch starts with its commit message
+    /^diff --git / { inmsg=0; inscope=0; md=0; self=0 }
+    inmsg {                                                          # commit message / headers (before first diff)
+      if (tolower($0) ~ /candidate|undisclosed|new violation/) print "commit-message: " $0
+      next
+    }
+    /^\+\+\+ b\// { p=substr($0,7)
+                    self=(p ~ /(^|\/)scripts\/90_publish\.sh$/)
+                    inscope=(p ~ /(^|\/)(results|env)\// || p ~ /candidate|CANDIDATE|\/private\//)
+                    md=(p ~ /\.md$/) }
+    /^\+[^+]/ {
+      if (self) next
       l=substr($0,2)
-      if (l ~ /,(FAIL|LEAK),/ && l !~ /^(0\.6\.2|0\.6\.3|0\.9\.0|0\.9\.1),/) print "FAIL/LEAK row outside ladder: " l
-      if (tolower(l) ~ /candidate|undisclosed|new violation/)            print "candidate/undisclosed content: " l
+      if (inscope && l ~ /,(FAIL|LEAK),/ && l !~ /^(0\.6\.2|0\.6\.3|0\.9\.0|0\.9\.1),/) print "FAIL/LEAK row outside ladder: " l
+      if ((inscope || md) && tolower(l) ~ /candidate|undisclosed|new violation/)         print "candidate/undisclosed content: " l
     }' "$tmp"/*.patch)"
-  if [ -n "$bad" ]; then echo "refusing to auto-publish (pass --yes once disclosed):"; echo "$bad" | head -5; exit 1; fi
+  if [ -n "$bad" ]; then echo "refusing to auto-publish (--yes is the user's call, once disclosed):"; echo "$bad" | head -8; exit 1; fi
 fi
 sed -i -E '/^Co-Authored-By: Claude.*$/Id' "$tmp"/*.patch
 

@@ -10,11 +10,12 @@ NET="pilot08v"   # internal network for the vanilla KC1 SUT (separate from KC2's
 # Run the version-specific jar (not the generic -all.jar, which is whatever was built last).
 jar="$PILOT/testbed/launcher/build/libs/pilot08-edc-$V.jar"
 [ -f "$jar" ] || { echo "no jar for $V — run scripts/30_build_vanilla.sh $V first"; exit 1; }
-# Verify its sha256 against the recorded build before booting (abort on mismatch).
-want="$(grep "^$V," "$PILOT/env/vanilla-jars.csv" 2>/dev/null | cut -d, -f2)"
+# Verify this jar's sha256 is recorded at a CLEAN commit before booting. vanilla-jars.csv is
+# append-only (several rows per version), so match the exact (version,sha,size,clean-commit) row
+# with a regex — never compare against a multi-line `grep|cut` capture, which is always "unequal".
 got="$(sha256sum "$jar" | cut -d' ' -f1)"
-[ -n "$want" ] || { echo "no recorded sha for $V in env/vanilla-jars.csv — build it first"; exit 1; }
-[ "$want" != "$got" ] && { echo "sha256 mismatch for $V: want $want got $got"; exit 1; }
+grep -qE "^$V,$got,[0-9]+,[0-9a-f]{7}," "$PILOT/env/vanilla-jars.csv" 2>/dev/null \
+  || { echo "jar sha $got for $V not recorded at a clean commit — rebuild on a clean tree"; exit 1; }
 export RUN_SHA="$got"
 run="$PILOT/build/run"; mkdir -p "$run"; cp "$jar" "$run/app.jar"; cp "$PILOT/testbed/launcher/config/provider.properties" "$run/"
 docker network inspect "$NET" >/dev/null 2>&1 || docker network create --internal "$NET" >/dev/null

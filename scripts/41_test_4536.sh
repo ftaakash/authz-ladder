@@ -21,7 +21,8 @@ NET="pilot08v"; ALIAS="pilot08-canary"; TOKEN_HOST="receiver:9300"
 trap 'docker rm -f pilot08v-provider pilot08v-receiver >/dev/null 2>&1 || true' EXIT
 jar="$PILOT/testbed/launcher/build/libs/pilot08-edc-$V.jar"
 [ -f "$jar" ] || { echo "no jar for $V"; exit 1; }
-sha="$(grep "^$V," "$PILOT/env/vanilla-jars.csv" | cut -d, -f2)"
+# vanilla-jars.csv is append-only; take one clean-commit row's sha (not a multi-line capture).
+sha="$(grep -E "^$V,[0-9a-f]+,[0-9]+,[0-9a-f]{7}," "$PILOT/env/vanilla-jars.csv" | head -1 | cut -d, -f2)"
 _x=$-; set +x
 CANARY="pilot08-canary-$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n')"   # per-run, never stored
 case $_x in *x*) set -x;; esac

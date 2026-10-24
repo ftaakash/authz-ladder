@@ -13,8 +13,9 @@ NET="pilot08v"; MK="pilot08-provider-mgmt"; ASSET="asset-9202"
 # sha of the jar actually run; append-only vanilla-jars.csv may hold several rows per version,
 # so verify this exact sha is recorded rather than grabbing the first row.
 sha="$(sha256sum "$PILOT/testbed/launcher/build/libs/pilot08-edc-$V.jar" 2>/dev/null | cut -d' ' -f1)"
-grep -qE "^$V,$sha," "$PILOT/env/vanilla-jars.csv" 2>/dev/null || { echo "jar sha $sha for $V not recorded — rebuild"; exit 1; }
-bash "$PILOT/scripts/31_run_vanilla.sh" "$V" >/dev/null 2>&1 || { echo "boot failed"; exit 1; }
+grep -qE "^$V,$sha,[0-9]+,[0-9a-f]{7}," "$PILOT/env/vanilla-jars.csv" 2>/dev/null || { echo "jar sha $sha for $V not recorded at a clean commit — rebuild"; exit 1; }
+# Boot via 31; keep its diagnostics so a boot failure shows the real reason (not a bare "boot failed").
+bootlog="$(bash "$PILOT/scripts/31_run_vanilla.sh" "$V" 2>&1)" || { echo "boot failed for $V:"; printf '%s\n' "$bootlog" | tail -5; exit 1; }
 # Management API version per resource: assets is /v3 on every rung, but policy &
 # contract definitions are /v2 on the 0.6.x line (the bundled management-api exposes
 # v2 there; v3 for those arrived later) and /v3 on 0.9.x. Wrong version -> 404 seed.
