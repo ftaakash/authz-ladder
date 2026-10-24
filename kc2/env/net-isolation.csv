@@ -1,0 +1,6 @@
+network,check,expected,got,ok,commit
+pilot08k2_dsp,network_internal_flag,true,true,yes,5e049a6-dirty
+pilot08k2_dsp,egress_control_peer_200,200,200,yes,5e049a6-dirty
+pilot08k2_dsp,egress_ip_1.1.1.1,BLOCKED,BLOCKED,yes,5e049a6-dirty
+pilot08k2_dsp,egress_dns_example.com,BLOCKED,BLOCKED,yes,5e049a6-dirty
+pilot08k2_dsp,host_published_ports,0,0,yes,5e049a6-dirty
