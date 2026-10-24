@@ -12,3 +12,7 @@ build/
 # Scratch / transient
 *.log
 *.tmp
+
+# KC2 identity-launcher build artifacts (regenerated from tracked sources)
+kc2/identity/.gradle/
+kc2/identity/build/
