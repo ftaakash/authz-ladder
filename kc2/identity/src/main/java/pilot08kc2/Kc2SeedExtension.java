@@ -33,6 +33,7 @@ public class Kc2SeedExtension implements ServiceExtension {
     static final String KEY_ALIAS = "pilot08.kc2.seed.key.alias";     // vault alias for the generated private key
     static final String KEY_ID = "pilot08.kc2.seed.key.id";           // key id used in the DID verificationMethod
     static final String AES_ALIAS = "edc.encryption.aes.key.alias";   // the IdentityHub participant-config AES key alias
+    static final String STS_SECRET = "pilot08.kc2.seed.sts.client.secret"; // known STS client secret (testbed)
 
     @Inject
     private IdentityHubParticipantContextService participantContextService;
@@ -97,6 +98,16 @@ public class Kc2SeedExtension implements ServiceExtension {
         var result = participantContextService.createParticipantContext(manifest);
         if (result.succeeded()) {
             context.getMonitor().info("[pilot08-kc2] seeded participant '" + id + "' did=" + did + " (keypair generated, DID published)");
+            // Overwrite the STS account's randomly-generated client secret with a KNOWN testbed value
+            // so the connector (remote STS client) can authenticate with a secret we also place in its
+            // own vault. Default alias = "<id>-sts-client-secret" (IdentityHubParticipantContext).
+            var stsSecret = context.getSetting(STS_SECRET, null);
+            if (stsSecret != null && !stsSecret.isBlank()) {
+                var alias = id + "-sts-client-secret";
+                vault.storeSecret(id, alias, stsSecret);   // partition = participantContextId (RemoteSecureTokenService resolves here)
+                vault.storeSecret(alias, stsSecret);       // in-memory vault ignores the partition; set the flat key too
+                context.getMonitor().info("[pilot08-kc2] set known STS client secret at alias '" + alias + "'");
+            }
         } else {
             context.getMonitor().severe("[pilot08-kc2] seed FAILED for '" + id + "': " + result.getFailureDetail());
         }
