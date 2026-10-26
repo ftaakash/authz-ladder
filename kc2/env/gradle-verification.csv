@@ -1,3 +1,5 @@
 launcher,edc_version,build_ok,artifacts_recorded,sha1_checked,sha1_crosscheck_ok,sha1_mismatches,sha1_missing,tamper_detected,commit
 kc2/identity,0.17.0,yes,568,568,yes,0,0,yes,107586f
 kc2/identity,0.17.0,yes,568,568,yes,0,0,yes,344e6e4
+kc2/identity,0.17.0,yes,570,570,yes,0,0,yes,c10b287-dirty
+kc2/identity,0.17.0,yes,570,570,yes,0,0,yes,c6a9d44
