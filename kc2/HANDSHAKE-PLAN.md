@@ -61,3 +61,12 @@ A DCP-authenticated **200 catalogue** consumer→provider with real DCP tokens, 
 Per Review 12 R6 the handshake smoke + all later verdicts route to `private/kc2/` (gitignored); tracked
 files state only that the positive control passed, with no finding content. Re-run isolation with the
 full stack up; keys/credentials stay under gitignored paths.
+
+## Smoke-output routing (Review 13 S3)
+
+- **Tracked** `kc2/env/handshake-smoke.csv` holds **infrastructure rows only**: service readiness, the
+  DCP-authenticated **200 catalogue with the trusted issuer** (the positive control that the stack
+  works), and did:web / BDRS resolution.
+- **Private** (`kc2_private_out` → `private/kc2/`, gitignored) holds everything that is an **invariant
+  assertion on a current release**: the untrusted-J refusal (INV-5), the third-participant cross-party
+  check (INV-4), and every sanity-vs-mutation admission row. When unsure, treat a row as private.

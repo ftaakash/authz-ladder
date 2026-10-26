@@ -141,3 +141,39 @@ Next steps, in order:
 2. Estimate the source-build download size; under 5 GB from Maven Central/Gradle is pre-approved, log it in ENV.md. Build inside the testbed, keep the `dsp` network internal at runtime. (Rough estimate this session: Gradle distribution ~150 MB + Maven deps ~0.3–0.8 GB across the 4 tags + source clones — under the 5 GB pre-approval; the build itself is a long-running job, minutes × 4 tags, so confirm before starting.)
 3. Re-check -8642 reachability on the vanilla ladder (`transfer-data-plane` present at 0.6.2/0.6.3?). If reachable, KC1 is back to 3 CVEs with margin.
 4. Then the -4536 and -9202 regression assertions (pass/fail only), checked against the predicted flip points.
+
+## KC2 status (finding-free) — updated 2026-10-26
+
+KC2 asks whether **current** releases violate the invariant catalogue (downgrade to tool/workshop paper
+if 0 new violations). No invariant has yet been run against a current target; **no finding exists or is
+at risk.** Any candidate finding will be reported here only as a count ("KC2: N candidate findings,
+details withheld pending disclosure"), split INV-1..5 vs INV-6..8, per SCOPE.
+
+**Targets (phase 1):** Tractus-X EDC `edc-runtime-memory` **0.13.0** (bundled EDC 0.17.0) and vanilla
+Eclipse EDC **0.18.1**, pinned by digest/version (ENV.md §KC2).
+
+**Identity stack (phase 2, option A):** real Eclipse **IdentityHub** + **IssuerService** (0.17.0) +
+official **BDRS** (`tractusx/bdrs-server-memory` 0.6.0), on an internal network. Milestone reached: both
+participants' `did:web` documents resolve host-to-host (`kc2/env/identity-smoke.csv`); isolation 5/5
+incl. in-container egress (`kc2/env/net-isolation.csv`); dependency-verified (570 artifacts). Decisions:
+**D11** (real components), **D12** (one shared 0.17.0 stack — DCP v1.0 context identical across targets),
+**D13** (MembershipCredential issued directly, issuance protocol out of scope).
+
+**Invariant freeze (phase 3 design):** `kc2/INVARIANTS.md` — INV-1..5 (`a8cd4df`) + INV-6..8 (amendment
+A1, `8479f2f`), each with source, assertion, preconditions, positive control, sanity + mutation configs,
+and PASS/FAIL/INVALID rules. `kc2/TCK-PLAN.md` gates phase 3 on an official-TCK baseline.
+
+### Dated KC2 plan (timebox ends ~2026-11-11)
+
+| Step | Target date | State |
+|---|---|---|
+| Phase 1 — pin targets | 2026-10-24 | DONE |
+| Phase 2 — identity stack + did:web milestone | 2026-10-24/26 | DONE |
+| Invariant freeze + amendment A1 | 2026-10-25/26 | DONE |
+| Handshake → DCP-authenticated 200 catalogue (both targets) | ~2026-10-28 | pending user go |
+| TCK baseline (DSP 1.0.2 / DCP 1.2.1) | ~2026-10-30 | planned |
+| Phase 3 — run frozen invariants (private verdicts) | ~2026-11-07 | planned |
+| KC2 verdict + report | 2026-11-11 | planned |
+
+If phase 3 does not finish by the timebox, KC2 reports **"incomplete invariant set"**, never "0 violations".
+Record any slips in this table.
