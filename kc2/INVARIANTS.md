@@ -255,3 +255,12 @@ data-plane audience/EDR binding → INV-7, and EDR refresh scoping → INV-8.)*
   could find anything. (3) **INV-4 cross-party** requires a **third participant** with its own
   IdentityHub identity; added to the step-2 handshake plan. Mutation configs are labelled test-only,
   never used for a current-release verdict, and encode the spec rule (no finding).
+
+## Scope limitation (D13, 2026-10-26)
+
+KC2's DCP handshake uses MembershipCredentials **issued directly** (issuer-signed VC stored into each
+holder's IdentityHub), **not** obtained through the DCP **issuance protocol**. The issuance protocol is
+therefore **out of scope** for KC2; the paper must state this. Credentials are nonetheless realistic
+(correct `MembershipCredential` type, holder DID as subject, real issue/expiry, resolvable issuer
+did:web), so an INV-5 / handshake verdict reflects the verifier's authorization logic, not a malformed
+credential.
