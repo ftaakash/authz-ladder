@@ -719,3 +719,38 @@ Scope: `cf2344e` through `97c3577`, with the focus on `107586f`, `caf0632`, `308
 - **Evidence gaps:** the network check predates the services it should cover (R1), and the cross-resolution claim overstates what was measured (R2).
 - **Confidentiality and freeze gates:** Review 11's still need to land before the handshake work goes further (R6).
 - **Findings:** none exist yet, and none are at risk.
+
+---
+
+## Review 13 (KC2 pre-handshake), 2026-10-26
+
+Scope: `5178493` through `1589ca9`: Review 12 hardening, the INVARIANTS freeze `a8cd4df` and amendment A1 `8479f2f`, D12, D13, the STS-secret seeding, `GenIssuer`, `HANDSHAKE-PLAN.md`, and `kc2/scripts/kc2lib.sh`. Also the KC2 transcript up to its checkpoint question. Read-only: no Docker, no downloads, no pushes.
+
+**Review 12 status:**
+- **R1 closed.** Isolation was re-run with the identity stack up, including probes from inside a container (peer positive control, IP and DNS blocked), at clean `5178493`.
+- **R2 closed.** The wording is corrected, and real cross-resolution rows were added, plus a no-private-member check.
+- **R3/R4 closed.** Verification was re-run (now 570 artifacts with the signing deps). The jar guard is in place.
+- **R6 mostly closed:**
+  - **Private routing:** `kc2_private_out` refuses `results/`, refuses path escapes and refuses any non-ignored path. It is solid.
+  - **Design freeze:** INV-1..5 were frozen in `a8cd4df`. A1 (pre-results, justified, dated) adds mutation configs and promotes INV-6/7/8.
+  - **The TCK is still absent** (see S1).
+- **R7 closed.** D12 records one shared 0.17.0 identity stack, on the basis of a byte-identical DCP v1.0 context.
+- **R8 closed.**
+
+**Design checks:**
+- **D13 (Route I):** issuer-signed VCs are stored directly, and the issuance protocol is out of scope. This is a user decision with two conditions: a realistic credential and a resolvable issuer DID. It is recorded as a paper limitation.
+- **Mutation admission (A1):** a test is admitted only if it gives FAIL on the mutation config and PASS on the sanity config. This is the right detection-power control, the KC2 equivalent of KC1's positive controls.
+- **Secrets:** no key or secret files are tracked. Private JWKs sit under the ignored `testbed/.secrets/kc2/`. The STS client secret is passed in by setting and is not committed.
+
+| # | file:line | Issue | Sev | Required change |
+|---|---|---|---|---|
+| S1 | `kc2/INVARIANTS.md`, `kc2/HANDSHAKE-PLAN.md` | **The TCK precondition (Review 11 Q2) is still not planned anywhere in `kc2/`.** The safe sentence counts violations "in implementations that pass the official DSP TCK". Without a TCK baseline, any KC2 violation can only be reported as "in current releases". | **H** | Add a "TCK baseline" phase between the handshake and phase 3. Run the official DSP TCK (v1.0.2) against each target in its DCP-configured form, and run the DCP TCK (v1.2.1) against the IdentityHub. Archive per-test pass/fail in `kc2/env/tck-*.csv`; those are conformance results, not KC2 findings. Check first whether the TCK artifacts come from an already-approved source (Maven Central or Docker Hub); if not, ask the user. If a target fails tests, record it and narrow the claim. |
+| S2 | `build/publish/authz-ladder/.git/pilot-last` | **Wrong marker value.** It holds `d1bec8a…`, which is the **mirror's** commit sha and does not exist in the Masters repo. The next `git format-patch "$(cat marker)..HEAD"` fails with "unknown revision". | M | Set the marker to the Masters sha of the last pushed commit (`1589ca9`'s full sha, after checking that its subject equals the mirror tip's). Keep this convention: the marker always holds a **Masters** sha. |
+| S3 | handshake smoke vs private routing | The handshake smoke against current targets has two parts. The DCP-authenticated **200 catalogue** is an infrastructure positive control. The **untrusted-J refusal** is INV-5's test on a current release, and it can itself be a finding. | **H** | Write only infrastructure rows to `kc2/env/handshake-smoke.csv`: boot readiness, DCP 200 with the trusted issuer, did:web and BDRS resolution. Route **every** INV-n assertion, including untrusted-J, the third-participant cross-party check and any mutation-vs-sanity row, through `kc2_private_out`. If unsure, treat it as private. |
+| S4 | KC2 counting | A1 promoted INV-6/7/8 into the frozen set before any results existed. That is acceptable, but the paper must be able to show that the count does not depend on post-freeze additions. | M | In every KC2 tally (private now, public only after disclosure), report INV-1..5 (original freeze `a8cd4df`) and INV-6..8 (A1 `8479f2f`) **separately**. Exclude INV-1/2 rediscoveries of the KC1 CVEs from "new violations". |
+| S5 | timebox | The pilot started on 2026-10-21 with a 3-week timebox, so it ends around 2026-11-11. The remaining work: the handshake (3 participants, 2 targets), a TCK baseline, and phase 3 (8 invariants × 2 targets × sanity/mutation). | M | Add a dated plan to `PILOT-REPORT.md`: handshake by about 10-28, TCK baseline by about 10-30, phase 3 by about 11-07, report by 11-11. Record each slip. If phase 3 cannot finish, KC2 must report "incomplete invariant set" honestly, not "0 violations". |
+| S6 | `PILOT-REPORT.md` | There is no KC2 status row yet: phase 1/2 progress, D11–D13, the freeze and A1. | L | Add a KC2 status section at the next checkpoint. Public content stays finding-free. |
+
+**Your decision (the KC2 session asked; I am not answering):** continue straight into credential signing and the connector bring-up, or checkpoint here. Reviewer recommendation: continue, and checkpoint when (a) the DCP-authenticated catalogue returns 200 for consumer→provider on **both** targets with the trusted issuer, (b) isolation has been re-run with every service up, and (c) the TCK baseline phase (S1) is planned in `kc2/`. The untrusted-J result goes to `private/` only (S3).
+
+**Verdict:** the KC2 groundwork is careful. It has real components, a frozen and amended invariant set with mutation-based detection power, solid private routing, and no secrets or findings in public. Before phase 3 can produce a countable result, two things must be added: the TCK baseline (S1) and strict private routing for the handshake's INV-5 control (S3). Fix the marker (S2) before the next push.
