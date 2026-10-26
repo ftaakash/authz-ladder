@@ -32,6 +32,9 @@ dependencies {
             // identityhub runtime classpath via the BOM, so they are not bundled again)
             compileOnly(edc("core-spi"))
             compileOnly(edc("participant-context-spi"))
+            compileOnly(edc("verifiable-credential-spi"))          // CredentialStore, VerifiableCredentialResource/Container
+            compileOnly(edc("verifiable-credentials-spi"))         // VerifiableCredential, CredentialSubject, Issuer, CredentialFormat
+            compileOnly("com.nimbusds:nimbus-jose-jwt:10.8")       // VC-JWT signing (runtime copy comes from the BOM)
         }
         "issuer"      -> runtimeOnly(edc("issuerservice-bom"))
         else -> throw GradleException("unknown role=$role (identityhub|issuer)")
