@@ -34,6 +34,7 @@ dependencies {
             compileOnly(edc("participant-context-spi"))
             compileOnly(edc("verifiable-credential-spi"))          // CredentialStore, VerifiableCredentialResource/Container
             compileOnly(edc("verifiable-credentials-spi"))         // VerifiableCredential, CredentialSubject, Issuer, CredentialFormat
+            compileOnly(edc("identity-did-spi"))                   // Service (DID document CredentialService endpoint)
             compileOnly("com.nimbusds:nimbus-jose-jwt:10.8")       // VC-JWT signing (runtime copy comes from the BOM)
         }
         "issuer"      -> runtimeOnly(edc("issuerservice-bom"))
