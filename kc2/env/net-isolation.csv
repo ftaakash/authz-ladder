@@ -36,3 +36,11 @@ pilot08k2_dsp,full-stack,host_published_ports,0,0,yes,1240aed
 pilot08k2_dsp,full-stack,incontainer_peer_200,200,200,yes,1240aed
 pilot08k2_dsp,full-stack,incontainer_egress_ip_1.1.1.1,BLOCKED,BLOCKED,yes,1240aed
 pilot08k2_dsp,full-stack,incontainer_egress_dns,BLOCKED,BLOCKED,yes,1240aed
+pilot08k2_dsp,full-stack-vanilla,network_internal_flag,true,true,yes,b9c5e47
+pilot08k2_dsp,full-stack-vanilla,egress_control_peer_200,200,200,yes,b9c5e47
+pilot08k2_dsp,full-stack-vanilla,egress_ip_1.1.1.1,BLOCKED,BLOCKED,yes,b9c5e47
+pilot08k2_dsp,full-stack-vanilla,egress_dns_example.com,BLOCKED,BLOCKED,yes,b9c5e47
+pilot08k2_dsp,full-stack-vanilla,host_published_ports,0,0,yes,b9c5e47
+pilot08k2_dsp,full-stack-vanilla,incontainer_peer_200,200,200,yes,b9c5e47
+pilot08k2_dsp,full-stack-vanilla,incontainer_egress_ip_1.1.1.1,BLOCKED,BLOCKED,yes,b9c5e47
+pilot08k2_dsp,full-stack-vanilla,incontainer_egress_dns,BLOCKED,BLOCKED,yes,b9c5e47
