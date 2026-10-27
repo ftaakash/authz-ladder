@@ -19,6 +19,7 @@ for _ in $(seq 1 10); do [ "$(docker run --rm --network "$NET" "$DRV" -s -o /dev
 IH="pilot08k2-provider-ih"; SVC=peer-only
 docker ps -q --filter name="$IH" | grep -q . && docker ps -q --filter name=pilot08k2-bdrs | grep -q . && SVC=identity-stack
 docker ps -q --filter name=pilot08k2-provider$ | grep -q . && docker ps -q --filter name=pilot08k2-consumer$ | grep -q . && [ "$SVC" = identity-stack ] && SVC=full-stack
+docker ps -q --filter name=pilot08k2-vprovider$ | grep -q . && docker ps -q --filter name=pilot08k2-vconsumer$ | grep -q . && [ "$SVC" = identity-stack ] && SVC=full-stack-vanilla
 
 dchk(){ docker run --rm --network "$NET" "$DRV" -s -o /dev/null -w '%{http_code}' --max-time 6 "$@" 2>/dev/null || true; }
 inchk(){ docker exec "$IH" curl -s -o /dev/null -w '%{http_code}' --max-time 6 "$@" 2>/dev/null || true; }
@@ -36,7 +37,7 @@ row egress_dns_example.com BLOCKED "$(norm "$(dchk http://example.com/)")"
 row host_published_ports 0 "$(docker ps --filter network=$NET --format '{{.Ports}}' | grep -c '\->' || true)"
 
 # Review 12 R1: egress probed from INSIDE an IdentityHub container, peer as positive control there.
-if [ "$SVC" = identity-stack ] || [ "$SVC" = full-stack ]; then
+if [ "$SVC" != peer-only ]; then
   row incontainer_peer_200 200 "$(inchk http://peer:8080/)"
   row incontainer_egress_ip_1.1.1.1 BLOCKED "$(norm "$(inchk http://1.1.1.1/)")"
   row incontainer_egress_dns BLOCKED "$(norm "$(inchk http://example.com/)")"
