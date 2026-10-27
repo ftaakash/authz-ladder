@@ -57,10 +57,11 @@ pilot08.kc2.seed.credentialservice.url=http://$id-ih:7082/api/credentials/v1/par
 pilot08.kc2.issuer.did=$(kc2_issuer_did "$issuer")
 pilot08.kc2.issuer.privjwk.path=/work/issuer.priv.jwk
 pilot08.kc2.issuer.keyid=key-1
+pilot08.kc2.txscope.enabled=${KC2_TXSCOPE:-true}
 EOF
   docker rm -f "pilot08k2-$id-ih" >/dev/null 2>&1
   MSYS_NO_PATHCONV=1 docker run -d --name "pilot08k2-$id-ih" --network "$NET" --network-alias "$id-ih" \
-    -v "$run":/work -w /work "$GRADLE_IMG" java -Dedc.fs.config=/work/cfg.properties -jar /work/ih.jar >/dev/null 2>&1
+    -v "$run":/work -w /work "$GRADLE_IMG" java -Dedc.fs.config=/work/cfg.properties -jar /work/ih.jar ${IH_ARGS:-} >/dev/null 2>&1
 }
 
 kc2_boot_bdrs(){
@@ -115,3 +116,52 @@ kc2_catalog_code(){ local from="$1"; local pdid; pdid="$(kc2_did provider 7084)"
   kc2_drv -s -o /dev/null -w '%{http_code}' --max-time 40 -X POST "http://$from:8081/management/v3/catalog/request" \
     -H "x-api-key: $from-mgmt" -H 'content-type: application/json' \
     -d '{"@context":{"@vocab":"https://w3id.org/edc/v0.0.1/ns/"},"@type":"CatalogRequest","counterPartyAddress":"http://provider:8082/api/v1/dsp","counterPartyId":"'"$pdid"'","protocol":"dataspace-protocol-http"}'; }
+
+# ---- vanilla Eclipse EDC 0.18.1 target (container pilot08k2-v<ID>, alias v<ID>) ----
+VJAR="$PILOT/kc2/vanilla/build/libs/pilot08kc2-vanilla-0.18.1.jar"
+DCP_ALIAS_SCOPE="org.eclipse.dspace.dcp.vc.type:MembershipCredential:read"
+kc2_boot_vconn(){
+  local id="$1"; local ihport="$2"; local extra="${3:-}"
+  local did; did="$(kc2_did "$id" "$ihport")"
+  local run="$PILOT/build/kc2-v$id"; mkdir -p "$run"; cp "$VJAR" "$run/app.jar"
+  local sigpriv; sigpriv="$(cat "$S/$id-signer.priv.jwk")"
+  local sigpub; sigpub="$(cat "$S/$id-signer.pub.jwk")"
+  cat > "$run/cfg.properties" <<EOF2
+edc.participant.id=$did
+edc.iam.issuer.id=$did
+edc.hostname=v$id
+edc.iam.did.web.use.https=false
+web.http.port=8080
+web.http.path=/api
+web.http.management.port=8081
+web.http.management.path=/management
+web.http.management.auth.type=tokenbased
+web.http.management.auth.key=v$id-mgmt
+web.http.protocol.port=8082
+web.http.protocol.path=/api/v1/dsp
+web.http.control.port=8083
+web.http.control.path=/control
+web.http.public.port=8085
+web.http.public.path=/public
+edc.dsp.callback.address=http://v$id:8082/api/v1/dsp
+edc.iam.sts.oauth.token.url=http://$id-ih:7083/api/sts/token
+edc.iam.sts.oauth.client.id=$did
+edc.iam.sts.oauth.client.secret.alias=$id-sts
+edc.iam.trustedissuer.pilot.id=$IDID
+edc.iam.dcp.scopes.membership.id=membership
+edc.iam.dcp.scopes.membership.type=DEFAULT
+edc.iam.dcp.scopes.membership.value=$DCP_ALIAS_SCOPE
+edc.transfer.proxy.token.signer.privatekey.alias=$id-signer
+edc.transfer.proxy.token.verifier.publickey.alias=$id-verifier
+pilot08.kc2.vault.secrets=$id-sts:$id-sts-secret;$id-signer:$sigpriv;$id-verifier:$sigpub
+EOF2
+  [ -n "$extra" ] && echo "edc.iam.trustedissuer.extra.id=$extra" >> "$run/cfg.properties"
+  docker rm -f "pilot08k2-v$id" >/dev/null 2>&1
+  MSYS_NO_PATHCONV=1 docker run -d --name "pilot08k2-v$id" --network "$NET" --network-alias "v$id" \
+    -v "$run":/work -w /work "$GRADLE_IMG" java -Dedc.fs.config=/work/cfg.properties -jar /work/app.jar ${CONN_ARGS:-} >/dev/null 2>&1
+}
+# catalogue request FROM vanilla connector v$1 TO vprovider; prints HTTP code
+kc2_vcatalog_code(){ local from="$1"; local pdid; pdid="$(kc2_did provider 7084)"
+  kc2_drv -s -o /dev/null -w '%{http_code}' --max-time 40 -X POST "http://v$from:8081/management/v3/catalog/request" \
+    -H "x-api-key: v$from-mgmt" -H 'content-type: application/json' \
+    -d '{"@context":{"@vocab":"https://w3id.org/edc/v0.0.1/ns/"},"@type":"CatalogRequest","counterPartyAddress":"http://vprovider:8082/api/v1/dsp/2025-1","counterPartyId":"'"$pdid"'","protocol":"dataspace-protocol-http:2025-1"}'; }

@@ -6,6 +6,7 @@ import org.eclipse.edc.identityhub.spi.transformation.ScopeToCriterionTransforme
 import org.eclipse.edc.runtime.metamodel.annotation.Inject;
 import org.eclipse.edc.runtime.metamodel.annotation.Provider;
 import org.eclipse.edc.spi.system.ServiceExtension;
+import org.eclipse.edc.spi.system.ServiceExtensionContext;
 
 /**
  * Pilot 08 KC2 identity-stack interop adapter (local testbed only).
@@ -34,9 +35,16 @@ public class Kc2TxScopeExtension implements ServiceExtension {
         return "Pilot08 KC2 Tractus-X scope alias adapter (test fixture)";
     }
 
+    static final String ENABLED = "pilot08.kc2.txscope.enabled";   // default true; false = plain EDC behaviour
+
     @Provider
-    public ScopeToCriterionTransformer scopeTransformer() {
+    public ScopeToCriterionTransformer scopeTransformer(ServiceExtensionContext context) {
         var edc = new EdcScopeToCriterionTransformer(discriminatorMappingRegistry);
+        if (!context.getSetting(ENABLED, true)) {
+            context.getMonitor().info("[pilot08-kc2] Tractus-X scope alias adapter OFF (plain EDC transformer)");
+            return edc;
+        }
+        context.getMonitor().info("[pilot08-kc2] Tractus-X scope alias adapter ON");
         return scope -> {
             if (scope != null && scope.regionMatches(true, 0, TX_ALIAS + ":", 0, TX_ALIAS.length() + 1)) {
                 scope = EdcScopeToCriterionTransformer.ALIAS_LITERAL + scope.substring(TX_ALIAS.length());

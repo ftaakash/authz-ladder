@@ -3,11 +3,13 @@
 # mirroring scripts/32_gradle_verify.sh (D1/D8): record sha1+sha256, cross-check every sha1 against
 # the publisher's own .sha1 (Maven Central; Gradle Plugin Portal accepted ONLY for the shadow plugin),
 # enforce strict builds, then a tamper negative control. Checksum-only (PGP skipped — keyserver = new source).
-# Usage: ./12_gradle_verify_identity.sh
+# Usage: ./12_gradle_verify_identity.sh   (identity stack)
+#        LAUNCHER=kc2/vanilla ROLES=single EDC_V=0.18.1 ./12_gradle_verify_identity.sh   (vanilla target)
 source "$(dirname "$0")/../../scripts/lib.sh"
 GRADLE_IMG="gradle@sha256:963d59f7f22767da4efbcf46b661361b61af5fb88b0309da1071c4234c647eba"
-SRC="$PILOT/kc2/identity"; CACHE="pilot08-gradle-cache"; V="${EDC_V:-0.17.0}"
-XML="$SRC/gradle/verification-metadata.xml"; ROLES="identityhub issuer"
+LAUNCHER="${LAUNCHER:-kc2/identity}"   # launcher dir relative to the pilot: kc2/identity or kc2/vanilla
+SRC="$PILOT/$LAUNCHER"; CACHE="pilot08-gradle-cache"; V="${EDC_V:-0.17.0}"
+XML="$SRC/gradle/verification-metadata.xml"; ROLES="${ROLES:-identityhub issuer}"   # vanilla: ROLES=single (its build ignores -Prole)
 mkdir -p "$PILOT/build"
 gb() { MSYS_NO_PATHCONV=1 docker run --rm -v "$SRC":/work -w /work -v "$CACHE":/home/gradle/.gradle "$GRADLE_IMG" gradle --no-daemon --console=plain "$@"; }
 
@@ -54,11 +56,11 @@ echo "  strict builds ok: $enforce_ok"
 echo "== (d) negative control: tamper a COPY, expect a verification failure =="
 tamper_detected=no; tmp="$(mktemp -d)"; cp -r "$SRC"/. "$tmp"/ 2>/dev/null; rm -rf "$tmp/build" "$tmp/.gradle"
 perl -0pi -e 's/(<sha256 value=")([0-9a-f])/$1 . (($2 eq "a")?"b":"a")/e' "$tmp/gradle/verification-metadata.xml" 2>/dev/null
-if MSYS_NO_PATHCONV=1 docker run --rm -v "$tmp":/work -w /work -v "$CACHE":/home/gradle/.gradle "$GRADLE_IMG" gradle --no-daemon --console=plain shadowJar -Prole=identityhub -Pedc="$V" >/dev/null 2>&1; then tamper_detected=no; else tamper_detected=yes; fi
+if MSYS_NO_PATHCONV=1 docker run --rm -v "$tmp":/work -w /work -v "$CACHE":/home/gradle/.gradle "$GRADLE_IMG" gradle --no-daemon --console=plain shadowJar -Prole="${ROLES%% *}" -Pedc="$V" >/dev/null 2>&1; then tamper_detected=no; else tamper_detected=yes; fi
 rm -rf "$tmp"; echo "  tamper detected: $tamper_detected"
 
 echo "== (e) record kc2/env/gradle-verification.csv =="
 out="$PILOT/kc2/env/gradle-verification.csv"; [ -f "$out" ] && head -1 "$out" | grep -q launcher || echo "launcher,edc_version,build_ok,artifacts_recorded,sha1_checked,sha1_crosscheck_ok,sha1_mismatches,sha1_missing,tamper_detected,commit" > "$out"
-echo "kc2/identity,$V,$enforce_ok,$recorded,${checked:-0},$crosscheck_ok,${mcount:-NA},${misscount:-NA},$tamper_detected,$COMMIT" >> "$out"
+echo "$LAUNCHER,$V,$enforce_ok,$recorded,${checked:-0},$crosscheck_ok,${mcount:-NA},${misscount:-NA},$tamper_detected,$COMMIT" >> "$out"
 cat "$out"
 [ "$crosscheck_ok" = yes ] && [ "$enforce_ok" = yes ] && [ "$tamper_detected" = yes ] && echo "VERIFICATION OK" || { echo "VERIFICATION INCOMPLETE"; exit 1; }
