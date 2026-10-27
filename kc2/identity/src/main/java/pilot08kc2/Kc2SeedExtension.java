@@ -44,9 +44,11 @@ import java.util.UUID;
  * (the same service the Identity API calls), which generates the keypair and publishes
  * the participant's did:web document through the local DID publisher.
  *
- * It does NOT issue or seed any VerifiableCredential (MembershipCredential): credential
- * issuance and the DCP token handshake are deliberately out of scope for the phase-2
- * did:web-resolution milestone. If the seed settings are absent, the extension is a no-op.
+ * It also (D13, Route I) stores a realistic MembershipCredential for that participant, signed
+ * by the configured trusted issuer's key and placed directly in the credential store, sets a
+ * known STS client secret, and advertises a CredentialService endpoint in the DID document.
+ * Credentials are issued directly, NOT through the DCP issuance protocol (stated limitation).
+ * Each part is skipped when its settings are absent; with no seed settings it is a no-op.
  */
 public class Kc2SeedExtension implements ServiceExtension {
 

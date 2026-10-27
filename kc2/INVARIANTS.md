@@ -264,3 +264,7 @@ therefore **out of scope** for KC2; the paper must state this. Credentials are n
 (correct `MembershipCredential` type, holder DID as subject, real issue/expiry, resolvable issuer
 did:web), so an INV-5 / handshake verdict reflects the verifier's authorization logic, not a malformed
 credential.
+
+**Further testbed deviations (Review 14 T1/T4; not changes to the frozen set):**
+- **Holder-side scope-alias adapter.** The holder IdentityHub is vanilla EDC IdentityHub 0.17.0 plus a test-fixture transformer accepting the Tractus-X scope alias (DECISIONS D11 amendment 2, fix 4) — mirroring Tractus-X's own DCP test runtime. It affects only how a presentation query selects stored credentials; the verifier's checks (VP signature, issuer trust, token claims) are untouched. Applied only to targets that need it.
+- **did:web over HTTP.** The testbed resolves `did:web` over plain HTTP on the internal network (`edc.iam.did.web.use.https=false`), since no TLS PKI is available offline. Transport only; DID-document contents and every authorization decision are unaffected.
