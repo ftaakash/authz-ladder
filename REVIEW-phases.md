@@ -754,3 +754,45 @@ Scope: `5178493` through `1589ca9`: Review 12 hardening, the INVARIANTS freeze `
 **Your decision (the KC2 session asked; I am not answering):** continue straight into credential signing and the connector bring-up, or checkpoint here. Reviewer recommendation: continue, and checkpoint when (a) the DCP-authenticated catalogue returns 200 for consumer→provider on **both** targets with the trusted issuer, (b) isolation has been re-run with every service up, and (c) the TCK baseline phase (S1) is planned in `kc2/`. The untrusted-J result goes to `private/` only (S3).
 
 **Verdict:** the KC2 groundwork is careful. It has real components, a frozen and amended invariant set with mutation-based detection power, solid private routing, and no secrets or findings in public. Before phase 3 can produce a countable result, two things must be added: the TCK baseline (S1) and strict private routing for the handshake's INV-5 control (S3). Fix the marker (S2) before the next push.
+
+---
+
+## Review 14 (KC2 handshake), 2026-10-27
+
+Scope: `eabb556` through `80c263d` (TCK plan, credential seeding, the DCP handshake interop fixes, the third participant, full-stack isolation, KC2 status). Read: D11 amendment 2, `Kc2SeedExtension`, `Kc2TxScopeExtension`, `kc2/scripts/40_up_handshake.sh` and `handshake_lib.sh`, `kc2/env/*`, `kc2/TCK-PLAN.md`, the mirror log, and `private/kc2/` (file count and ignore status only, contents not read). No Docker, no downloads.
+
+**Repo state:** clean tree. All 11 pilot commits since Review 13 are on the mirror, matched by subject. The marker holds a Masters sha equal to HEAD (`80c263d`, mirror `869419c`). Every commit has author and committer ftaakash with no trailer. No KC2 commit message states an invariant outcome; they report counts and "ran (private)" only. Nothing from `private/` or `.secrets/` is tracked or on the mirror.
+
+**The four interop fixes: no verifier check was weakened (confirmed in code and config):**
+1. *Key id is a DID URL.* This is spec-conformant key identification. The verifier still resolves and checks the key.
+2. *`edc.participant.id` = DID.* The audience check stays on. The pilot saw it **reject** the BPN-as-id setup, which shows the check is live.
+3. *Raw credential-service path.* This is holder-side routing only.
+4. *`Kc2TxScopeExtension`.* This is holder-side only: it maps the Tractus-X scope alias to the DCP alias before IdentityHub's own transformer runs. The provider still verifies the VP signature, the issuer against its trusted list and the token claims.
+
+On the connector side, trusted issuers come from the standard `EDC_IAM_TRUSTEDISSUER_<n>_ID` setting. The optional `EXTRA` trusted issuer hook is **not** used by the smoke run, so it is reserved for the INV-5 mutation config. `OTEL_JAVAAGENT_ENABLED=false` is irrelevant to authorization.
+
+**Handshake evidence:**
+- **Tracked `handshake-smoke.csv`:** infrastructure rows only. The final clean set at `1240aed` (15/15) covers 3 IdentityHubs seeded with credentials, 3 BDRS seeds (204), 3 connectors booted, BDRS booted and the issuer DID resolving. The DSP catalogue without a token gets 401, and the DCP-authenticated catalogue gets 200 for **both** consumer and third with a `dcat:Catalog` body. Rows carry the connector digest and the IdentityHub jar sha, which is recorded at clean `f0f08eb`.
+- **Isolation:** re-run at `1240aed` with the **full stack** up (16 rows), including in-container probes.
+- **Untrusted-issuer (INV-5) control:** it ran, and its output is in `private/kc2/` (2 files, gitignored; not inspected).
+
+**Credential realism (D13):** type `[MembershipCredential, VerifiableCredential]`. The subject id is the holder DID, with `holderIdentifier` = BPN. Real `issuanceDate` and `expirationDate` are set. It is an ES256 JWT with `iss` = issuer DID and `sub` = holder DID, and the issuer DID resolves (smoke row). The issuer private JWKs sit only under the ignored `testbed/.secrets/kc2/`.
+
+| # | file:line | Issue | Sev | Required change |
+|---|---|---|---|---|
+| T1 | `DECISIONS.md` D11 amendment 2, fixes 2 and 4 | **The fixes are justified by description, not by citation.** Fix 2 says "as in Tractus-X's own e2e fixture", and fix 4 says "Tractus-X normally pairs the connector with its own IdentityHub distribution, which accepts its alias". Neither gives a source path. Without a citation the scope adapter is an unverified deviation. | M | Add file paths at a pinned commit: Tractus-X `v0.13.0` for the e2e/helm `edc.participant.id` = DID setting, and the Tractus-X IdentityHub/wallet source that maps `org.eclipse.tractusx.vc.type`. If the alias mapping cannot be found in source, mark fix 4 **UNVERIFIED**. Either way, list it in INVARIANTS "Scope limitation" as a stated testbed deviation that affects only holder-side presentation queries. |
+| T2 | vanilla 0.18.1 target | **The second target has not handshaken yet** (D12: shared 0.17.0 identity stack). Step 2 is half done. | **H** | Next step: build the vanilla 0.18.1 DCP launcher, with Gradle verification and a cross-check row, as for `kc2/identity`. Reach the same infrastructure smoke: 3 participants, no-token 401, DCP 200 for consumer and third, isolation re-run. Check whether vanilla needs the scope adapter at all, since it should request the DCP alias natively, and record the answer. The adapter must stay **off** for a target that does not need it. INV-5's control for vanilla goes to `private/` only. |
+| T3 | `kc2/TCK-PLAN.md` | **The plan names the TCK artifacts (Maven Central, already approved) but must say how the DSP TCK authenticates as a counterparty to a DCP-configured connector.** The TCK needs its own DCP identity (DID, credential, BDRS entry), or else a documented TCK-side config. | M | Add a TCK identity section to the plan: a fourth "tck" participant seeded through the same IdentityHub/issuer/BDRS path, or the TCK's own documented mechanism. Run the TCK **on both targets** before phase 3. Archive per-test pass/fail in `kc2/env/tck-*.csv`; conformance results are public. Any TCK test failure is recorded and narrows the claim. It does not stop the baseline. |
+| T4 | D13 / INVARIANTS scope limitation | DID resolution runs over HTTP (`EDC_IAM_DID_WEB_USE_HTTPS=false`). This is standard for local e2e setups, but it is a transport deviation from production. | L | Add one sentence to the scope limitation: "did:web over HTTP in the testbed; authorization logic unaffected." |
+| T5 | `Kc2SeedExtension.java:47` | The class javadoc still says the extension "does NOT issue or seed any VerifiableCredential", but it now does (Route I, line ~149). | L | Update the javadoc to match D13. |
+| T6 | timebox | The handshake was due ~10-28. Tractus-X is done on 10-27; vanilla is still open. TCK baseline ~10-30, phase 3 ~11-07, report 11-11. | M | Keep the plan. If vanilla's DCP launcher is not at 200 by 10-29, ask the user whether phase 3 should run on Tractus-X only, and record it as a decision. Never quietly drop the target. |
+
+**Next steps, in order:** (1) the vanilla 0.18.1 handshake (T2); (2) TCK identity, then the TCK baseline on both targets (T3); (3) only then phase 3: frozen INV-1..8, sanity plus mutation per target, all verdict rows in `private/kc2/`, with INV-1..5 and INV-6..8 counted separately. Commit and push each completed step per D9.
+
+**User decisions (not decided here):** (a) whether phase 3 may run on Tractus-X only if vanilla slips (T6); (b) none others yet.
+
+**Verdict:**
+- **Tractus-X 0.13.0:** the handshake is real and controlled. A DCP-authenticated 200 for two counterparties, a 401 without a token, and the audience check visibly enforced, with the isolation re-run on the full stack.
+- **Four fixes:** none of them weakens a verifier check, though two still need source citations (T1).
+- **Repository:** fully committed and pushed, with no findings or secrets in public.
+- **Remaining:** the vanilla target and the TCK identity must land before phase 3.
