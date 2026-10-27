@@ -70,3 +70,11 @@ full stack up; keys/credentials stay under gitignored paths.
 - **Private** (`kc2_private_out` → `private/kc2/`, gitignored) holds everything that is an **invariant
   assertion on a current release**: the untrusted-J refusal (INV-5), the third-participant cross-party
   check (INV-4), and every sanity-vs-mutation admission row. When unsure, treat a row as private.
+
+## Status (2026-10-27)
+
+- **Tractus-X 0.13.0: DCP-authenticated 200 catalogue reached** (consumer→provider), after the four interop
+  fixes in DECISIONS D11 amendment 2. Infra rows in `kc2/env/handshake-smoke.csv`.
+- **Remaining for step 2:** vanilla EDC 0.18.1 target (own launcher with the DCP modules) to a 200;
+  third participant; untrusted-issuer (INV-5) negative control — **private only**; isolation re-run with
+  every service up.

@@ -102,7 +102,9 @@ public class Kc2SeedExtension implements ServiceExtension {
         }
         var did = context.getSetting(DID, null);
         var keyAlias = context.getSetting(KEY_ALIAS, id + "-private-key");
-        var keyId = context.getSetting(KEY_ID, id + "-key-1");
+        // Key id must be a full DID URL (did#fragment): it becomes the DID-document verificationMethod id
+        // and the STS token "kid", which the verifier resolves as a DID URL (bare ids are rejected).
+        var keyId = context.getSetting(KEY_ID, did + "#" + id + "-key-1");
 
         var existing = participantContextService.getParticipantContext(id);
         if (existing.succeeded()) {

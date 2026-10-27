@@ -42,7 +42,7 @@ edc.encryption.aes.key.alias=aes-encryption-key
 pilot08.kc2.seed.participant.id=$id
 pilot08.kc2.seed.participant.did=did:web:$id-ih%3A$didport:$id
 pilot08.kc2.seed.key.alias=$id-private-key
-pilot08.kc2.seed.key.id=$id-key-1
+pilot08.kc2.seed.key.id=did:web:$id-ih%3A$didport:$id#$id-key-1
 EOF
   echo "$dir"
 }
