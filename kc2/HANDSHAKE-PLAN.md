@@ -78,3 +78,8 @@ full stack up; keys/credentials stay under gitignored paths.
 - **Remaining for step 2:** vanilla EDC 0.18.1 target (own launcher with the DCP modules) to a 200;
   third participant; untrusted-issuer (INV-5) negative control — **private only**; isolation re-run with
   every service up.
+- 2026-10-27: **three participants** (provider, consumer, third — each its own IdentityHub identity) all
+  reach the DCP-authenticated 200 catalogue with the trusted issuer (`handshake-smoke.csv` 15/15, clean
+  `1240aed`); isolation re-measured with the full stack up (8/8). The **untrusted-issuer negative control
+  (INV-5) has been run; its observations and verdict are held in `private/kc2/`** (pre-TCK, not counted).
+  Remaining: vanilla EDC 0.18.1 target.
