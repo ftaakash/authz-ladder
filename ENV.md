@@ -190,3 +190,26 @@ the `identity-stack` rows are measured with all four identity services up (not j
 egress probe **exec'd from inside an IdentityHub container** (IP `1.1.1.1` and DNS both BLOCKED) with the
 in-net peer reachable from that same container as the positive control; internal flag true; 0 host ports.
 Container/network prefix `pilot08k2-` / `pilot08k2_`, separate from `pilot08_dsp` and `pilot08v`.
+
+### KC2 step 2 — downloads log (2026-10-24 … 2026-10-27; all sources pre-approved)
+
+| Download | Source | Pin | Notes |
+|---|---|---|---|
+| IdentityHub + IssuerService 0.17.0 dependency set | Maven Central | 570 artifacts, sha1+sha256 in `kc2/identity/gradle/verification-metadata.xml`, cross-checked 570/570 (`kc2/env/gradle-verification.csv`) | identity stack (D11) |
+| vanilla EDC 0.18.1 dependency set (`controlplane-dcp-bom` + `dataplane-base-bom`) | Maven Central | 657 artifacts in `kc2/vanilla/gradle/verification-metadata.xml`, cross-checked 657/657 | second KC2 target; an earlier bootstrap row (679, `d60d67c-dirty`) predates the final launcher build |
+| `decentralized-claims-core-0.18.1.jar` | Maven Central | — | read-only, R7 DCP-context comparison (D12) |
+| `tractusx/bdrs-server-memory:0.6.0` | Docker Hub | `sha256:157696da8d5365e675c3e994f4b52e32ef5cbb392ae1b7ccd0c0ee57331601fe` | official BDRS |
+| `busybox:1.37` | Docker Hub | `sha256:bdf57e528e45e4433820e045b29b4597825a1c9e38353532d90a01445013f82e` | did:web file server + isolation peer. **First pulled by tag** (2026-10-24); scripts now reference it by digest |
+| `tractusx-edc` @ `0.13.0` | GitHub (source, read-only) | `964d33d7ed942369f624aacbc45037a1f79fc7be` | config/fixture reference; not built |
+| `eclipse-edc/Connector` @ `v0.17.0`, `v0.18.1` | GitHub (source, read-only) | `737bfc92527c89ca291de538b9e379cde86fcd03`, `3a22ff4aa90213a564309b5a05851e6d7f27f9ff` | reference |
+| `eclipse-edc/IdentityHub` @ `v0.18.1` | GitHub (source, read-only) | `c0cbf96040adfcf4172d7ad11d78d11a753d4b49` | API reference (the stack runs 0.17.0 from Maven Central) |
+| `eclipse-tractusx/bpn-did-resolution-service` @ `0.6.0` | GitHub (source, read-only) | `fee8860b0404a85dba06a7380847dc2298b0e5a6` | BDRS API reference |
+
+### KC2 vanilla 0.18.1 target — runtime notes
+
+Assembled per `kc2/vanilla/build.gradle.kts` (jar sha256 in `kc2/env/vanilla018-jars.csv`), run in the pinned
+JRE image like the KC1 rungs. Differences from Tractus-X that the bring-up needs: DSP profile
+`dataspace-protocol-http:2025-1` served at `/api/v1/dsp/2025-1`; no BDRS (participant ids are DIDs); vault
+secrets via a test-fixture seeder (`pilot08.kc2.vault.secrets`, vanilla InMemoryVault has none); a DEFAULT DCP
+scope `org.eclipse.dspace.dcp.vc.type:MembershipCredential:read` (`edc.iam.dcp.scopes.membership.*`) so the
+provider actually requests the credential; the Tractus-X scope adapter is **OFF** (vanilla uses the DCP alias).

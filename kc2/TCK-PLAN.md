@@ -44,3 +44,25 @@ If 1.2.1 is not on Maven Central, pin the nearest available 1.2.x and record the
 - All phase-3 run output (assertions, observations, verdicts, notes) goes through `kc2_private_out`
   into `private/kc2/`; tracked files carry only the **count** of candidate findings, split INV-1..5 vs
   INV-6..8, with no invariant/version/mechanism detail.
+
+## How the DSP TCK authenticates — facts at the pinned tags (Review 14 T3, 2026-10-27)
+
+- **Upstream does not run the DSP TCK through DCP.** Tractus-X 0.13.0 (`edc-tests/e2e/dsp-tck-tests/…/EdcCompatibilityPostgresTest.java`,
+  `src/test/resources/docker.tck.properties`) starts the TCK image `eclipsedataspacetck/dsp-tck-runtime:1.0.0` and has it send
+  a **static** `Authorization` header with a mock-IAM body (`{"region":"any","audience":"any","clientId":"any"}`)
+  against a dedicated **TCK runtime** (`:edc-tests:runtime:runtime-dsp` + `org.eclipse.edc:tck-extension`, which seeds the
+  scenario datasets/agreements `CAT0101`, `ACN0101`, `ATP0101`, … and exposes the TCK webhook endpoints). Vanilla EDC v0.18.1
+  does the same in `system-tests/tck/dsp-tck-connector-under-test` + `system-tests/tck/tck-extension`.
+- So "passes the official DSP TCK" is, upstream, a property of a **TCK-configured runtime built from the same release
+  code with mock identity**, not of the release image's DCP configuration.
+- Sources needed are all already approved: TCK image (Docker Hub; pin by digest), `org.eclipse.edc:tck-extension`
+  (Maven Central, present at 0.17.0 and 0.18.1), DSP TCK libraries 1.0.0–1.0.2 (Maven Central).
+
+**Options for the baseline (user decision at step 3):**
+- **A — reproduce the upstream TCK configuration per target** (recommended baseline): a TCK runtime assembled from each target's
+  pinned release artifacts + `tck-extension`, mock-IAM header exactly as upstream, TCK image pinned by digest, run on the internal
+  network; per-test pass/fail to `kc2/env/tck-dsp-<target>.csv`. Faithful to how the premise is established upstream.
+- **B — additionally, DSP TCK against the DCP-configured target**: a fourth `tck` participant seeded through the same IdentityHub/
+  issuer/BDRS path; its STS mints a long-lived self-issued token (`edc.iam.sts.token.expiration`) that the TCK sends as the static
+  header; its DID's CredentialService serves its VP. Stronger, but still needs `tck-extension` in the runtime for the scenario seeding.
+Either way TCK failures **narrow the claim; they do not block** phase 3.

@@ -83,3 +83,7 @@ full stack up; keys/credentials stay under gitignored paths.
   `1240aed`); isolation re-measured with the full stack up (8/8). The **untrusted-issuer negative control
   (INV-5) has been run; its observations and verdict are held in `private/kc2/`** (pre-TCK, not counted).
   Remaining: vanilla EDC 0.18.1 target.
+- 2026-10-27: **vanilla EDC 0.18.1 reaches the DCP-authenticated 200 catalogue** for consumer and third (`handshake-smoke.csv`
+  target `vanilla-0.18.1`, 12/12, clean `e6906d7`), no-token 401, **scope adapter OFF** (not needed: vanilla requests the DCP
+  alias natively); isolation re-measured with the vanilla full stack up (8/8). The INV-5 negative control was run on vanilla too
+  (with an added presentation-fetch precondition); observations/verdict held in `private/kc2/`. **Step 2 complete on both targets.**

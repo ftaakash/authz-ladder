@@ -29,7 +29,7 @@ kc2_didweb_up(){
   cp "$S/issuer.did.json" "$w/issuer/did.json"; cp "$S/untrusted-j.did.json" "$w/untrusted-j/did.json"
   docker rm -f pilot08k2-issuer-did >/dev/null 2>&1
   MSYS_NO_PATHCONV=1 docker run -d --name pilot08k2-issuer-did --network "$NET" --network-alias issuer --network-alias untrusted-j \
-    -v "$w":/www busybox:1.37 httpd -f -h /www -p 8099 >/dev/null 2>&1
+    -v "$w":/www busybox@sha256:bdf57e528e45e4433820e045b29b4597825a1c9e38353532d90a01445013f82e httpd -f -h /www -p 8099 >/dev/null 2>&1
 }
 
 kc2_boot_ih(){

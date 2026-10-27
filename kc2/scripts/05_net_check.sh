@@ -11,7 +11,7 @@ source "$(dirname "$0")/../../scripts/lib.sh"
 NET="${KC2_NET:-pilot08k2_dsp}"; DRV="pilot08/curl:8.11.1"
 docker network inspect "$NET" >/dev/null 2>&1 || docker network create --internal "$NET" >/dev/null
 docker rm -f pilot08k2-peer >/dev/null 2>&1
-docker run -d --name pilot08k2-peer --network "$NET" --network-alias peer busybox:1.37 \
+docker run -d --name pilot08k2-peer --network "$NET" --network-alias peer busybox@sha256:bdf57e528e45e4433820e045b29b4597825a1c9e38353532d90a01445013f82e \
   sh -c 'mkdir -p /www && echo ok > /www/index.html && httpd -f -h /www -p 8080' >/dev/null 2>&1
 for _ in $(seq 1 10); do [ "$(docker run --rm --network "$NET" "$DRV" -s -o /dev/null -w '%{http_code}' --max-time 3 http://peer:8080/ 2>/dev/null)" = 200 ] && break; done
 

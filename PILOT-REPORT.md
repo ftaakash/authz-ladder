@@ -170,7 +170,7 @@ and PASS/FAIL/INVALID rules. `kc2/TCK-PLAN.md` gates phase 3 on an official-TCK 
 | Phase 1 — pin targets | 2026-10-24 | DONE |
 | Phase 2 — identity stack + did:web milestone | 2026-10-24/26 | DONE |
 | Invariant freeze + amendment A1 | 2026-10-25/26 | DONE |
-| Handshake → DCP-authenticated 200 catalogue (both targets) | ~2026-10-28 | Tractus-X 0.13.0 DONE 2026-10-27 (3 participants, `kc2/env/handshake-smoke.csv`); vanilla 0.18.1 in progress |
+| Handshake → DCP-authenticated 200 catalogue (both targets) | ~2026-10-28 | DONE 2026-10-27 — both targets, 3 participants each (`kc2/env/handshake-smoke.csv`) |
 | TCK baseline (DSP 1.0.2 / DCP 1.2.1) | ~2026-10-30 | planned |
 | Phase 3 — run frozen invariants (private verdicts) | ~2026-11-07 | planned |
 | KC2 verdict + report | 2026-11-11 | planned |
