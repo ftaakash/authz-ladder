@@ -17,7 +17,7 @@ for _ in $(seq 1 10); do [ "$(docker run --rm --network "$NET" "$DRV" -s -o /dev
 
 # topology: is the identity stack up?
 IH="pilot08k2-provider-ih"; SVC=peer-only
-docker ps -q --filter name="$IH" | grep -q . && docker ps -q --filter name=pilot08k2-bdrs | grep -q . && SVC=identity-stack
+docker ps -q --filter name="$IH" | grep -q . && SVC=identity-stack   # BDRS is Tractus-X-only; not required
 docker ps -q --filter name=pilot08k2-provider$ | grep -q . && docker ps -q --filter name=pilot08k2-consumer$ | grep -q . && [ "$SVC" = identity-stack ] && SVC=full-stack
 docker ps -q --filter name=pilot08k2-vprovider$ | grep -q . && docker ps -q --filter name=pilot08k2-vconsumer$ | grep -q . && [ "$SVC" = identity-stack ] && SVC=full-stack-vanilla
 
