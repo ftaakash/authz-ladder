@@ -100,7 +100,7 @@ esac
 for _ in $(seq 1 90); do docker logs pilot08k2-cut 2>&1 | grep -qE ' ready| SEVERE ' && break; done
 docker logs pilot08k2-cut 2>&1 | grep -q ' ready' || { echo "connector-under-test not ready"; docker logs pilot08k2-cut 2>&1 | grep -E "SEVERE|ERROR" | head -15; exit 4; }
 echo "== cut ready; service replacements (which provider won) =="
-docker logs pilot08k2-cut 2>&1 | grep -oE "A service of the type [^ ]+ was already registered and has now been replaced with a [A-Za-z0-9$]+ instance" | sed 's/A service of the type //' | sort -u | tee "$run/replacements.txt"
+docker logs pilot08k2-cut 2>&1 | grep -oE "A service of the type [^ ]+ was already registered and has now been replaced with a [A-Za-z0-9$]+ instance" | sed 's/A service of the type //' | sort -u | tee "$run/replacements.txt" || true
 
 echo "== TCK $TCK_VER =="
 MSYS_NO_PATHCONV=1 docker run -d --name pilot08k2-tck --network "$NET" --network-alias tck \
@@ -108,5 +108,5 @@ MSYS_NO_PATHCONV=1 docker run -d --name pilot08k2-tck --network "$NET" --network
 for _ in $(seq 1 400); do docker logs pilot08k2-tck 2>&1 | grep -qE 'Test run complete' && break; docker ps -q --filter name=pilot08k2-tck | grep -q . || break; done
 raw="$PILOT/kc2/env/tck-dsp-$T.txt"; docker logs pilot08k2-tck > "$raw" 2>&1
 grep -qE 'Test run complete' "$raw" || { echo "TCK did not complete — see $raw"; tail -20 "$raw"; exit 5; }
-echo "--- TCK summary lines ---"; grep -iE "Test run complete|tests? (succeeded|failed|passed)|Tests found|FAILED:" "$raw" | head -40
+echo "--- TCK summary lines ---"; grep -iE "Test run complete|tests? (succeeded|failed|passed)|Tests found|FAILED:" "$raw" | head -40 || true
 echo "(target=$T bin=$BIN tck=$TCK_VER commit=$COMMIT)"
