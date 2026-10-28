@@ -66,3 +66,6 @@ If 1.2.1 is not on Maven Central, pin the nearest available 1.2.x and record the
   issuer/BDRS path; its STS mints a long-lived self-issued token (`edc.iam.sts.token.expiration`) that the TCK sends as the static
   header; its DID's CredentialService serves its VP. Stronger, but still needs `tck-extension` in the runtime for the scenario seeding.
 Either way TCK failures **narrow the claim; they do not block** phase 3.
+
+**Decision (D14, 2026-10-28): Option A.** Claim wording: the targets *pass the official DSP TCK in the upstream TCK
+configuration (mock identity), without the real identity protocol (DCP)*. Option B is not run.
