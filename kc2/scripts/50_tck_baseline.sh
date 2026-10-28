@@ -105,8 +105,19 @@ docker logs pilot08k2-cut 2>&1 | grep -oE "A service of the type [^ ]+ was alrea
 echo "== TCK $TCK_VER =="
 MSYS_NO_PATHCONV=1 docker run -d --name pilot08k2-tck --network "$NET" --network-alias tck \
   -v "$PILOT/kc2/tck/$T":/etc/tck:ro "$TCK_IMG" >/dev/null 2>&1
-for _ in $(seq 1 400); do docker logs pilot08k2-tck 2>&1 | grep -qE 'Test run complete' && break; docker ps -q --filter name=pilot08k2-tck | grep -q . || break; done
+# follow the TCK log until it reports completion (each failing scenario waits ~7 s, so a run takes minutes)
+timeout 1800 docker logs -f pilot08k2-tck 2>&1 | grep -m1 -q 'Test run complete' || true
 raw="$PILOT/kc2/env/tck-dsp-$T.txt"; docker logs pilot08k2-tck > "$raw" 2>&1
 grep -qE 'Test run complete' "$raw" || { echo "TCK did not complete — see $raw"; tail -20 "$raw"; exit 5; }
-echo "--- TCK summary lines ---"; grep -iE "Test run complete|tests? (succeeded|failed|passed)|Tests found|FAILED:" "$raw" | head -40 || true
+
+# Per-test result: every "Started: <ID>: ..." scenario is PASS unless the TCK logged "FAILED: <ID>" for it.
+csv="$PILOT/kc2/env/tck-dsp-$T.csv"
+[ -f "$csv" ] || echo "target,suite,suite_version,test_id,result,binary,commit" > "$csv"
+grep -oE 'Started: [A-Z_]+:[0-9]+-[0-9]+' "$raw" | sed 's/Started: //' | sort -u | while read -r id; do
+  res=PASS; grep -qE "FAILED: $id( |\$|:)" "$raw" && res=FAIL
+  echo "$T,dsp-tck,$TCK_VER,$id,$res,$BIN,$COMMIT" >> "$csv"
+done
+n="$(grep -c ",$COMMIT\$" "$csv" || true)"; f="$(grep ",FAIL,.*,$COMMIT\$" "$csv" | grep -c . || true)"
+echo "--- $T: $n scenarios this run, $f FAIL (per-test rows in $csv) ---"
+grep -E "Test run complete" "$raw" | tail -1
 echo "(target=$T bin=$BIN tck=$TCK_VER commit=$COMMIT)"

@@ -12,3 +12,8 @@ Copies of upstream's own DSP-TCK configuration at the pinned commits, with `host
 
 The TCK's mock identity is the static `dataspacetck.dsp.connector.http.headers.authorization` header (as upstream);
 no DCP is involved (D14 claim wording).
+
+Second network adaptation: `dataspacetck.callback.address` changed from `http://0.0.0.0:8083` to `http://tck:8083`.
+Upstream's connector runs on the host, where `0.0.0.0:8083` reaches the TCK's published port; on the internal
+network the connector must call back the TCK container by its alias. Without this every scenario that needs a
+callback times out after 7 s — a setup artifact, not a conformance result (observed 2026-10-28, run discarded).
