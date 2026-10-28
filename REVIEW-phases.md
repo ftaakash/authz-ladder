@@ -796,3 +796,37 @@ On the connector side, trusted issuers come from the standard `EDC_IAM_TRUSTEDIS
 - **Four fixes:** none of them weakens a verifier check, though two still need source citations (T1).
 - **Repository:** fully committed and pushed, with no findings or secrets in public.
 - **Remaining:** the vanilla target and the TCK identity must land before phase 3.
+
+---
+
+## Review 15 (KC2 pre-phase-3), 2026-10-29
+
+Scope: `d60d67c` through `546e613`: the T1–T5 fixes, the vanilla 0.18.1 DCP launcher and handshake, the TCK plan and D14, the TCK builds and dependency verification, the two DSP TCK baselines, and the operator Docker preflight. Also the KC2 transcript up to its "start phase 3?" question. Read-only apart from this file. No Docker, no downloads.
+
+**Repo state:** clean tree. The marker = HEAD `546e613`, a Masters sha. Every pilot commit subject since Review 14 is present in the mirror log. No trailers, and no outcome wording in messages.
+
+**Done and correct:**
+- **T1:** citations added; fixes 2 and 4 verified upstream. **T4:** did:web over HTTP stated as a testbed deviation. **T5:** javadoc fixed.
+- **T2:** the vanilla 0.18.1 handshake reaches 12/12 at clean `e6906d7`, with the scope adapter **OFF** (switchable, as required). Isolation was re-run with the vanilla full stack up, and the launcher's deps are verified (657/657).
+- **D14 (user):** the TCK baseline follows the upstream configuration (TCK runtime with mock identity, not DCP). The claim wording is fixed correctly: "pass the official DSP TCK in the upstream TCK configuration (mock identity), without DCP"; the paper must not say the DCP-configured release passes.
+- **DSP TCK 1.0.2:** **65/65** on vanilla 0.18.1 and **65/65** on Tractus-X 0.13.0 (release image binary plus add-on). Per-test CSVs and raw output are in `kc2/env/`. TCK jars are verified (659 + 125, tamper-tested). Before results are recorded, the Tractus-X run asserts from the boot log that its stand-ins are the ones actually loaded.
+- **Docker:** `00_ensure_docker.ps1` is operator-only and never called from tests, which is consistent with Review 9 N1. The cause is recorded: AutoStart was off and the engine was being terminated externally.
+
+**Admission rule checked for soundness:** the sanity configuration is a scenario on the same build where the invariant holds by construction (for example, INV-1: the policy admits B). It is not the attack scenario on the current target. So "PASS on sanity + FAIL on mutation" validates the test without masking a violation in the current-release cell. The rule is consistent.
+
+| # | file:line | Issue | Sev | Required change |
+|---|---|---|---|---|
+| U1 | KC2 transcript; Review 11 Q3 | **Publishing counts.** The KC2 session plans that "tracked files only show counts, split INV-1–5 and INV-6–8". A per-invariant or per-target count (for example "INV-x: 1 FAIL on target y") already locates an undisclosed finding. Review 11 Q3 said aggregate counts are published **only once the user approves**. | **H** | Until disclosure is decided, tracked files and commit messages carry **no** phase-3 counts at all, not even totals: only "phase 3 run complete, results private". All tallies stay in `private/kc2/`. Ask the user before publishing any number. |
+| U2 | phase-3 runner (missing) | Phase 3 is **16 cells × 3 configurations** (8 invariants × 2 targets × sanity, mutation and current) and needs KC1's batch discipline. | **H** | Before the first phase-3 cell, add and commit `kc2/scripts/60_phase3_batch.sh`, modelled on `50_kc1_batch.sh`. It must refuse a dirty tree, abort if HEAD moves, keep per-cell logs and all rows **under `private/kc2/`** via `kc2_private_out`, and set a timeout per cell. It runs, per invariant and target, **sanity → mutation → current**. If the admission step fails, the current cell is written as `INVALID(admission)` and is never counted. Run Docker's preflight once beforehand by hand; make no commits during the batch. |
+| U3 | `kc2/TCK-PLAN.md:87-90`; Tractus-X add-on | **The Tractus-X TCK run used stand-ins modified from upstream's test code:** named classes, and a PolicyArchive stand-in made deterministic. A PolicyArchive stand-in sits on a policy path, so its fidelity matters. | M | Record, in `kc2/env/`, each stand-in's upstream source path at the pinned Tractus-X tag and a diff from upstream. State in TCK-PLAN that the changes are load-order/naming only and change no policy semantics. If any semantic change exists, mark the Tractus-X TCK result **UNVERIFIED**. |
+| U4 | discarded TCK runs | Two runs were discarded as setup artifacts (the vanilla callback address and the Tractus-X stand-in race). The reasons are documented, but the raw outputs are not archived. | M | Archive the raw output of each discarded run if it still exists (`kc2/env/tck-dsp-<target>-discarded-<n>.txt`, with the reason in its first line); otherwise mark "not archived" in TCK-PLAN. Discarded runs stay visible, so the baseline is not selectively reported. |
+| U5 | `kc2/TCK-PLAN.md:22` | **The DCP TCK (v1.2.1, IdentityHub) is planned but has not run.** INV-5 rests on the identity stack verifying correctly. | M | Either run the DCP TCK against IdentityHub 0.17.0 before phase 3's INV-5 cells, or record a dated deferral with its reason. In that case INV-5's result must carry "identity stack not TCK-baselined". |
+| U6 | timebox | The handshake (10-28) and TCK (10-30) milestones were met early. Phase 3 is due ~11-07 and the report 11-11. | L | On track. Note it in the PILOT-REPORT KC2 plan. |
+
+**Next steps, in order:** (1) U1: fix the publishing rule in `kc2/` docs and the status text **before** any phase-3 run. (2) U2: the batch runner, committed and pushed. (3) U3/U4: TCK fidelity records. (4) U5: the DCP TCK, or a recorded deferral. (5) **Phase 3, when the user says go.** The KC2 session asked; it is the user's call.
+
+**User decisions (not decided here):** (a) go or no-go for phase 3; (b) whether any phase-3 counts may ever be published before disclosure (U1); (c) whether the DCP TCK runs before INV-5 or is deferred (U5).
+
+**Verdict:**
+- **Both targets:** now handshaking and TCK-baselined in the upstream configuration, with honest claim wording (D14). The invariant set is frozen and its admission rule is sound.
+- **Before phase 3 can produce countable, safely handled results:** close the publishing gap for counts (U1), put a disciplined private batch runner in place (U2), and record the Tractus-X stand-ins' fidelity (U3).
