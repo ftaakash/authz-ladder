@@ -1,0 +1,985 @@
+[1m
+[2026-10-28T16:26:09.868022369] [1mRunning DSP TCK v2025.1[0m
+[0m
+SLF4J(W): No SLF4J providers were found.
+SLF4J(W): Defaulting to no-operation (NOP) logger implementation
+SLF4J(W): See https://www.slf4j.org/codes.html#noProviders for further details.
+
+[2026-10-28T16:26:10.571788797] Started: TP:03-01: Verify transfer request, consumer completed
+[2026-10-28T16:26:10.588371139] Sending transfer request
+[2026-10-28T16:26:11.045769992] Received transfer request response
+[2026-10-28T16:26:11.170617532] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:26:11.290799952] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 547dd3df-99c5-42cd-ace0-33e84e620079
+[2026-10-28T16:26:11.291203475] Done waiting for for provider transfer process state to be REQUESTED
+[2026-10-28T16:26:11.291475518] Sending transfer completion
+[2026-10-28T16:26:11.312248811] Received completion request response
+[2026-10-28T16:26:11.413275721] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:26:11.530136353] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 547dd3df-99c5-42cd-ace0-33e84e620079
+[2026-10-28T16:26:11.530584194] Done waiting for for provider transfer process state to be REQUESTED
+[2026-10-28T16:26:11.534233848] SUCCESSFUL: TP:03-01
+
+
+[2026-10-28T16:26:11.534743901] Started: TP:03-02: Verify transfer request, consumer suspended
+[2026-10-28T16:26:11.535665331] Sending transfer request
+[2026-10-28T16:26:11.554253626] Received transfer request response
+[2026-10-28T16:26:11.657357146] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:26:11.777252543] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 5a13ea05-f49d-440d-9e5c-b589feec7c82
+[2026-10-28T16:26:11.777605649] Done waiting for for provider transfer process state to be REQUESTED
+[2026-10-28T16:26:11.777811098] Sending transfer suspension
+[2026-10-28T16:26:11.792448012] Received suspension request response
+[2026-10-28T16:26:11.893821062] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:26:12.01155092] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 5a13ea05-f49d-440d-9e5c-b589feec7c82
+[2026-10-28T16:26:12.012008215] Done waiting for for provider transfer process state to be REQUESTED
+[2026-10-28T16:26:12.012481876] SUCCESSFUL: TP:03-02
+
+
+[2026-10-28T16:26:12.013003247] Started: TP:03-03: Verify transfer request, provider started, consumer suspended, consumer completed
+[2026-10-28T16:26:12.014939582] Sending transfer request
+[2026-10-28T16:26:12.03483419] Received transfer request response
+[2026-10-28T16:26:12.993876122] Received start message: 6fb2282b-1d3a-4336-8ce6-2dcc7fac0e4c with correlation id 719bbe59-be99-44f0-a2d3-0813343be60d
+[2026-10-28T16:26:13.096502016] Done waiting for state to transition to STARTED
+[2026-10-28T16:26:13.219691512] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 719bbe59-be99-44f0-a2d3-0813343be60d
+[2026-10-28T16:26:13.220178068] Done waiting for for provider transfer process state to be STARTED
+[2026-10-28T16:26:13.22036437] Sending transfer suspension
+[2026-10-28T16:26:13.229784352] Received suspension request response
+[2026-10-28T16:26:13.330957931] Done waiting for state to transition to SUSPENDED
+[2026-10-28T16:26:13.458374628] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 719bbe59-be99-44f0-a2d3-0813343be60d
+[2026-10-28T16:26:13.576294072] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 719bbe59-be99-44f0-a2d3-0813343be60d
+[2026-10-28T16:26:13.691605226] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 719bbe59-be99-44f0-a2d3-0813343be60d
+[2026-10-28T16:26:13.801802202] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 719bbe59-be99-44f0-a2d3-0813343be60d
+[2026-10-28T16:26:13.915275632] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 719bbe59-be99-44f0-a2d3-0813343be60d
+[2026-10-28T16:26:14.025183929] Received transfer status response with state https://w3id.org/dspace/2025/1/SUSPENDED: 719bbe59-be99-44f0-a2d3-0813343be60d
+[2026-10-28T16:26:14.025487639] Done waiting for for provider transfer process state to be SUSPENDED
+[2026-10-28T16:26:14.025666356] Sending transfer completion
+[2026-10-28T16:26:14.036946035] Received completion request response
+[2026-10-28T16:26:14.139449742] Done waiting for state to transition to SUSPENDED
+[2026-10-28T16:26:14.259138921] Received transfer status response with state https://w3id.org/dspace/2025/1/SUSPENDED: 719bbe59-be99-44f0-a2d3-0813343be60d
+[2026-10-28T16:26:14.259485877] Done waiting for for provider transfer process state to be SUSPENDED
+[2026-10-28T16:26:14.26035217] SUCCESSFUL: TP:03-03
+
+
+[2026-10-28T16:26:14.260932174] Started: TP:03-04: Verify transfer request, provider started, consumer terminated, consumer started
+[2026-10-28T16:26:14.262805627] Sending transfer request
+[2026-10-28T16:26:14.274600504] Received transfer request response
+[2026-10-28T16:26:14.977997297] Received start message: 87074b65-b18c-4de1-b212-083fa56b200d with correlation id 64895723-3cb1-47e0-a2fa-81ed42475023
+[2026-10-28T16:26:15.0811848] Done waiting for state to transition to STARTED
+[2026-10-28T16:26:15.198884467] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 64895723-3cb1-47e0-a2fa-81ed42475023
+[2026-10-28T16:26:15.19916453] Done waiting for for provider transfer process state to be STARTED
+[2026-10-28T16:26:15.199289428] Sending transfer termination
+[2026-10-28T16:26:15.207463105] Received termination request response
+[2026-10-28T16:26:15.308300759] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:26:15.42635183] Received transfer status response with state https://w3id.org/dspace/2025/1/TERMINATED: 64895723-3cb1-47e0-a2fa-81ed42475023
+[2026-10-28T16:26:15.426627479] Done waiting for for provider transfer process state to be TERMINATED
+[2026-10-28T16:26:15.426770466] Sending transfer start
+[2026-10-28T16:26:15.437749986] Received start request response
+[2026-10-28T16:26:15.538715784] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:26:15.65063307] Received transfer status response with state https://w3id.org/dspace/2025/1/TERMINATED: 64895723-3cb1-47e0-a2fa-81ed42475023
+[2026-10-28T16:26:15.650898742] Done waiting for for provider transfer process state to be TERMINATED
+[2026-10-28T16:26:15.651248028] SUCCESSFUL: TP:03-04
+
+
+[2026-10-28T16:26:15.651532244] Started: TP:03-05: Verify transfer request, provider started, consumer terminated, consumer suspended
+[2026-10-28T16:26:15.652499806] Sending transfer request
+[2026-10-28T16:26:15.663706843] Received transfer request response
+[2026-10-28T16:26:15.982895211] Received start message: 1480f76e-609e-4d1c-9d2e-8a9692c32812 with correlation id d36d33a1-4939-4f40-8be8-889726094648
+[2026-10-28T16:26:16.085365614] Done waiting for state to transition to STARTED
+[2026-10-28T16:26:16.201531711] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: d36d33a1-4939-4f40-8be8-889726094648
+[2026-10-28T16:26:16.201782173] Done waiting for for provider transfer process state to be STARTED
+[2026-10-28T16:26:16.201894764] Sending transfer termination
+[2026-10-28T16:26:16.208945345] Received termination request response
+[2026-10-28T16:26:16.311253473] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:26:16.422461432] Received transfer status response with state https://w3id.org/dspace/2025/1/TERMINATED: d36d33a1-4939-4f40-8be8-889726094648
+[2026-10-28T16:26:16.4227393] Done waiting for for provider transfer process state to be TERMINATED
+[2026-10-28T16:26:16.422857769] Sending transfer suspension
+[2026-10-28T16:26:16.434957216] Received suspension request response
+[2026-10-28T16:26:16.536223806] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:26:16.66284702] Received transfer status response with state https://w3id.org/dspace/2025/1/TERMINATED: d36d33a1-4939-4f40-8be8-889726094648
+[2026-10-28T16:26:16.663211116] Done waiting for for provider transfer process state to be TERMINATED
+[2026-10-28T16:26:16.663681278] SUCCESSFUL: TP:03-05
+
+
+[2026-10-28T16:26:16.664107787] Started: TP:03-06: Verify transfer request, provider started, consumer terminated, consumer completed
+[2026-10-28T16:26:16.665111419] Sending transfer request
+[2026-10-28T16:26:16.676283467] Received transfer request response
+[2026-10-28T16:26:17.000979429] Received start message: 756aba44-54f2-4e84-9974-797da60ec063 with correlation id 61372494-c9f9-48fb-b804-b6249258dfc0
+[2026-10-28T16:26:17.103343564] Done waiting for state to transition to STARTED
+[2026-10-28T16:26:17.220098145] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 61372494-c9f9-48fb-b804-b6249258dfc0
+[2026-10-28T16:26:17.220448951] Done waiting for for provider transfer process state to be STARTED
+[2026-10-28T16:26:17.220625182] Sending transfer termination
+[2026-10-28T16:26:17.227773592] Received termination request response
+[2026-10-28T16:26:17.330085416] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:26:17.448663417] Received transfer status response with state https://w3id.org/dspace/2025/1/TERMINATED: 61372494-c9f9-48fb-b804-b6249258dfc0
+[2026-10-28T16:26:17.448920133] Done waiting for for provider transfer process state to be TERMINATED
+[2026-10-28T16:26:17.44901974] Sending transfer completion
+[2026-10-28T16:26:17.459393516] Received completion request response
+[2026-10-28T16:26:17.560265547] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:26:17.67822571] Received transfer status response with state https://w3id.org/dspace/2025/1/TERMINATED: 61372494-c9f9-48fb-b804-b6249258dfc0
+[2026-10-28T16:26:17.678522756] Done waiting for for provider transfer process state to be TERMINATED
+[2026-10-28T16:26:17.67900987] SUCCESSFUL: TP:03-06
+
+
+[2026-10-28T16:26:17.682245866] Started: TP_C:02-01: Verify transfer request, provider started, consumer terminated
+[2026-10-28T16:26:17.696054233] Received transfer request response
+[2026-10-28T16:26:18.018520225] Received transfer request message with consumer pid: 4bacad1e-7c8b-43ca-a1ea-80bf75a0b0e4
+[2026-10-28T16:26:18.121440669] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:26:18.122685894] Sending transfer start
+[2026-10-28T16:26:18.148463776] Received start request response
+[2026-10-28T16:26:20.030855156] Received terminated message: 97410803-b6e7-4d10-af17-f106f8c84bb7 with correlation id 4bacad1e-7c8b-43ca-a1ea-80bf75a0b0e4
+[2026-10-28T16:26:20.133753505] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:26:20.251389778] Received transfer status response with state https://w3id.org/dspace/2025/1/TERMINATED: 97410803-b6e7-4d10-af17-f106f8c84bb7
+[2026-10-28T16:26:20.251727182] Done waiting for for consumer transfer process state to be TERMINATED
+[2026-10-28T16:26:20.252106395] SUCCESSFUL: TP_C:02-01
+
+
+[2026-10-28T16:26:20.252390828] Started: TP_C:02-02: Verify transfer request, provider started, consumer completed
+[2026-10-28T16:26:20.256378198] Received transfer request response
+[2026-10-28T16:26:21.046387139] Received transfer request message with consumer pid: e4fc162b-f475-4d34-983e-5ded840b25df
+[2026-10-28T16:26:21.148459718] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:26:21.149695669] Sending transfer start
+[2026-10-28T16:26:21.163523489] Received start request response
+[2026-10-28T16:26:23.060125831] Received completion message: 8d721c4e-2e22-4c6f-8891-04f1c38af2bc with correlation id e4fc162b-f475-4d34-983e-5ded840b25df
+[2026-10-28T16:26:23.163399077] Done waiting for state to transition to COMPLETED
+[2026-10-28T16:26:23.282109017] Received transfer status response with state https://w3id.org/dspace/2025/1/COMPLETED: 8d721c4e-2e22-4c6f-8891-04f1c38af2bc
+[2026-10-28T16:26:23.282412064] Done waiting for for consumer transfer process state to be COMPLETED
+[2026-10-28T16:26:23.282749182] SUCCESSFUL: TP_C:02-02
+
+
+[2026-10-28T16:26:23.283034358] Started: TP_C:02-03: Verify transfer request, provider started, consumer suspended, consumer terminated
+[2026-10-28T16:26:23.286837503] Received transfer request response
+[2026-10-28T16:26:24.066466384] Received transfer request message with consumer pid: 93dd15d0-552c-4f58-af90-4e6d137d97a7
+[2026-10-28T16:26:24.169207092] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:26:24.170502586] Sending transfer start
+[2026-10-28T16:26:24.181460604] Received start request response
+[2026-10-28T16:26:26.08526388] Received suspension message: 24c6fb45-04b1-4685-a31a-0df9be1b8585 with correlation id 93dd15d0-552c-4f58-af90-4e6d137d97a7
+[2026-10-28T16:26:26.188058555] Done waiting for state to transition to SUSPENDED
+[2026-10-28T16:26:27.09321027] Received terminated message: 24c6fb45-04b1-4685-a31a-0df9be1b8585 with correlation id 93dd15d0-552c-4f58-af90-4e6d137d97a7
+[2026-10-28T16:26:27.195685641] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:26:27.314480558] Received transfer status response with state https://w3id.org/dspace/2025/1/TERMINATED: 24c6fb45-04b1-4685-a31a-0df9be1b8585
+[2026-10-28T16:26:27.314927798] Done waiting for for consumer transfer process state to be TERMINATED
+[2026-10-28T16:26:27.315294983] SUCCESSFUL: TP_C:02-03
+
+
+[2026-10-28T16:26:27.31755974] Started: TP_C:02-05: Verify transfer request, consumer terminated
+[2026-10-28T16:26:27.321493953] Received transfer request response
+[2026-10-28T16:26:28.102202218] Received transfer request message with consumer pid: 6a347086-5b3a-4e4f-801b-501ee2467603
+[2026-10-28T16:26:28.204796697] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:26:29.111887593] Received terminated message: e4490979-71b3-416a-9b1f-467c790c6477 with correlation id 6a347086-5b3a-4e4f-801b-501ee2467603
+[2026-10-28T16:26:29.214012719] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:26:29.32444047] Received transfer status response with state https://w3id.org/dspace/2025/1/TERMINATED: e4490979-71b3-416a-9b1f-467c790c6477
+[2026-10-28T16:26:29.324707888] Done waiting for for consumer transfer process state to be TERMINATED
+[2026-10-28T16:26:29.325069457] SUCCESSFUL: TP_C:02-05
+
+
+[2026-10-28T16:26:29.325860063] Started: CN_C:01-01: Verify contract request, offer received, consumer accepted, provider agreed, consumer verified, provider finalized
+[2026-10-28T16:26:29.334932827] Received contract request response
+[2026-10-28T16:26:32.082179243] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:26:32.083388607] Sending offer
+[2026-10-28T16:26:32.099905507] Received contract request response
+[2026-10-28T16:26:33.095768311] Done waiting for state to transition to ACCEPTED
+[2026-10-28T16:26:33.09669093] Sending agreement
+[2026-10-28T16:26:33.136023958] Received contract agreement response
+[2026-10-28T16:26:34.101288942] Done waiting for state to transition to VERIFIED
+[2026-10-28T16:26:34.101472466] Sending finalized event
+[2026-10-28T16:26:34.109952959] Received contract finalize response
+[2026-10-28T16:26:34.221940219] Received negotiation status response with state https://w3id.org/dspace/2025/1/FINALIZED: 91645c36-f8f3-47b6-947d-a42e7d1b34bc
+[2026-10-28T16:26:34.223818801] SUCCESSFUL: CN_C:01-01
+
+
+[2026-10-28T16:26:34.224110854] Started: CN_C:01-02: Verify contract request, offer received, consumer counter-offer, provider terminated
+[2026-10-28T16:26:34.227879903] Received contract request response
+[2026-10-28T16:26:37.118233593] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:26:37.119510872] Sending offer
+[2026-10-28T16:26:37.134788053] Received contract request response
+[2026-10-28T16:26:38.132632316] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:26:38.233580373] Sending termination: 85d3986e-8aba-4207-9e66-b76bb4f34895
+[2026-10-28T16:26:38.249440081] Received negotiation terminate response: 85d3986e-8aba-4207-9e66-b76bb4f34895
+[2026-10-28T16:26:38.352300675] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:26:38.353382352] SUCCESSFUL: CN_C:01-02
+
+
+[2026-10-28T16:26:38.354055423] Started: CN_C:01-03: Verify contract request, offer received, consumer terminated
+[2026-10-28T16:26:38.36212733] Received contract request response
+[2026-10-28T16:26:41.148032656] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:26:41.149366342] Sending offer
+[2026-10-28T16:26:41.163642005] Received contract request response
+[2026-10-28T16:26:42.05799649] Received terminated message: 782bdb01-d880-4c8f-aaf1-754ba91879d2 with correlation id 0d599d91-4453-4783-97ea-9585b7c197ff
+[2026-10-28T16:26:42.160397108] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:26:42.27845675] Received negotiation status response with state https://w3id.org/dspace/2025/1/TERMINATED: 782bdb01-d880-4c8f-aaf1-754ba91879d2
+[2026-10-28T16:26:42.278999863] SUCCESSFUL: CN_C:01-03
+
+
+[2026-10-28T16:26:42.279456257] Started: CN_C:01-04: Verify contract request, provider agreement, consumer verified, provider finalized
+[2026-10-28T16:26:42.283826636] Received contract request response
+[2026-10-28T16:26:45.173089663] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:26:45.173735086] Sending agreement
+[2026-10-28T16:26:45.188478752] Received contract agreement response
+[2026-10-28T16:26:46.175151114] Done waiting for state to transition to VERIFIED
+[2026-10-28T16:26:46.17529095] Sending finalized event
+[2026-10-28T16:26:46.184698907] Received contract finalize response
+[2026-10-28T16:26:46.291816753] Received negotiation status response with state https://w3id.org/dspace/2025/1/FINALIZED: 7d258f4d-e924-4ee3-ba79-69c7212c5685
+[2026-10-28T16:26:46.29217794] SUCCESSFUL: CN_C:01-04
+
+
+[2026-10-28T16:26:46.293003177] Started: CN:02-01: Verify contract request, provider terminated
+[2026-10-28T16:26:46.296228893] Sending contract request
+[2026-10-28T16:26:46.316875005] Received contract request response
+[2026-10-28T16:26:48.112082258] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:26:48.11329303] SUCCESSFUL: CN:02-01
+
+
+[2026-10-28T16:26:48.114359492] Started: CN:02-02: Verify contract request, consumer terminated
+[2026-10-28T16:26:48.117571872] Sending contract request
+[2026-10-28T16:26:48.1329503] Received contract request response
+[2026-10-28T16:26:48.235432188] Sending termination: 89b4a51e-8676-4336-8a58-f50dffb1ed0d
+[2026-10-28T16:26:48.247933666] Received negotiation terminate response: 89b4a51e-8676-4336-8a58-f50dffb1ed0d
+[2026-10-28T16:26:48.364365326] Received negotiation status response with state https://w3id.org/dspace/2025/1/TERMINATED: 89b4a51e-8676-4336-8a58-f50dffb1ed0d
+[2026-10-28T16:26:48.364796685] SUCCESSFUL: CN:02-02
+
+
+[2026-10-28T16:26:48.365091772] Started: CN:02-03: Verify contract request, provider agreement, consumer terminated
+[2026-10-28T16:26:48.365782373] Sending contract request
+[2026-10-28T16:26:48.375769724] Received contract request response
+[2026-10-28T16:26:50.01766585] Received provider agreement: 4a6450bf-cf15-4a5c-a497-6b7b56ef87a1
+[2026-10-28T16:26:50.1210348] Done waiting for state to transition to AGREED
+[2026-10-28T16:26:50.221792] Sending termination: 4a6450bf-cf15-4a5c-a497-6b7b56ef87a1
+[2026-10-28T16:26:50.234995305] Received negotiation terminate response: 4a6450bf-cf15-4a5c-a497-6b7b56ef87a1
+[2026-10-28T16:26:50.349770063] Received negotiation status response with state https://w3id.org/dspace/2025/1/TERMINATED: 4a6450bf-cf15-4a5c-a497-6b7b56ef87a1
+[2026-10-28T16:26:50.350119783] SUCCESSFUL: CN:02-03
+
+
+[2026-10-28T16:26:50.350394308] Started: CN:02-04: Verify contract request, offer received, consumer terminated
+[2026-10-28T16:26:50.351316358] Sending contract request
+[2026-10-28T16:26:50.361709343] Received contract request response
+[2026-10-28T16:26:52.034159085] Received provider offer: 12bf4742-66f7-490f-a7af-de49f3b2e748
+[2026-10-28T16:26:52.136923765] Done waiting for state to transition to OFFERED
+[2026-10-28T16:26:52.237629821] Sending termination: 12bf4742-66f7-490f-a7af-de49f3b2e748
+[2026-10-28T16:26:52.250547615] Received negotiation terminate response: 12bf4742-66f7-490f-a7af-de49f3b2e748
+[2026-10-28T16:26:52.364533246] Received negotiation status response with state https://w3id.org/dspace/2025/1/TERMINATED: 12bf4742-66f7-490f-a7af-de49f3b2e748
+[2026-10-28T16:26:52.364938622] SUCCESSFUL: CN:02-04
+
+
+[2026-10-28T16:26:52.365213706] Started: CN:02-05: Verify contract request, offer received, provider terminated
+[2026-10-28T16:26:52.365974431] Sending contract request
+[2026-10-28T16:26:52.378219873] Received contract request response
+[2026-10-28T16:26:54.05203264] Received provider offer: f85017e3-c24c-4877-b5c4-bf587a68cc26
+[2026-10-28T16:26:54.154023966] Done waiting for state to transition to OFFERED
+[2026-10-28T16:26:55.168345654] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:26:55.169365239] SUCCESSFUL: CN:02-05
+
+
+[2026-10-28T16:26:55.170491123] Started: CN:02-06: Verify contract request, offer received, consumer accepted, provider terminated
+[2026-10-28T16:26:55.173592018] Sending contract request
+[2026-10-28T16:26:55.185894361] Received contract request response
+[2026-10-28T16:26:57.079080979] Received provider offer: babb6496-8a44-4cc7-8e7a-fd26bccf5a8e
+[2026-10-28T16:26:57.180120785] Done waiting for state to transition to OFFERED
+[2026-10-28T16:26:57.180325157] Accepting offer: babb6496-8a44-4cc7-8e7a-fd26bccf5a8e
+[2026-10-28T16:26:57.188743599] Received accept response: babb6496-8a44-4cc7-8e7a-fd26bccf5a8e
+[2026-10-28T16:26:58.186002795] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:26:58.187092912] SUCCESSFUL: CN:02-06
+
+
+[2026-10-28T16:26:58.188040342] Started: CN:02-07: Verify contract request, provider agreement, consumer verified, provider terminated
+[2026-10-28T16:26:58.190045085] Sending contract request
+[2026-10-28T16:26:58.202225361] Received contract request response
+[2026-10-28T16:27:00.111571287] Received provider agreement: 473c15be-6542-4310-9ecf-d32070986dc3
+[2026-10-28T16:27:00.213768362] Done waiting for state to transition to AGREED
+[2026-10-28T16:27:00.314395271] Sending verification: 473c15be-6542-4310-9ecf-d32070986dc3
+[2026-10-28T16:27:00.324201456] Received verification response: 473c15be-6542-4310-9ecf-d32070986dc3
+[2026-10-28T16:27:02.22805757] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:27:02.228814968] SUCCESSFUL: CN:02-07
+
+
+[2026-10-28T16:27:02.230445908] Started: CN:01-01: Verify contract request, offer received, consumer terminated
+[2026-10-28T16:27:02.232126978] Sending contract request
+[2026-10-28T16:27:02.244121473] Received contract request response
+[2026-10-28T16:27:04.141490412] Received provider offer: 04e15c4f-bc76-4590-912b-4d5de640b426
+[2026-10-28T16:27:04.243769806] Done waiting for state to transition to OFFERED
+[2026-10-28T16:27:04.344468171] Sending termination: 04e15c4f-bc76-4590-912b-4d5de640b426
+[2026-10-28T16:27:04.357041619] Received negotiation terminate response: 04e15c4f-bc76-4590-912b-4d5de640b426
+[2026-10-28T16:27:04.465941872] Received negotiation status response with state https://w3id.org/dspace/2025/1/TERMINATED: 04e15c4f-bc76-4590-912b-4d5de640b426
+[2026-10-28T16:27:04.466413506] SUCCESSFUL: CN:01-01
+
+
+[2026-10-28T16:27:04.466726343] Started: CN:01-02: Verify contract request, offer received, consumer counter-offer, provider terminated
+[2026-10-28T16:27:04.46759952] Sending contract request
+[2026-10-28T16:27:04.47740449] Received contract request response
+[2026-10-28T16:27:06.160575691] Received provider offer: 5bd28015-0be2-419e-b595-11e564a8d3c7
+[2026-10-28T16:27:06.262732489] Done waiting for state to transition to OFFERED
+[2026-10-28T16:27:06.26362921] Sending counter offer: 5bd28015-0be2-419e-b595-11e564a8d3c7
+[2026-10-28T16:27:06.2792622] Received contract offer request response
+[2026-10-28T16:27:08.17769139] Received terminated message: 98e00a58-1291-4a3f-8cfa-765698ce91a8 with correlation id 5bd28015-0be2-419e-b595-11e564a8d3c7
+[2026-10-28T16:27:08.279994623] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:27:08.281380778] SUCCESSFUL: CN:01-02
+
+
+[2026-10-28T16:27:08.283153722] Started: CN:01-03: Verify contract request, offer received, consumer accepted, provider agreement, consumer verified, provider finalized
+[2026-10-28T16:27:08.288081858] Sending contract request
+[2026-10-28T16:27:08.299422354] Received contract request response
+[2026-10-28T16:27:10.194833579] Received provider offer: a0ac89ac-e7b5-4c41-a712-507b37e15923
+[2026-10-28T16:27:10.296943307] Done waiting for state to transition to OFFERED
+[2026-10-28T16:27:10.297279437] Accepting offer: a0ac89ac-e7b5-4c41-a712-507b37e15923
+[2026-10-28T16:27:10.311577132] Received accept response: a0ac89ac-e7b5-4c41-a712-507b37e15923
+[2026-10-28T16:27:12.21403853] Received provider agreement: a0ac89ac-e7b5-4c41-a712-507b37e15923
+[2026-10-28T16:27:12.316533558] Done waiting for state to transition to AGREED
+[2026-10-28T16:27:12.417013042] Sending verification: a0ac89ac-e7b5-4c41-a712-507b37e15923
+[2026-10-28T16:27:12.429947091] Received verification response: a0ac89ac-e7b5-4c41-a712-507b37e15923
+[2026-10-28T16:27:14.226802858] Received provider finalize: a0ac89ac-e7b5-4c41-a712-507b37e15923
+[2026-10-28T16:27:14.327827111] Done waiting for state to transition to FINALIZED
+[2026-10-28T16:27:14.32820849] SUCCESSFUL: CN:01-03
+
+
+[2026-10-28T16:27:14.328500576] Started: CN:01-04: Verify contract request, provider agreement, consumer verified, provider finalized
+[2026-10-28T16:27:14.329353928] Sending contract request
+[2026-10-28T16:27:14.33969584] Received contract request response
+[2026-10-28T16:27:16.240353012] Received provider agreement: 93807630-9408-45d7-838f-a2dcde4c8143
+[2026-10-28T16:27:16.341222706] Done waiting for state to transition to AGREED
+[2026-10-28T16:27:16.44154382] Sending verification: 93807630-9408-45d7-838f-a2dcde4c8143
+[2026-10-28T16:27:16.454059706] Received verification response: 93807630-9408-45d7-838f-a2dcde4c8143
+[2026-10-28T16:27:18.258042038] Received provider finalize: 93807630-9408-45d7-838f-a2dcde4c8143
+[2026-10-28T16:27:18.360245258] Done waiting for state to transition to FINALIZED
+[2026-10-28T16:27:18.361673939] SUCCESSFUL: CN:01-04
+
+
+[2026-10-28T16:27:18.364456826] Started: TP_C:01-01: Verify transfer request, provider started, provider terminated
+[2026-10-28T16:27:18.370652722] Received transfer request response
+[2026-10-28T16:27:19.198717559] Received transfer request message with consumer pid: 04fa75cd-4ffc-4f03-ab96-66851f2cabab
+[2026-10-28T16:27:19.300176083] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:27:19.300328498] Sending transfer start
+[2026-10-28T16:27:19.307036338] Received start request response
+[2026-10-28T16:27:19.409342573] Done waiting for state to transition to STARTED
+[2026-10-28T16:27:19.519236054] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 04131aed-87bb-4205-ab65-8679d29efab3
+[2026-10-28T16:27:19.639615403] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 04131aed-87bb-4205-ab65-8679d29efab3
+[2026-10-28T16:27:19.757853844] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 04131aed-87bb-4205-ab65-8679d29efab3
+[2026-10-28T16:27:19.875931293] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 04131aed-87bb-4205-ab65-8679d29efab3
+[2026-10-28T16:27:19.989840831] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 04131aed-87bb-4205-ab65-8679d29efab3
+[2026-10-28T16:27:20.103669152] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 04131aed-87bb-4205-ab65-8679d29efab3
+[2026-10-28T16:27:20.215069412] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 04131aed-87bb-4205-ab65-8679d29efab3
+[2026-10-28T16:27:20.215327344] Done waiting for for consumer transfer process state to be STARTED
+[2026-10-28T16:27:20.215382751] Sending transfer termination
+[2026-10-28T16:27:20.220902521] Received termination request response
+[2026-10-28T16:27:20.322956804] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:27:20.435899709] Received transfer status response with state https://w3id.org/dspace/2025/1/TERMINATED: 04131aed-87bb-4205-ab65-8679d29efab3
+[2026-10-28T16:27:20.436189579] Done waiting for for consumer transfer process state to be TERMINATED
+[2026-10-28T16:27:20.436478081] SUCCESSFUL: TP_C:01-01
+
+
+[2026-10-28T16:27:20.436734372] Started: TP_C:01-02: Verify transfer request, provider started, provider completed
+[2026-10-28T16:27:20.440210947] Received transfer request response
+[2026-10-28T16:27:21.214193292] Received transfer request message with consumer pid: 6b9d19e7-3930-46b3-936a-2624b2b5cec6
+[2026-10-28T16:27:21.31535491] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:27:21.315494665] Sending transfer start
+[2026-10-28T16:27:21.322114729] Received start request response
+[2026-10-28T16:27:21.424043392] Done waiting for state to transition to STARTED
+[2026-10-28T16:27:21.542018737] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: ae67a181-3b01-4ccf-b21a-3881baa9e7fe
+[2026-10-28T16:27:21.656321276] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: ae67a181-3b01-4ccf-b21a-3881baa9e7fe
+[2026-10-28T16:27:21.77161463] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: ae67a181-3b01-4ccf-b21a-3881baa9e7fe
+[2026-10-28T16:27:21.880929895] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: ae67a181-3b01-4ccf-b21a-3881baa9e7fe
+[2026-10-28T16:27:21.993662079] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: ae67a181-3b01-4ccf-b21a-3881baa9e7fe
+[2026-10-28T16:27:22.10872039] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: ae67a181-3b01-4ccf-b21a-3881baa9e7fe
+[2026-10-28T16:27:22.222477438] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: ae67a181-3b01-4ccf-b21a-3881baa9e7fe
+[2026-10-28T16:27:22.336254353] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: ae67a181-3b01-4ccf-b21a-3881baa9e7fe
+[2026-10-28T16:27:22.336594244] Done waiting for for consumer transfer process state to be STARTED
+[2026-10-28T16:27:22.336706245] Sending transfer completion
+[2026-10-28T16:27:22.342649406] Received completion request response
+[2026-10-28T16:27:22.444950654] Done waiting for state to transition to COMPLETED
+[2026-10-28T16:27:22.564581388] Received transfer status response with state https://w3id.org/dspace/2025/1/COMPLETED: ae67a181-3b01-4ccf-b21a-3881baa9e7fe
+[2026-10-28T16:27:22.564905852] Done waiting for for consumer transfer process state to be COMPLETED
+[2026-10-28T16:27:22.565329784] SUCCESSFUL: TP_C:01-02
+
+
+[2026-10-28T16:27:22.565830127] Started: TP_C:01-03: Verify transfer request, provider started, provider suspended, provider terminated
+[2026-10-28T16:27:22.569443495] Received transfer request response
+[2026-10-28T16:27:23.223165646] Received transfer request message with consumer pid: b46be05c-36fa-4a6e-bf26-da72cbd0b8c5
+[2026-10-28T16:27:23.325036304] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:27:23.325471676] Sending transfer start
+[2026-10-28T16:27:23.335849794] Received start request response
+[2026-10-28T16:27:23.437849085] Done waiting for state to transition to STARTED
+[2026-10-28T16:27:23.552899927] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: de206665-3dd3-405a-ba29-b54d6736e72e
+[2026-10-28T16:27:23.693274812] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: de206665-3dd3-405a-ba29-b54d6736e72e
+[2026-10-28T16:27:23.813801937] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: de206665-3dd3-405a-ba29-b54d6736e72e
+[2026-10-28T16:27:23.9295467] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: de206665-3dd3-405a-ba29-b54d6736e72e
+[2026-10-28T16:27:24.037882565] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: de206665-3dd3-405a-ba29-b54d6736e72e
+[2026-10-28T16:27:24.150449046] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: de206665-3dd3-405a-ba29-b54d6736e72e
+[2026-10-28T16:27:24.27338452] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: de206665-3dd3-405a-ba29-b54d6736e72e
+[2026-10-28T16:27:24.273864842] Done waiting for for consumer transfer process state to be STARTED
+[2026-10-28T16:27:24.274018462] Sending transfer suspension
+[2026-10-28T16:27:24.284901071] Received suspension request response
+[2026-10-28T16:27:24.38687237] Done waiting for state to transition to SUSPENDED
+[2026-10-28T16:27:24.497999603] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: de206665-3dd3-405a-ba29-b54d6736e72e
+[2026-10-28T16:27:24.613877528] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: de206665-3dd3-405a-ba29-b54d6736e72e
+[2026-10-28T16:27:24.721553153] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: de206665-3dd3-405a-ba29-b54d6736e72e
+[2026-10-28T16:27:24.838145449] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: de206665-3dd3-405a-ba29-b54d6736e72e
+[2026-10-28T16:27:24.953994634] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: de206665-3dd3-405a-ba29-b54d6736e72e
+[2026-10-28T16:27:25.067095582] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: de206665-3dd3-405a-ba29-b54d6736e72e
+[2026-10-28T16:27:25.183082125] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: de206665-3dd3-405a-ba29-b54d6736e72e
+[2026-10-28T16:27:25.298906264] Received transfer status response with state https://w3id.org/dspace/2025/1/SUSPENDED: de206665-3dd3-405a-ba29-b54d6736e72e
+[2026-10-28T16:27:25.299130676] Done waiting for for consumer transfer process state to be SUSPENDED
+[2026-10-28T16:27:25.299200059] Sending transfer termination
+[2026-10-28T16:27:25.304652185] Received termination request response
+[2026-10-28T16:27:25.406646338] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:27:25.519506869] Received transfer status response with state https://w3id.org/dspace/2025/1/TERMINATED: de206665-3dd3-405a-ba29-b54d6736e72e
+[2026-10-28T16:27:25.519920134] Done waiting for for consumer transfer process state to be TERMINATED
+[2026-10-28T16:27:25.520375785] SUCCESSFUL: TP_C:01-03
+
+
+[2026-10-28T16:27:25.520698822] Started: TP_C:01-04: Verify transfer request, provider started, provider suspended, provider started, provider completed
+[2026-10-28T16:27:25.525578387] Received transfer request response
+[2026-10-28T16:27:26.258078982] Received transfer request message with consumer pid: 6a6cc0a8-b046-4818-9c40-befd2dcc68a2
+[2026-10-28T16:27:26.360300512] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:27:26.360567227] Sending transfer start
+[2026-10-28T16:27:26.375060716] Received start request response
+[2026-10-28T16:27:26.476025252] Done waiting for state to transition to STARTED
+[2026-10-28T16:27:26.583869646] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: a79880a1-39af-48b9-9603-884f1fdfb8d3
+[2026-10-28T16:27:26.698027743] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: a79880a1-39af-48b9-9603-884f1fdfb8d3
+[2026-10-28T16:27:26.812113316] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: a79880a1-39af-48b9-9603-884f1fdfb8d3
+[2026-10-28T16:27:26.92750126] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: a79880a1-39af-48b9-9603-884f1fdfb8d3
+[2026-10-28T16:27:27.043195982] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: a79880a1-39af-48b9-9603-884f1fdfb8d3
+[2026-10-28T16:27:27.159420784] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: a79880a1-39af-48b9-9603-884f1fdfb8d3
+[2026-10-28T16:27:27.274581048] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: a79880a1-39af-48b9-9603-884f1fdfb8d3
+[2026-10-28T16:27:27.274896554] Done waiting for for consumer transfer process state to be STARTED
+[2026-10-28T16:27:27.274988612] Sending transfer suspension
+[2026-10-28T16:27:27.280626164] Received suspension request response
+[2026-10-28T16:27:27.382752199] Done waiting for state to transition to SUSPENDED
+[2026-10-28T16:27:27.49872061] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: a79880a1-39af-48b9-9603-884f1fdfb8d3
+[2026-10-28T16:27:27.612326071] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: a79880a1-39af-48b9-9603-884f1fdfb8d3
+[2026-10-28T16:27:27.731797718] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: a79880a1-39af-48b9-9603-884f1fdfb8d3
+[2026-10-28T16:27:27.848183653] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: a79880a1-39af-48b9-9603-884f1fdfb8d3
+[2026-10-28T16:27:27.962195221] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: a79880a1-39af-48b9-9603-884f1fdfb8d3
+[2026-10-28T16:27:28.071488403] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: a79880a1-39af-48b9-9603-884f1fdfb8d3
+[2026-10-28T16:27:28.187759325] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: a79880a1-39af-48b9-9603-884f1fdfb8d3
+[2026-10-28T16:27:28.306387958] Received transfer status response with state https://w3id.org/dspace/2025/1/SUSPENDED: a79880a1-39af-48b9-9603-884f1fdfb8d3
+[2026-10-28T16:27:28.306665801] Done waiting for for consumer transfer process state to be SUSPENDED
+[2026-10-28T16:27:28.306758843] Sending transfer start
+[2026-10-28T16:27:28.313543169] Received start request response
+[2026-10-28T16:27:28.415726407] Done waiting for state to transition to STARTED
+[2026-10-28T16:27:28.532010697] Received transfer status response with state https://w3id.org/dspace/2025/1/SUSPENDED: a79880a1-39af-48b9-9603-884f1fdfb8d3
+[2026-10-28T16:27:28.63919572] Received transfer status response with state https://w3id.org/dspace/2025/1/SUSPENDED: a79880a1-39af-48b9-9603-884f1fdfb8d3
+[2026-10-28T16:27:28.745618719] Received transfer status response with state https://w3id.org/dspace/2025/1/SUSPENDED: a79880a1-39af-48b9-9603-884f1fdfb8d3
+[2026-10-28T16:27:28.866193251] Received transfer status response with state https://w3id.org/dspace/2025/1/SUSPENDED: a79880a1-39af-48b9-9603-884f1fdfb8d3
+[2026-10-28T16:27:28.981996492] Received transfer status response with state https://w3id.org/dspace/2025/1/SUSPENDED: a79880a1-39af-48b9-9603-884f1fdfb8d3
+[2026-10-28T16:27:29.100942391] Received transfer status response with state https://w3id.org/dspace/2025/1/SUSPENDED: a79880a1-39af-48b9-9603-884f1fdfb8d3
+[2026-10-28T16:27:29.21709088] Received transfer status response with state https://w3id.org/dspace/2025/1/SUSPENDED: a79880a1-39af-48b9-9603-884f1fdfb8d3
+[2026-10-28T16:27:29.331771482] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: a79880a1-39af-48b9-9603-884f1fdfb8d3
+[2026-10-28T16:27:29.332030408] Done waiting for for consumer transfer process state to be STARTED
+[2026-10-28T16:27:29.332126858] Sending transfer completion
+[2026-10-28T16:27:29.337834046] Received completion request response
+[2026-10-28T16:27:29.440178026] Done waiting for state to transition to COMPLETED
+[2026-10-28T16:27:29.549523124] Received transfer status response with state https://w3id.org/dspace/2025/1/COMPLETED: a79880a1-39af-48b9-9603-884f1fdfb8d3
+[2026-10-28T16:27:29.549811825] Done waiting for for consumer transfer process state to be COMPLETED
+[2026-10-28T16:27:29.55012148] SUCCESSFUL: TP_C:01-04
+
+
+[2026-10-28T16:27:29.550368579] Started: TP_C:01-05: Verify transfer request, provider terminated
+[2026-10-28T16:27:29.553463113] Received transfer request response
+[2026-10-28T16:27:30.284564663] Received transfer request message with consumer pid: 3adb8edd-980d-4bb1-881b-5e20b8cf3680
+[2026-10-28T16:27:30.386918234] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:27:30.387227333] Sending transfer termination
+[2026-10-28T16:27:30.400766747] Received termination request response
+[2026-10-28T16:27:30.502488801] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:27:30.619755433] Received transfer status response with state https://w3id.org/dspace/2025/1/TERMINATED: 98080c7a-b45c-42d6-a6a7-e7bbe57eca7d
+[2026-10-28T16:27:30.61996001] Done waiting for for consumer transfer process state to be TERMINATED
+[2026-10-28T16:27:30.620277285] SUCCESSFUL: TP_C:01-05
+
+
+[2026-10-28T16:27:30.620811292] Started: CN_C:03-01: Verify contract request, invalid provider finalized
+[2026-10-28T16:27:30.624026302] Received contract request response
+[2026-10-28T16:27:33.273251436] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:27:33.273399646] Sending finalized event
+[2026-10-28T16:27:33.285752566] Received contract finalize response
+[2026-10-28T16:27:33.398599623] Received negotiation status response with state https://w3id.org/dspace/2025/1/REQUESTED: 193811e0-51c1-41cd-b027-caff98bc3b6d
+[2026-10-28T16:27:33.399134796] SUCCESSFUL: CN_C:03-01
+
+
+[2026-10-28T16:27:33.39959265] Started: CN_C:03-02: Verify contract request, offer received, invalid provider agreed
+[2026-10-28T16:27:33.402834043] Received contract request response
+[2026-10-28T16:27:36.285744133] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:27:36.286089774] Sending offer
+[2026-10-28T16:27:36.297372492] Received contract request response
+[2026-10-28T16:27:36.39953716] Done waiting for state to transition to OFFERED
+[2026-10-28T16:27:36.516564934] Received negotiation status response with state https://w3id.org/dspace/2025/1/OFFERED: b76cae36-6c5e-48db-a2e0-8c12927fb207
+[2026-10-28T16:27:36.516738337] Sending agreement
+[2026-10-28T16:27:36.526214197] Received contract agreement response
+[2026-10-28T16:27:36.633790168] Received negotiation status response with state https://w3id.org/dspace/2025/1/OFFERED: b76cae36-6c5e-48db-a2e0-8c12927fb207
+[2026-10-28T16:27:36.634093728] SUCCESSFUL: CN_C:03-02
+
+
+[2026-10-28T16:27:36.634343458] Started: CN_C:03-03: Verify contract request, offer received, invalid provider finalized
+[2026-10-28T16:27:36.637347232] Received contract request response
+[2026-10-28T16:27:39.30544266] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:27:39.305598833] Sending offer
+[2026-10-28T16:27:39.314513808] Received contract request response
+[2026-10-28T16:27:39.416431325] Done waiting for state to transition to OFFERED
+[2026-10-28T16:27:39.416757401] Sending finalized event
+[2026-10-28T16:27:39.435285596] Received contract finalize response
+[2026-10-28T16:27:39.552907724] Received negotiation status response with state https://w3id.org/dspace/2025/1/OFFERED: cc0db476-ac53-444f-9caf-c78e7f283100
+[2026-10-28T16:27:39.553374447] SUCCESSFUL: CN_C:03-03
+
+
+[2026-10-28T16:27:39.553741963] Started: CN_C:03-04: Verify contract request, offer received, consumer accepted, invalid provider finalized
+[2026-10-28T16:27:39.557860051] Received contract request response
+[2026-10-28T16:27:42.333306574] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:27:42.333707523] Sending offer
+[2026-10-28T16:27:42.345163889] Received contract request response
+[2026-10-28T16:27:43.346552185] Done waiting for state to transition to ACCEPTED
+[2026-10-28T16:27:43.346903209] Sending finalized event
+[2026-10-28T16:27:43.360453993] Received contract finalize response
+[2026-10-28T16:27:43.47560016] Received negotiation status response with state https://w3id.org/dspace/2025/1/ACCEPTED: d135fe9b-6b0c-4ec8-a5a1-687f0592191a
+[2026-10-28T16:27:43.476077432] SUCCESSFUL: CN_C:03-04
+
+
+[2026-10-28T16:27:43.476378736] Started: CN_C:03-05: Verify contract request, offer received, consumer accepted, invalid provider offer
+[2026-10-28T16:27:43.47958361] Received contract request response
+[2026-10-28T16:27:46.364955505] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:27:46.365370428] Sending offer
+[2026-10-28T16:27:46.378980743] Received contract request response
+[2026-10-28T16:27:47.376232784] Done waiting for state to transition to ACCEPTED
+[2026-10-28T16:27:47.376346915] Sending offer
+[2026-10-28T16:27:47.388119318] Received contract request response
+[2026-10-28T16:27:47.494598896] Received negotiation status response with state https://w3id.org/dspace/2025/1/ACCEPTED: 9223fea4-d000-45be-ada2-ce7c1c46c0a4
+[2026-10-28T16:27:47.494910572] SUCCESSFUL: CN_C:03-05
+
+
+[2026-10-28T16:27:47.495167121] Started: CN_C:03-06: Verify contract request, offer received, consumer accepted, provider agreed, invalid provider finalized
+[2026-10-28T16:27:47.498290396] Received contract request response
+[2026-10-28T16:27:50.397129017] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:27:50.397476998] Sending offer
+[2026-10-28T16:27:50.40836568] Received contract request response
+[2026-10-28T16:27:51.409070005] Done waiting for state to transition to ACCEPTED
+[2026-10-28T16:27:51.409533596] Sending agreement
+[2026-10-28T16:27:51.423261753] Received contract agreement response
+[2026-10-28T16:27:51.524315378] Done waiting for state to transition to AGREED
+[2026-10-28T16:27:51.524491283] Sending finalized event
+[2026-10-28T16:27:51.536405606] Received contract finalize response
+[2026-10-28T16:27:51.650979207] Received negotiation status response with state https://w3id.org/dspace/2025/1/AGREED: a0aba563-8234-42d1-aec4-d49e60c33233
+[2026-10-28T16:27:51.65140615] SUCCESSFUL: CN_C:03-06
+
+
+[2026-10-28T16:27:51.652140394] Started: TP:02-01: Verify transfer request, provider started, consumer terminated
+[2026-10-28T16:27:51.653008252] Sending transfer request
+[2026-10-28T16:27:51.661860758] Received transfer request response
+[2026-10-28T16:27:52.325492547] Received start message: 482f5066-aee0-44b0-93a0-9cf3e18254e7 with correlation id c7c6a65c-e720-49fb-a9e4-79d7cf5bc95d
+[2026-10-28T16:27:52.427587595] Done waiting for state to transition to STARTED
+[2026-10-28T16:27:52.543982172] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: c7c6a65c-e720-49fb-a9e4-79d7cf5bc95d
+[2026-10-28T16:27:52.544223167] Done waiting for for provider transfer process state to be STARTED
+[2026-10-28T16:27:52.544305751] Sending transfer termination
+[2026-10-28T16:27:52.549539435] Received termination request response
+[2026-10-28T16:27:52.651508077] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:27:52.764502631] Received transfer status response with state https://w3id.org/dspace/2025/1/TERMINATED: c7c6a65c-e720-49fb-a9e4-79d7cf5bc95d
+[2026-10-28T16:27:52.764836122] Done waiting for for provider transfer process state to be TERMINATED
+[2026-10-28T16:27:52.765097392] SUCCESSFUL: TP:02-01
+
+
+[2026-10-28T16:27:52.765326482] Started: TP:02-02: Verify transfer request, provider started, consumer completed
+[2026-10-28T16:27:52.765963669] Sending transfer request
+[2026-10-28T16:27:52.775054813] Received transfer request response
+[2026-10-28T16:27:53.334915246] Received start message: b7cc19d6-1261-4d28-bb41-cc45d5a1b516 with correlation id 846b0529-0796-40ad-8372-18309d961e64
+[2026-10-28T16:27:53.437450832] Done waiting for state to transition to STARTED
+[2026-10-28T16:27:53.552398203] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 846b0529-0796-40ad-8372-18309d961e64
+[2026-10-28T16:27:53.55265569] Done waiting for for provider transfer process state to be STARTED
+[2026-10-28T16:27:53.552724611] Sending transfer completion
+[2026-10-28T16:27:53.558084443] Received completion request response
+[2026-10-28T16:27:53.660381778] Done waiting for state to transition to COMPLETED
+[2026-10-28T16:27:53.771646366] Received transfer status response with state https://w3id.org/dspace/2025/1/COMPLETED: 846b0529-0796-40ad-8372-18309d961e64
+[2026-10-28T16:27:53.772043441] Done waiting for for provider transfer process state to be COMPLETED
+[2026-10-28T16:27:53.772352545] SUCCESSFUL: TP:02-02
+
+
+[2026-10-28T16:27:53.772594405] Started: TP:02-03: Verify transfer request, provider started, consumer suspended, consumer terminated
+[2026-10-28T16:27:53.773196223] Sending transfer request
+[2026-10-28T16:27:53.781577447] Received transfer request response
+[2026-10-28T16:27:54.339913757] Received start message: 55124745-7e2d-4def-9e48-44cf4df233f2 with correlation id 41a4def8-2f0a-40ed-8020-ea5f01f9fe24
+[2026-10-28T16:27:54.442378498] Done waiting for state to transition to STARTED
+[2026-10-28T16:27:54.5575753] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 41a4def8-2f0a-40ed-8020-ea5f01f9fe24
+[2026-10-28T16:27:54.557819376] Done waiting for for provider transfer process state to be STARTED
+[2026-10-28T16:27:54.557890813] Sending transfer suspension
+[2026-10-28T16:27:54.562982734] Received suspension request response
+[2026-10-28T16:27:54.664653707] Done waiting for state to transition to SUSPENDED
+[2026-10-28T16:27:54.776930014] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 41a4def8-2f0a-40ed-8020-ea5f01f9fe24
+[2026-10-28T16:27:54.887299521] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 41a4def8-2f0a-40ed-8020-ea5f01f9fe24
+[2026-10-28T16:27:54.998629282] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 41a4def8-2f0a-40ed-8020-ea5f01f9fe24
+[2026-10-28T16:27:55.113538642] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 41a4def8-2f0a-40ed-8020-ea5f01f9fe24
+[2026-10-28T16:27:55.228593769] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 41a4def8-2f0a-40ed-8020-ea5f01f9fe24
+[2026-10-28T16:27:55.342899409] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 41a4def8-2f0a-40ed-8020-ea5f01f9fe24
+[2026-10-28T16:27:55.457111535] Received transfer status response with state https://w3id.org/dspace/2025/1/SUSPENDED: 41a4def8-2f0a-40ed-8020-ea5f01f9fe24
+[2026-10-28T16:27:55.457440902] Done waiting for for provider transfer process state to be SUSPENDED
+[2026-10-28T16:27:55.457534946] Sending transfer termination
+[2026-10-28T16:27:55.463129053] Received termination request response
+[2026-10-28T16:27:55.565216087] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:27:55.684348705] Received transfer status response with state https://w3id.org/dspace/2025/1/TERMINATED: 41a4def8-2f0a-40ed-8020-ea5f01f9fe24
+[2026-10-28T16:27:55.684616901] Done waiting for for provider transfer process state to be TERMINATED
+[2026-10-28T16:27:55.684943296] SUCCESSFUL: TP:02-03
+
+
+[2026-10-28T16:27:55.685529213] Started: TP:02-05: Verify transfer request, consumer terminated
+[2026-10-28T16:27:55.686006503] Sending transfer request
+[2026-10-28T16:27:55.694395694] Received transfer request response
+[2026-10-28T16:27:55.797418004] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:27:55.905228794] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: cd4031e9-8941-4b92-98fe-e71b814e4ef3
+[2026-10-28T16:27:55.905461342] Done waiting for for provider transfer process state to be REQUESTED
+[2026-10-28T16:27:55.905524487] Sending transfer termination
+[2026-10-28T16:27:55.911085458] Received termination request response
+[2026-10-28T16:27:56.013068597] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:27:56.131126338] Received transfer status response with state https://w3id.org/dspace/2025/1/TERMINATED: cd4031e9-8941-4b92-98fe-e71b814e4ef3
+[2026-10-28T16:27:56.13140378] Done waiting for for provider transfer process state to be TERMINATED
+[2026-10-28T16:27:56.131871383] SUCCESSFUL: TP:02-05
+
+
+[2026-10-28T16:27:56.13265744] Started: TP:01-01: Verify transfer request, provider started, provider terminated
+[2026-10-28T16:27:56.133623359] Sending transfer request
+[2026-10-28T16:27:56.141842803] Received transfer request response
+[2026-10-28T16:27:56.361644886] Received start message: 553bb100-a6cb-47cf-9325-dbd0b0900e8a with correlation id 65d29251-8a20-435c-a53c-c7208e8211f6
+[2026-10-28T16:27:56.463700032] Done waiting for state to transition to STARTED
+[2026-10-28T16:27:57.372542355] Received terminated message: 553bb100-a6cb-47cf-9325-dbd0b0900e8a with correlation id 65d29251-8a20-435c-a53c-c7208e8211f6
+[2026-10-28T16:27:57.474614289] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:27:57.586302344] Received transfer status response with state https://w3id.org/dspace/2025/1/TERMINATED: 65d29251-8a20-435c-a53c-c7208e8211f6
+[2026-10-28T16:27:57.586589105] Done waiting for for provider transfer process state to be TERMINATED
+[2026-10-28T16:27:57.586946733] SUCCESSFUL: TP:01-01
+
+
+[2026-10-28T16:27:57.587205585] Started: TP:01-02: Verify transfer request, provider started, provider completed
+[2026-10-28T16:27:57.588266474] Sending transfer request
+[2026-10-28T16:27:57.595911764] Received transfer request response
+[2026-10-28T16:27:58.380278858] Received start message: c2d1df85-e726-4256-8dd2-85dad1fe47f6 with correlation id c33c4a8e-f916-4f91-bf7c-4f48f8ad6165
+[2026-10-28T16:27:58.482294886] Done waiting for state to transition to STARTED
+[2026-10-28T16:27:59.391790773] Received completion message: c2d1df85-e726-4256-8dd2-85dad1fe47f6 with correlation id c33c4a8e-f916-4f91-bf7c-4f48f8ad6165
+[2026-10-28T16:27:59.493553573] Done waiting for state to transition to COMPLETED
+[2026-10-28T16:27:59.60942754] Received transfer status response with state https://w3id.org/dspace/2025/1/COMPLETED: c33c4a8e-f916-4f91-bf7c-4f48f8ad6165
+[2026-10-28T16:27:59.609663464] Done waiting for for provider transfer process state to be COMPLETED
+[2026-10-28T16:27:59.610020172] SUCCESSFUL: TP:01-02
+
+
+[2026-10-28T16:27:59.610344873] Started: TP:01-03: Verify transfer request, provider started, provider suspended, provider terminated
+[2026-10-28T16:27:59.611299687] Sending transfer request
+[2026-10-28T16:27:59.619205814] Received transfer request response
+[2026-10-28T16:28:00.405514699] Received start message: b91c45d9-3034-4a8f-9896-6b26e959f620 with correlation id b85107e2-009d-4ee4-9626-060395dd6bc2
+[2026-10-28T16:28:00.507384027] Done waiting for state to transition to STARTED
+[2026-10-28T16:28:01.427617605] Received suspension message: b91c45d9-3034-4a8f-9896-6b26e959f620 with correlation id b85107e2-009d-4ee4-9626-060395dd6bc2
+[2026-10-28T16:28:01.530044578] Done waiting for state to transition to SUSPENDED
+[2026-10-28T16:28:02.447515146] Received terminated message: b91c45d9-3034-4a8f-9896-6b26e959f620 with correlation id b85107e2-009d-4ee4-9626-060395dd6bc2
+[2026-10-28T16:28:02.549645329] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:28:02.66081168] Received transfer status response with state https://w3id.org/dspace/2025/1/TERMINATED: b85107e2-009d-4ee4-9626-060395dd6bc2
+[2026-10-28T16:28:02.661073078] Done waiting for for provider transfer process state to be TERMINATED
+[2026-10-28T16:28:02.66144991] SUCCESSFUL: TP:01-03
+
+
+[2026-10-28T16:28:02.661862522] Started: TP:01-04: Verify transfer request, provider started, provider suspended, provider started, provider completed
+[2026-10-28T16:28:02.662967054] Sending transfer request
+[2026-10-28T16:28:02.670678578] Received transfer request response
+[2026-10-28T16:28:03.457988335] Received start message: 390e262d-dda7-41c1-8343-e46b3cbf5775 with correlation id 16b335be-8223-4df0-9e28-76c8526d200f
+[2026-10-28T16:28:03.560370759] Done waiting for state to transition to STARTED
+[2026-10-28T16:28:04.462891949] Received suspension message: 390e262d-dda7-41c1-8343-e46b3cbf5775 with correlation id 16b335be-8223-4df0-9e28-76c8526d200f
+[2026-10-28T16:28:04.563694184] Done waiting for state to transition to SUSPENDED
+[2026-10-28T16:28:05.467270049] Received start message: 390e262d-dda7-41c1-8343-e46b3cbf5775 with correlation id 16b335be-8223-4df0-9e28-76c8526d200f
+[2026-10-28T16:28:05.568154511] Done waiting for state to transition to STARTED
+[2026-10-28T16:28:07.472764904] Received completion message: 390e262d-dda7-41c1-8343-e46b3cbf5775 with correlation id 16b335be-8223-4df0-9e28-76c8526d200f
+[2026-10-28T16:28:07.573685874] Done waiting for state to transition to COMPLETED
+[2026-10-28T16:28:07.680285044] Received transfer status response with state https://w3id.org/dspace/2025/1/COMPLETED: 16b335be-8223-4df0-9e28-76c8526d200f
+[2026-10-28T16:28:07.680477749] Done waiting for for provider transfer process state to be COMPLETED
+[2026-10-28T16:28:07.680784022] SUCCESSFUL: TP:01-04
+
+
+[2026-10-28T16:28:07.681074916] Started: TP:01-05: Verify transfer request, provider terminated
+[2026-10-28T16:28:07.681794569] Sending transfer request
+[2026-10-28T16:28:07.689692988] Received transfer request response
+[2026-10-28T16:28:09.491468183] Received terminated message: c4ad99a0-6960-47c7-ad51-eaf57632f451 with correlation id 28e57517-3ddf-4fd6-8b0c-27dad8944106
+[2026-10-28T16:28:09.592426081] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:28:09.702138271] Received transfer status response with state https://w3id.org/dspace/2025/1/TERMINATED: 28e57517-3ddf-4fd6-8b0c-27dad8944106
+[2026-10-28T16:28:09.702383554] Done waiting for for provider transfer process state to be TERMINATED
+[2026-10-28T16:28:09.702762167] SUCCESSFUL: TP:01-05
+
+
+[2026-10-28T16:28:09.703534214] Started: TP_C:03-01: Verify transfer request, provider completed
+[2026-10-28T16:28:09.707039065] Received transfer request response
+[2026-10-28T16:28:10.506627689] Received transfer request message with consumer pid: f78d3eb4-5c09-4951-8c2a-299c44b1cc14
+[2026-10-28T16:28:10.608438674] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:28:10.727628755] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: a5b8de27-9487-4b0f-886a-2537de7151af
+[2026-10-28T16:28:10.727898791] Done waiting for for consumer transfer process state to be REQUESTED
+[2026-10-28T16:28:10.728032579] Sending transfer completion
+[2026-10-28T16:28:10.735450259] Received completion request response
+[2026-10-28T16:28:10.837850406] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:28:10.952804993] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: a5b8de27-9487-4b0f-886a-2537de7151af
+[2026-10-28T16:28:10.953091429] Done waiting for for consumer transfer process state to be REQUESTED
+[2026-10-28T16:28:10.953415046] SUCCESSFUL: TP_C:03-01
+
+
+[2026-10-28T16:28:10.953739047] Started: TP_C:03-02: Verify transfer request, provider suspended
+[2026-10-28T16:28:10.957117607] Received transfer request response
+[2026-10-28T16:28:11.522804051] Received transfer request message with consumer pid: 162bb120-ad3a-4dc3-9a7d-55c218ee3d4c
+[2026-10-28T16:28:11.625585705] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:28:11.741181957] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 1808c1bc-1446-4140-a4d9-493b4380ece6
+[2026-10-28T16:28:11.741538526] Done waiting for for consumer transfer process state to be REQUESTED
+[2026-10-28T16:28:11.741679563] Sending transfer suspension
+[2026-10-28T16:28:11.749955057] Received suspension request response
+[2026-10-28T16:28:11.85182722] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:28:11.967886156] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 1808c1bc-1446-4140-a4d9-493b4380ece6
+[2026-10-28T16:28:11.968175243] Done waiting for for consumer transfer process state to be REQUESTED
+[2026-10-28T16:28:11.968510147] SUCCESSFUL: TP_C:03-02
+
+
+[2026-10-28T16:28:11.968903273] Started: TP_C:03-03: Verify transfer request, provider started, provider suspended, provider completed
+[2026-10-28T16:28:11.972010236] Received transfer request response
+[2026-10-28T16:28:12.53678056] Received transfer request message with consumer pid: 6c51db20-8941-4612-ba3e-abd57635041f
+[2026-10-28T16:28:12.636847775] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:28:12.751997463] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 486e639c-23ef-4cb2-8821-413afedb9751
+[2026-10-28T16:28:12.752249398] Done waiting for for consumer transfer process state to be REQUESTED
+[2026-10-28T16:28:12.752360389] Sending transfer start
+[2026-10-28T16:28:12.758009733] Received start request response
+[2026-10-28T16:28:12.860109506] Done waiting for state to transition to STARTED
+[2026-10-28T16:28:12.974885743] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 486e639c-23ef-4cb2-8821-413afedb9751
+[2026-10-28T16:28:13.088779646] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 486e639c-23ef-4cb2-8821-413afedb9751
+[2026-10-28T16:28:13.201987847] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 486e639c-23ef-4cb2-8821-413afedb9751
+[2026-10-28T16:28:13.317693882] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 486e639c-23ef-4cb2-8821-413afedb9751
+[2026-10-28T16:28:13.432373216] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 486e639c-23ef-4cb2-8821-413afedb9751
+[2026-10-28T16:28:13.547454181] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 486e639c-23ef-4cb2-8821-413afedb9751
+[2026-10-28T16:28:13.547764105] Done waiting for for consumer transfer process state to be STARTED
+[2026-10-28T16:28:13.547845769] Sending transfer suspension
+[2026-10-28T16:28:13.553359824] Received suspension request response
+[2026-10-28T16:28:13.654712005] Done waiting for state to transition to SUSPENDED
+[2026-10-28T16:28:13.76866631] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 486e639c-23ef-4cb2-8821-413afedb9751
+[2026-10-28T16:28:13.88162628] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 486e639c-23ef-4cb2-8821-413afedb9751
+[2026-10-28T16:28:13.998985039] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 486e639c-23ef-4cb2-8821-413afedb9751
+[2026-10-28T16:28:14.116084417] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 486e639c-23ef-4cb2-8821-413afedb9751
+[2026-10-28T16:28:14.228542934] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 486e639c-23ef-4cb2-8821-413afedb9751
+[2026-10-28T16:28:14.337676856] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 486e639c-23ef-4cb2-8821-413afedb9751
+[2026-10-28T16:28:14.444858233] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 486e639c-23ef-4cb2-8821-413afedb9751
+[2026-10-28T16:28:14.552898898] Received transfer status response with state https://w3id.org/dspace/2025/1/SUSPENDED: 486e639c-23ef-4cb2-8821-413afedb9751
+[2026-10-28T16:28:14.553224629] Done waiting for for consumer transfer process state to be SUSPENDED
+[2026-10-28T16:28:14.553303481] Sending transfer completion
+[2026-10-28T16:28:14.560693759] Received completion request response
+[2026-10-28T16:28:14.6626954] Done waiting for state to transition to SUSPENDED
+[2026-10-28T16:28:14.778060385] Received transfer status response with state https://w3id.org/dspace/2025/1/SUSPENDED: 486e639c-23ef-4cb2-8821-413afedb9751
+[2026-10-28T16:28:14.778274662] Done waiting for for consumer transfer process state to be SUSPENDED
+[2026-10-28T16:28:14.778567645] SUCCESSFUL: TP_C:03-03
+
+
+[2026-10-28T16:28:14.778781895] Started: TP_C:03-04: Verify transfer request, provider started, provider terminated, provider started
+[2026-10-28T16:28:14.782195742] Received transfer request response
+[2026-10-28T16:28:15.560228844] Received transfer request message with consumer pid: 951e6710-c47c-48c9-a226-c724e8a283e0
+[2026-10-28T16:28:15.662933993] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:28:15.780282154] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 3ac12bac-4a9d-4aee-b01c-49f275e17a4f
+[2026-10-28T16:28:15.78061427] Done waiting for for consumer transfer process state to be REQUESTED
+[2026-10-28T16:28:15.780689776] Sending transfer start
+[2026-10-28T16:28:15.786804933] Received start request response
+[2026-10-28T16:28:15.88758661] Done waiting for state to transition to STARTED
+[2026-10-28T16:28:15.994183159] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 3ac12bac-4a9d-4aee-b01c-49f275e17a4f
+[2026-10-28T16:28:16.10675792] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 3ac12bac-4a9d-4aee-b01c-49f275e17a4f
+[2026-10-28T16:28:16.234367947] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 3ac12bac-4a9d-4aee-b01c-49f275e17a4f
+[2026-10-28T16:28:16.342658323] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 3ac12bac-4a9d-4aee-b01c-49f275e17a4f
+[2026-10-28T16:28:16.460740216] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 3ac12bac-4a9d-4aee-b01c-49f275e17a4f
+[2026-10-28T16:28:16.573384885] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 3ac12bac-4a9d-4aee-b01c-49f275e17a4f
+[2026-10-28T16:28:16.573674723] Done waiting for for consumer transfer process state to be STARTED
+[2026-10-28T16:28:16.573746864] Sending transfer termination
+[2026-10-28T16:28:16.579709394] Received termination request response
+[2026-10-28T16:28:16.680475172] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:28:16.795958997] Received transfer status response with state https://w3id.org/dspace/2025/1/TERMINATED: 3ac12bac-4a9d-4aee-b01c-49f275e17a4f
+[2026-10-28T16:28:16.796289797] Done waiting for for consumer transfer process state to be TERMINATED
+[2026-10-28T16:28:16.796386855] Sending transfer start
+[2026-10-28T16:28:16.806645895] Received start request response
+[2026-10-28T16:28:16.908452125] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:28:17.022227356] Received transfer status response with state https://w3id.org/dspace/2025/1/TERMINATED: 3ac12bac-4a9d-4aee-b01c-49f275e17a4f
+[2026-10-28T16:28:17.022506175] Done waiting for for consumer transfer process state to be TERMINATED
+[2026-10-28T16:28:17.022864314] SUCCESSFUL: TP_C:03-04
+
+
+[2026-10-28T16:28:17.023476853] Started: TP_C:03-05: Verify transfer request, provider started, provider terminated, provider suspended
+[2026-10-28T16:28:17.026545905] Received transfer request response
+[2026-10-28T16:28:17.580792144] Received transfer request message with consumer pid: 3c8a7acb-2510-4c15-8ffe-984b18ff1450
+[2026-10-28T16:28:17.683283735] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:28:17.800276396] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 95f7d643-f344-4e2b-a07b-4deee4366405
+[2026-10-28T16:28:17.800590802] Done waiting for for consumer transfer process state to be REQUESTED
+[2026-10-28T16:28:17.80068787] Sending transfer start
+[2026-10-28T16:28:17.807522946] Received start request response
+[2026-10-28T16:28:17.909204419] Done waiting for state to transition to STARTED
+[2026-10-28T16:28:18.023163915] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 95f7d643-f344-4e2b-a07b-4deee4366405
+[2026-10-28T16:28:18.130297907] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 95f7d643-f344-4e2b-a07b-4deee4366405
+[2026-10-28T16:28:18.249569898] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 95f7d643-f344-4e2b-a07b-4deee4366405
+[2026-10-28T16:28:18.366154261] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 95f7d643-f344-4e2b-a07b-4deee4366405
+[2026-10-28T16:28:18.476206194] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 95f7d643-f344-4e2b-a07b-4deee4366405
+[2026-10-28T16:28:18.592485811] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 95f7d643-f344-4e2b-a07b-4deee4366405
+[2026-10-28T16:28:18.592800565] Done waiting for for consumer transfer process state to be STARTED
+[2026-10-28T16:28:18.592867976] Sending transfer termination
+[2026-10-28T16:28:18.597943197] Received termination request response
+[2026-10-28T16:28:18.698788612] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:28:18.811779855] Received transfer status response with state https://w3id.org/dspace/2025/1/TERMINATED: 95f7d643-f344-4e2b-a07b-4deee4366405
+[2026-10-28T16:28:18.812061531] Done waiting for for consumer transfer process state to be TERMINATED
+[2026-10-28T16:28:18.812126244] Sending transfer suspension
+[2026-10-28T16:28:18.819402033] Received suspension request response
+[2026-10-28T16:28:18.921169236] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:28:19.035204981] Received transfer status response with state https://w3id.org/dspace/2025/1/TERMINATED: 95f7d643-f344-4e2b-a07b-4deee4366405
+[2026-10-28T16:28:19.035514172] Done waiting for for consumer transfer process state to be TERMINATED
+[2026-10-28T16:28:19.036029695] SUCCESSFUL: TP_C:03-05
+
+
+[2026-10-28T16:28:19.036497238] Started: TP_C:03-06: Verify transfer request, provider started, provider terminated, provider completed
+[2026-10-28T16:28:19.04024541] Received transfer request response
+[2026-10-28T16:28:19.6001112] Received transfer request message with consumer pid: dfdae6ba-cfde-4e1e-8f16-a59cd2b9eaba
+[2026-10-28T16:28:19.700907968] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:28:19.81529937] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 03e7a715-f484-49d2-a57e-5eee50e172c4
+[2026-10-28T16:28:19.815599187] Done waiting for for consumer transfer process state to be REQUESTED
+[2026-10-28T16:28:19.815679308] Sending transfer start
+[2026-10-28T16:28:19.82219181] Received start request response
+[2026-10-28T16:28:19.924397692] Done waiting for state to transition to STARTED
+[2026-10-28T16:28:20.034127142] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 03e7a715-f484-49d2-a57e-5eee50e172c4
+[2026-10-28T16:28:20.148443445] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 03e7a715-f484-49d2-a57e-5eee50e172c4
+[2026-10-28T16:28:20.266239335] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 03e7a715-f484-49d2-a57e-5eee50e172c4
+[2026-10-28T16:28:20.381381881] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 03e7a715-f484-49d2-a57e-5eee50e172c4
+[2026-10-28T16:28:20.499105974] Received transfer status response with state https://w3id.org/dspace/2025/1/REQUESTED: 03e7a715-f484-49d2-a57e-5eee50e172c4
+[2026-10-28T16:28:20.610050411] Received transfer status response with state https://w3id.org/dspace/2025/1/STARTED: 03e7a715-f484-49d2-a57e-5eee50e172c4
+[2026-10-28T16:28:20.610337373] Done waiting for for consumer transfer process state to be STARTED
+[2026-10-28T16:28:20.610401234] Sending transfer termination
+[2026-10-28T16:28:20.615590516] Received termination request response
+[2026-10-28T16:28:20.717471461] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:28:20.82709202] Received transfer status response with state https://w3id.org/dspace/2025/1/TERMINATED: 03e7a715-f484-49d2-a57e-5eee50e172c4
+[2026-10-28T16:28:20.827316151] Done waiting for for consumer transfer process state to be TERMINATED
+[2026-10-28T16:28:20.827382481] Sending transfer completion
+[2026-10-28T16:28:20.834709783] Received completion request response
+[2026-10-28T16:28:20.936863657] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:28:21.052015921] Received transfer status response with state https://w3id.org/dspace/2025/1/TERMINATED: 03e7a715-f484-49d2-a57e-5eee50e172c4
+[2026-10-28T16:28:21.052294936] Done waiting for for consumer transfer process state to be TERMINATED
+[2026-10-28T16:28:21.052798732] SUCCESSFUL: TP_C:03-06
+
+
+[2026-10-28T16:28:21.053561805] Started: CN_C:02-01: Verify contract request, provider terminated
+[2026-10-28T16:28:21.056912739] Received contract request response
+[2026-10-28T16:28:23.491302289] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:28:23.59180808] Sending termination: 1bcaddc7-8bf6-40b2-95da-4ff4dfac9053
+[2026-10-28T16:28:23.600265027] Received negotiation terminate response: 1bcaddc7-8bf6-40b2-95da-4ff4dfac9053
+[2026-10-28T16:28:23.702444919] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:28:23.819964797] Received negotiation status response with state https://w3id.org/dspace/2025/1/TERMINATED: 4c396674-5d4b-4c7f-a4ce-ef46c65408a1
+[2026-10-28T16:28:23.820427928] SUCCESSFUL: CN_C:02-01
+
+
+[2026-10-28T16:28:23.820719937] Started: CN_C:02-02: Verify contract request, consumer terminated
+[2026-10-28T16:28:23.824286385] Received contract request response
+[2026-10-28T16:28:26.502884273] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:28:27.413358483] Received terminated message: d9fbeefd-b85e-4250-a97f-f113aa97ddde with correlation id 189b32f7-706f-4da5-a490-a15a66c20192
+[2026-10-28T16:28:27.515448389] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:28:27.62733499] Received negotiation status response with state https://w3id.org/dspace/2025/1/TERMINATED: d9fbeefd-b85e-4250-a97f-f113aa97ddde
+[2026-10-28T16:28:27.627684262] SUCCESSFUL: CN_C:02-02
+
+
+[2026-10-28T16:28:27.627917667] Started: CN_C:02-03: Verify contract request, provider agreement, consumer terminated
+[2026-10-28T16:28:27.631115234] Received contract request response
+[2026-10-28T16:28:30.535443057] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:28:30.535895985] Sending agreement
+[2026-10-28T16:28:30.549771588] Received contract agreement response
+[2026-10-28T16:28:31.446164581] Received terminated message: 8a163b4e-8dde-4527-8806-d54a0aa9e849 with correlation id a9a67f33-0a0b-4aa6-89b7-83d81985ab7f
+[2026-10-28T16:28:31.548301059] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:28:31.662349467] Received negotiation status response with state https://w3id.org/dspace/2025/1/TERMINATED: 8a163b4e-8dde-4527-8806-d54a0aa9e849
+[2026-10-28T16:28:31.662708142] SUCCESSFUL: CN_C:02-03
+
+
+[2026-10-28T16:28:31.663022709] Started: CN_C:02-04: Verify contract request, offer received, provider terminated
+[2026-10-28T16:28:31.666537227] Received contract request response
+[2026-10-28T16:28:34.571744573] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:28:34.572045518] Sending offer
+[2026-10-28T16:28:34.585765617] Received contract request response
+[2026-10-28T16:28:34.687364459] Done waiting for state to transition to OFFERED
+[2026-10-28T16:28:34.796174444] Received negotiation status response with state https://w3id.org/dspace/2025/1/OFFERED: 1c1b0763-976b-4de6-9805-c53f2022cf5a
+[2026-10-28T16:28:34.896597904] Sending termination: cb76b438-06d6-4058-939c-8e6d319f7800
+[2026-10-28T16:28:34.90755002] Received negotiation terminate response: cb76b438-06d6-4058-939c-8e6d319f7800
+[2026-10-28T16:28:35.008272501] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:28:35.120461677] Received negotiation status response with state https://w3id.org/dspace/2025/1/TERMINATED: 1c1b0763-976b-4de6-9805-c53f2022cf5a
+[2026-10-28T16:28:35.120805832] SUCCESSFUL: CN_C:02-04
+
+
+[2026-10-28T16:28:35.121154196] Started: CN_C:02-05: Verify contract request, offer received, consumer accepted, provider terminated
+[2026-10-28T16:28:35.124634112] Received contract request response
+[2026-10-28T16:28:37.591634953] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:28:37.591961843] Sending offer
+[2026-10-28T16:28:37.604561141] Received contract request response
+[2026-10-28T16:28:38.606918836] Done waiting for state to transition to ACCEPTED
+[2026-10-28T16:28:38.707303183] Sending termination: 88e5ec4a-0e59-45a4-8dd1-fd6a658cc86c
+[2026-10-28T16:28:38.71305886] Received negotiation terminate response: 88e5ec4a-0e59-45a4-8dd1-fd6a658cc86c
+[2026-10-28T16:28:38.81499022] Done waiting for state to transition to TERMINATED
+[2026-10-28T16:28:38.930834743] Received negotiation status response with state https://w3id.org/dspace/2025/1/TERMINATED: a1ef5e7a-1a65-465c-9f25-5229c520b9b4
+[2026-10-28T16:28:38.931159282] SUCCESSFUL: CN_C:02-05
+
+
+[2026-10-28T16:28:38.931404972] Started: CN_C:02-06: Verify contract request, provider agreement, consumer verified, provider terminated
+[2026-10-28T16:28:38.934587149] Received contract request response
+[2026-10-28T16:28:41.623380175] Done waiting for state to transition to REQUESTED
+[2026-10-28T16:28:41.623705222] Sending agreement
+[2026-10-28T16:28:41.633521515] Received contract agreement response
+[2026-10-28T16:28:42.631471796] Done waiting for state to transition to VERIFIED
+[2026-10-28T16:28:42.732117335] Sending termination: e9e89fa8-2758-4e2b-af8d-1e08ec7575b1
+[2026-10-28T16:28:42.747709717] Received negotiation terminate response: e9e89fa8-2758-4e2b-af8d-1e08ec7575b1
+[2026-10-28T16:28:42.863706012] Received negotiation status response with state https://w3id.org/dspace/2025/1/TERMINATED: d687fed7-10c3-46a3-b7b0-3ce320402ddd
+[2026-10-28T16:28:42.864119283] SUCCESSFUL: CN_C:02-06
+
+
+[2026-10-28T16:28:42.864855063] Started: MET:01-01: Verify metadata request
+[2026-10-28T16:28:42.871357667] Received metadata  response
+[2026-10-28T16:28:42.892143975] SUCCESSFUL: MET:01-01
+
+
+[2026-10-28T16:28:42.892671503] Started: CN:03-01: Verify contract request, provider agreement, consumer verified, provider finalized, invalid consumer terminated
+[2026-10-28T16:28:42.893354762] Sending contract request
+[2026-10-28T16:28:42.900890324] Received contract request response
+[2026-10-28T16:28:44.452705722] Received provider agreement: a3722c97-5181-4de9-ad4f-797c3cf050e1
+[2026-10-28T16:28:44.554629282] Done waiting for state to transition to AGREED
+[2026-10-28T16:28:44.655134555] Sending verification: a3722c97-5181-4de9-ad4f-797c3cf050e1
+[2026-10-28T16:28:44.667609242] Received verification response: a3722c97-5181-4de9-ad4f-797c3cf050e1
+[2026-10-28T16:28:46.478381426] Received provider finalize: a3722c97-5181-4de9-ad4f-797c3cf050e1
+[2026-10-28T16:28:46.580416757] Done waiting for state to transition to FINALIZED
+[2026-10-28T16:28:46.686964291] Received negotiation status response with state https://w3id.org/dspace/2025/1/FINALIZED: a3722c97-5181-4de9-ad4f-797c3cf050e1
+[2026-10-28T16:28:46.787327032] Sending termination: a3722c97-5181-4de9-ad4f-797c3cf050e1
+[2026-10-28T16:28:46.801533642] Received negotiation terminate response: a3722c97-5181-4de9-ad4f-797c3cf050e1
+[2026-10-28T16:28:46.801904507] SUCCESSFUL: CN:03-01
+
+
+[2026-10-28T16:28:46.80217162] Started: CN:03-02: Verify contract request, offer received, invalid consumer verified
+[2026-10-28T16:28:46.803051921] Sending contract request
+[2026-10-28T16:28:46.81281906] Received contract request response
+[2026-10-28T16:28:48.498236284] Received provider offer: ec8e21cb-7d70-4e39-899e-d4d65db41fb2
+[2026-10-28T16:28:48.5991013] Done waiting for state to transition to OFFERED
+[2026-10-28T16:28:48.699297783] Sending verification: ec8e21cb-7d70-4e39-899e-d4d65db41fb2
+[2026-10-28T16:28:48.70812425] Received verification response: ec8e21cb-7d70-4e39-899e-d4d65db41fb2
+[2026-10-28T16:28:48.708500306] SUCCESSFUL: CN:03-02
+
+
+[2026-10-28T16:28:48.708781896] Started: CN:03-03: Verify contract request, offer received, consumer accepted, illegal consumer verified
+[2026-10-28T16:28:48.709463586] Sending contract request
+[2026-10-28T16:28:48.718111249] Received contract request response
+[2026-10-28T16:28:50.516919286] Received provider offer: 9ba3fbef-aa3b-4ff5-9eaa-276e621c1a34
+[2026-10-28T16:28:50.618923169] Done waiting for state to transition to OFFERED
+[2026-10-28T16:28:50.619133854] Accepting offer: 9ba3fbef-aa3b-4ff5-9eaa-276e621c1a34
+[2026-10-28T16:28:50.629673051] Received accept response: 9ba3fbef-aa3b-4ff5-9eaa-276e621c1a34
+[2026-10-28T16:28:50.729997161] Sending verification: 9ba3fbef-aa3b-4ff5-9eaa-276e621c1a34
+[2026-10-28T16:28:50.743168402] Received verification response: 9ba3fbef-aa3b-4ff5-9eaa-276e621c1a34
+[2026-10-28T16:28:50.743573761] SUCCESSFUL: CN:03-03
+
+
+[2026-10-28T16:28:50.743794599] Started: CN:03-04: Verify contract request, offer received, consumer counter-offer (x2), provider terminated
+[2026-10-28T16:28:50.744527777] Sending contract request
+[2026-10-28T16:28:50.752454857] Received contract request response
+[2026-10-28T16:28:52.535045554] Received provider offer: 9481e0af-ff56-4fe9-8df8-23aa53c37b42
+[2026-10-28T16:28:52.63705119] Done waiting for state to transition to OFFERED
+[2026-10-28T16:28:52.637502134] Sending counter offer: 9481e0af-ff56-4fe9-8df8-23aa53c37b42
+[2026-10-28T16:28:52.64921686] Received contract offer request response
+[2026-10-28T16:28:52.649344816] Sending counter offer: 9481e0af-ff56-4fe9-8df8-23aa53c37b42
+[2026-10-28T16:28:52.657446525] Received contract offer request response
+[2026-10-28T16:28:52.657850183] SUCCESSFUL: CN:03-04
+
+
+[2026-10-28T16:28:52.658544261] Started: CAT:01-01: Verify catalog request
+[2026-10-28T16:28:52.699526784] Received catalog request response
+[2026-10-28T16:28:52.71084813] SUCCESSFUL: CAT:01-01
+
+
+[2026-10-28T16:28:52.711162133] Started: CAT:01-02: Verify dataset request
+[2026-10-28T16:28:52.718623346] Received dataset request response
+[2026-10-28T16:28:52.720037749] SUCCESSFUL: CAT:01-02
+
+
+[2026-10-28T16:28:52.720277669] Started: CAT:01-03: Verify dataset request not found
+[2026-10-28T16:28:52.725666785] Received dataset request response
+[2026-10-28T16:28:52.727314351] SUCCESSFUL: CAT:01-03
+
+[2026-10-28T16:28:52.728955699] Passed tests: 65
+[2026-10-28T16:28:52.729032887] Failed tests: 0
+[32m
+[2026-10-28T16:28:52.729083284] 🎉😃🚀All tests passed
+[0m
+[0m
+[2026-10-28T16:28:52.729229644] Test run complete
