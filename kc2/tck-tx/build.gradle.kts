@@ -11,6 +11,7 @@ dependencies {
     implementation("org.eclipse.edc:tck-extension:$edc") { isTransitive = false }   // bundled into the thin jar
     compileOnly("org.eclipse.edc:core-spi:$edc")
     compileOnly("org.eclipse.edc:policy-spi:$edc")
+    compileOnly("org.eclipse.edc:contract-spi:$edc")   // ContractNegotiationObservable (ordering handle)
     compileOnly("org.eclipse.edc:protocol-spi:$edc")
     compileOnly("org.eclipse.edc:control-plane-core:$edc")
     compileOnly("org.eclipse.tractusx.edc:bdrs-client-spi:$tx")

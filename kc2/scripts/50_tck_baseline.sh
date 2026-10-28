@@ -100,7 +100,18 @@ esac
 for _ in $(seq 1 90); do docker logs pilot08k2-cut 2>&1 | grep -qE ' ready| SEVERE ' && break; done
 docker logs pilot08k2-cut 2>&1 | grep -q ' ready' || { echo "connector-under-test not ready"; docker logs pilot08k2-cut 2>&1 | grep -E "SEVERE|ERROR" | head -15; exit 4; }
 echo "== cut ready; service replacements (which provider won) =="
-docker logs pilot08k2-cut 2>&1 | grep -oE "A service of the type [^ ]+ was already registered and has now been replaced with a [A-Za-z0-9$]+ instance" | sed 's/A service of the type //' | sort -u | tee "$run/replacements.txt" || true
+docker logs pilot08k2-cut 2>&1 | grep -oE "A service of the type [^ ]+ was already registered and has now been replaced with a [A-Za-z0-9$]* instance" | sed 's/A service of the type //' | sort -u | tee "$run/replacements.txt" || true
+# The run counts only if the upstream stand-ins actually won (precedence is measured, not assumed).
+winner(){ grep -E "^$1 was already registered" "$run/replacements.txt" | tail -1 | sed -E 's/.* replaced with a ([A-Za-z0-9$]*) instance/\1/'; }
+expect(){ local w; w="$(winner "$1")"; [ "$w" = "$2" ] && echo "  ok: $1 -> $2" || { echo "  INVALID reproduction: $1 -> '${w:-<not replaced>}' (expected $2)"; bad=1; }; }
+bad=0
+# vanilla: tck-extension's NoopIdentityService is the only IdentityService provider (no DCP) -> no replacement line.
+if [ "$T" = tractusx ]; then
+  expect org.eclipse.edc.spi.iam.IdentityService NoopIdentityService      # beats Tractus-X's DCP identity service
+  expect org.eclipse.edc.connector.controlplane.policy.spi.store.PolicyArchive TckPolicyArchive
+  expect org.eclipse.tractusx.edc.spi.identity.mapper.BdrsClient TckPassThroughBdrsClient
+fi
+[ "$bad" = 0 ] || { echo "upstream TCK configuration NOT reproduced — no TCK results recorded"; exit 6; }
 
 echo "== TCK $TCK_VER =="
 MSYS_NO_PATHCONV=1 docker run -d --name pilot08k2-tck --network "$NET" --network-alias tck \
