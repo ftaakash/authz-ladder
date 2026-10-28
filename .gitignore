@@ -18,3 +18,5 @@ kc2/identity/.gradle/
 kc2/identity/build/
 kc2/vanilla/.gradle/
 kc2/vanilla/build/
+kc2/tck-tx/.gradle/
+kc2/tck-tx/build/
