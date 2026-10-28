@@ -97,3 +97,29 @@ runtime difference: in-memory release binary vs. upstream's PostgreSQL runtime).
 (vanilla callback-address run; Tractus-X lost-PolicyArchive run) was deleted when the runs were discarded and is **not archived**;
 their failure signatures are recorded above from the session observations (vanilla: callback scenarios timed out after 7 s;
 Tractus-X: 11 transfer-provider scenarios, NPE on `Policy.getAssignee()`).
+
+## DCP TCK (identity stack) — DEFERRED (U5; 2026-10-29)
+
+**Version evidence (not chosen by what passes).** eclipse-edc/IdentityHub **v0.17.0** (commit `e78f72ec`) is the KC2
+identity-stack version (D12). Its own DCP-TCK presentation test pins the **1.0.0** TCK line:
+`e2e-tests/tck-tests/presentation/.../presentation/DcpPresentationFlowWithDockerTest.java` uses image
+`eclipsedataspacetck/dcp-tck-runtime:1.0.0-RC5`; `gradle/libs.versions.toml` `dcp-tck = "1.0.0-RC6"`. So the
+faithful suite for this stack is the 1.0.0 line, **not** 1.2.1 (Review 15 U5's 1.2.1 was a planning guess).
+
+**Discarded setup runs (both: TCK credential-seeding failed before any assertion; not conformance results, not archived):**
+- DCP TCK **1.2.1** (`sha256:b4c445cd…`): every scenario failed in the TCK's credential-seeding step
+  (`Failed to seed credentials: Bad Request`, then `Conflict`) — forward version mismatch vs IdentityHub 0.17.0.
+- DCP TCK **1.0.0** (`sha256:02c298a2…`, the upstream-matched line): **same** credential-seeding failure
+  (`Bad Request`/`Conflict`) before any presentation assertion ran.
+
+**Why deferred.** Upstream runs this TCK from an **in-process JUnit harness** (`ComponentRuntimeExtension` +
+`registerServiceMock`, `DcpPresentationFlowWithDockerTest`) that seeds the holder's credentials through test-fixture
+service wiring. The standalone dockerized reproduction (holder IdentityHub boots, seeds its participant, publishes its
+`did:web` — all confirmed, did.json 200) cannot drive that credential-seeding path the same way out-of-process, so the
+TCK aborts in setup on both versions. This is a harness-reproduction limit, **not** an IdentityHub conformance result.
+Per the coordinator's time-box (end 2026-10-30), versions are not iterated further.
+
+**Consequence.** The DSP TCK baseline (both targets, 65/65) stands as the DSP-side "passes the official suite" premise.
+The DCP (identity-layer) TCK baseline is **deferred** (DECISIONS D15); **INV-5's phase-3 result is tagged
+"identity stack not TCK-baselined"**. Revisit: drive seeding via the in-process harness or the Identity API with the
+participant API key.

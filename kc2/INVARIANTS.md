@@ -143,6 +143,10 @@ encodes **no undisclosed finding** — so it is tracked and pushed (per the coor
 
 ## INV-5 — Credential issuer trust (presentation accepted only from a trusted issuer)
 
+- **TCK-baseline tag (D15, 2026-10-29).** The DCP (identity-layer) TCK baseline was **deferred** (standalone
+  reproduction blocked in the TCK's credential-seeding step; see `kc2/TCK-PLAN.md` §DCP TCK). INV-5's phase-3
+  result on each current target therefore carries the tag **"identity stack not TCK-baselined"**. The DSP TCK
+  baseline (both targets 65/65) is unaffected.
 - **Source.** DCP (Decentralized Claims Protocol): a counterparty authenticates by presenting a VP
   whose credential (e.g. MembershipCredential) was issued by an issuer the verifier **trusts**
   (`edc.iam.trusted-issuer.*`), resolved via did:web.

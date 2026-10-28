@@ -8,7 +8,9 @@
 # Usage: ./51_tck_dcp.sh
 source "$(dirname "$0")/../../scripts/lib.sh"
 GRADLE_IMG="gradle@sha256:963d59f7f22767da4efbcf46b661361b61af5fb88b0309da1071c4234c647eba"
-DCP_TCK_DIGEST="sha256:b4c445cdc2e7bb2d5d7c9410cf38bcb4a3d6fddddec7bd224f040d864eaea6ca"; DCP_TCK_VER="1.2.1"
+# DCP TCK line upstream paired with IdentityHub 0.17.0 (its docker test pins 1.0.0-RC5). 1.2.1 vs 0.17.0 was a
+# forward mismatch — every scenario failed in the TCK's credential-seeding step ("Bad Request"/"Conflict") — discarded.
+DCP_TCK_DIGEST="sha256:02c298a2a223c63cf0f68cebbccf004bbf5def9abb7fbe89477ae8e04b788c6a"; DCP_TCK_VER="1.0.0"
 NET="pilot08k2_tck"; S="$PILOT/testbed/.secrets/kc2"
 JAR="$PILOT/kc2/tck-ih/build/libs/pilot08kc2-tck-ih-0.17.0.jar"
 [ -f "$JAR" ] || { echo "missing $JAR — run ROLE=tck-ih kc2/scripts/11_build_vanilla.sh"; exit 1; }
