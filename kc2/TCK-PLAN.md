@@ -69,3 +69,23 @@ Either way TCK failures **narrow the claim; they do not block** phase 3.
 
 **Decision (D14, 2026-10-28): Option A.** Claim wording: the targets *pass the official DSP TCK in the upstream TCK
 configuration (mock identity), without the real identity protocol (DCP)*. Option B is not run.
+
+## Baseline result (2026-10-28/29) — both targets pass
+
+| Target | Connector-under-test | DSP TCK | Result | Evidence |
+|---|---|---|---|---|
+| vanilla EDC 0.18.1 | upstream `dsp-tck-connector-under-test` reproduced (`controlplane-base-bom` + `tck-extension` 0.18.1), jar `404149ac…` | 1.0.2 (`sha256:f5f7fcc8…`) | **65/65 pass** | `kc2/env/tck-dsp-vanilla.csv`, `.txt` |
+| Tractus-X 0.13.0 | **release image binary** (`sha256:bc54335d…`) + add-on (`tck-extension` 0.17.0 + upstream test stand-ins), add-on `28f0cc3c…` | 1.0.2 | **65/65 pass** | `kc2/env/tck-dsp-tractusx.csv`, `.txt` |
+
+65 scenarios each: catalogue (3), metadata (1), contract negotiation provider (15) / consumer (16), transfer process
+provider (15) / consumer (15). Per D14 the claim is *"pass the official DSP TCK in the upstream TCK configuration (mock
+identity), without the real identity protocol (DCP)"*. TCK 1.0.2 = latest release; upstream pins 1.0.0 (Tractus-X) and
+1.0.0-RC6 (vanilla).
+
+**Reproduction validity checks.** (1) Network adaptation of upstream's config: connector host → `cut`, TCK callback →
+`http://tck:8083` (a first vanilla run with upstream's `0.0.0.0` callback timed out on every callback scenario — discarded as a
+setup artifact). (2) Tractus-X stand-ins are asserted from the boot log before results are recorded: `IdentityService` →
+`NoopIdentityService`, `PolicyArchive` → `TckPolicyArchive`, `BdrsClient` → `TckPassThroughBdrsClient`. A first Tractus-X
+run in which the PolicyArchive stand-in lost the provider race (11 transfer-provider scenarios failed on a null policy
+assignee) was discarded as a setup artifact; the stand-in is now ordered deterministically.
+**Phase-3 gate (this file): met** — baseline archived and green for both targets.

@@ -213,3 +213,11 @@ JRE image like the KC1 rungs. Differences from Tractus-X that the bring-up needs
 secrets via a test-fixture seeder (`pilot08.kc2.vault.secrets`, vanilla InMemoryVault has none); a DEFAULT DCP
 scope `org.eclipse.dspace.dcp.vc.type:MembershipCredential:read` (`edc.iam.dcp.scopes.membership.*`) so the
 provider actually requests the credential; the Tractus-X scope adapter is **OFF** (vanilla uses the DCP alias).
+
+### KC2 step 3 — TCK baseline downloads (2026-10-28; pre-approved sources)
+
+| Download | Source | Pin | Notes |
+|---|---|---|---|
+| `eclipsedataspacetck/dsp-tck-runtime:1.0.2` | Docker Hub | `sha256:f5f7fcc80f607dad680f363ba32f9abf6762aa9c4f54a2a211f6fec2582730fd` | official DSP TCK (latest release) |
+| vanilla TCK runtime deps (`controlplane-base-bom`, `tck-extension` 0.18.1, `parsson` 1.1.7) | Maven Central | in `kc2/vanilla/gradle/verification-metadata.xml` (659 incl. the DCP role), cross-checked | D14 |
+| Tractus-X TCK add-on deps (`tck-extension` 0.17.0 + SPIs) | Maven Central | `kc2/tck-tx/gradle/verification-metadata.xml` (118), cross-checked | D14 |
