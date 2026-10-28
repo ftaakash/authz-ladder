@@ -146,8 +146,9 @@ Next steps, in order:
 
 KC2 asks whether **current** releases violate the invariant catalogue (downgrade to tool/workshop paper
 if 0 new violations). No invariant has yet been run against a current target; **no finding exists or is
-at risk.** Any candidate finding will be reported here only as a count ("KC2: N candidate findings,
-details withheld pending disclosure"), split INV-1..5 vs INV-6..8, per SCOPE.
+at risk.** Phase-3 results will appear here only as "phase 3 run complete, results private" — **no number
+of any kind** (not per invariant, not per target, not a total) until the user approves publishing one
+(Review 15 U1, 2026-10-29; stricter than the earlier count-only rule). All tallies stay in `private/kc2/`.
 
 **Targets (phase 1):** Tractus-X EDC `edc-runtime-memory` **0.13.0** (bundled EDC 0.17.0) and vanilla
 Eclipse EDC **0.18.1**, pinned by digest/version (ENV.md §KC2).
@@ -175,5 +176,7 @@ and PASS/FAIL/INVALID rules. `kc2/TCK-PLAN.md` gates phase 3 on an official-TCK 
 | Phase 3 — run frozen invariants (private verdicts) | ~2026-11-07 | planned |
 | KC2 verdict + report | 2026-11-11 | planned |
 
+The handshake (planned ~10-28) and TCK baseline (planned ~10-30) milestones were both met early (10-27 and 10-29);
+phase 3 remains due ~11-07 and the report 11-11 (Review 15 U6).
 If phase 3 does not finish by the timebox, KC2 reports **"incomplete invariant set"**, never "0 violations".
 Record any slips in this table.

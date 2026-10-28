@@ -10,8 +10,10 @@ encodes **no undisclosed finding** — so it is tracked and pushed (per the coor
 > **Confidentiality (SCOPE / Review 11 Q3).** This catalogue is the *specification* of what should
 > hold. Anything produced by *running* it against a current release — test scripts specialised to a
 > discovered violation, observations, verdict rows, logs, notes — stays under `private/kc2/`
-> (gitignored). Tracked files may state only the **count** of candidate findings, never which
-> invariant, version, or mechanism. Disclosure is the user's call, Eclipse security process only.
+> (gitignored). **Tracked files and commit messages carry NO phase-3 number at all** — not per invariant,
+> not per target, not even a total (Review 15 U1, 2026-10-29: any count can locate an undisclosed finding).
+> They may say only "phase 3 run complete, results private". Every tally stays in `private/kc2/`; no number
+> is published without the user's explicit approval. Disclosure is the user's call, Eclipse security process only.
 
 ## Freeze rules
 

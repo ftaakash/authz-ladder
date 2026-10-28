@@ -42,8 +42,9 @@ If 1.2.1 is not on Maven Central, pin the nearest available 1.2.x and record the
   `8479f2f`) **separately**. A rediscovery of a **KC1 CVE** by INV-1 (−9202) or INV-2 (−4536) on a
   current release is a regression, **never** counted as a NEW violation.
 - All phase-3 run output (assertions, observations, verdicts, notes) goes through `kc2_private_out`
-  into `private/kc2/`; tracked files carry only the **count** of candidate findings, split INV-1..5 vs
-  INV-6..8, with no invariant/version/mechanism detail.
+  into `private/kc2/`. Tallies (kept private) split INV-1..5 vs INV-6..8. **Tracked files and commit messages
+  carry no phase-3 number at all, not even a total** — only "phase 3 run complete, results private" — until
+  the user approves publishing a number (Review 15 U1, 2026-10-29).
 
 ## How the DSP TCK authenticates — facts at the pinned tags (Review 14 T3, 2026-10-27)
 
@@ -89,3 +90,10 @@ setup artifact). (2) Tractus-X stand-ins are asserted from the boot log before r
 run in which the PolicyArchive stand-in lost the provider race (11 transfer-provider scenarios failed on a null policy
 assignee) was discarded as a setup artifact; the stand-in is now ordered deterministically.
 **Phase-3 gate (this file): met** — baseline archived and green for both targets.
+
+**Review 15 U3/U4 (2026-10-29).** Stand-in provenance and a line-by-line comparison with upstream are in
+`kc2/env/tck-tx-standins.md`: the reproduction changes **load order and naming only, no policy semantics** (plus the stated
+runtime difference: in-memory release binary vs. upstream's PostgreSQL runtime). The raw output of the two **discarded** runs
+(vanilla callback-address run; Tractus-X lost-PolicyArchive run) was deleted when the runs were discarded and is **not archived**;
+their failure signatures are recorded above from the session observations (vanilla: callback scenarios timed out after 7 s;
+Tractus-X: 11 transfer-provider scenarios, NPE on `Policy.getAssignee()`).
