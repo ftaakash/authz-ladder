@@ -28,6 +28,11 @@ case "$ROLE" in
     jar="$SRC/build/libs/pilot08kc2-vanilla-tck-all.jar"; [ -f "$jar" ] || { echo "build failed"; exit 1; }
     tjar="$SRC/build/libs/pilot08kc2-vanilla-tck-$V.jar"; cp "$jar" "$tjar"
     rec "$PILOT/kc2/env/tck-jars.csv" "vanilla-$V" "$tjar" ;;
+  tck-ih)
+    SRC="$PILOT/kc2/tck-ih"; gbuild "$SRC" -Pedc="0.17.0"
+    jar="$SRC/build/libs/pilot08kc2-tck-ih-all.jar"; [ -f "$jar" ] || { echo "build failed"; exit 1; }
+    cp "$jar" "$SRC/build/libs/pilot08kc2-tck-ih-0.17.0.jar"
+    rec "$PILOT/kc2/env/tck-jars.csv" "tck-ih-0.17.0" "$SRC/build/libs/pilot08kc2-tck-ih-0.17.0.jar" ;;
   tck-tx)
     SRC="$PILOT/kc2/tck-tx"; gbuild "$SRC"
     jar="$SRC/build/libs/pilot08kc2-tck-tx-addon.jar"; [ -f "$jar" ] || { echo "build failed"; exit 1; }
