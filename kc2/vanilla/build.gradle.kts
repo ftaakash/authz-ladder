@@ -34,6 +34,11 @@ dependencies {
             runtimeOnly(edc("controlplane-dcp-bom"))
             runtimeOnly(edc("dataplane-base-bom"))
             compileOnly(edc("core-spi"))   // vault-seed fixture (classes provided at runtime by the BOMs)
+            // INV-6 probe fixture: policy-engine + control-plane policy contexts + participant agent.
+            // All already verified via the runtime BOM graph (compileOnly adds no new verified artifact).
+            compileOnly(edc("policy-engine-spi"))
+            compileOnly(edc("control-plane-spi"))
+            compileOnly(edc("participant-spi"))
         }
     }
 }

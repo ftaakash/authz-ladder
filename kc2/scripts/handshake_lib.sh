@@ -156,6 +156,8 @@ edc.transfer.proxy.token.verifier.publickey.alias=$id-verifier
 pilot08.kc2.vault.secrets=$id-sts:$id-sts-secret;$id-signer:$sigpriv;$id-verifier:$sigpub
 EOF2
   [ -n "$extra" ] && echo "edc.iam.trustedissuer.extra.id=$extra" >> "$run/cfg.properties"
+  # generic per-connector extra-config hook (newline-separated key=value lines); no assertion logic, no results.
+  [ -n "${KC2_VCONN_EXTRA_CFG:-}" ] && printf '%s\n' "$KC2_VCONN_EXTRA_CFG" >> "$run/cfg.properties"
   docker rm -f "pilot08k2-v$id" >/dev/null 2>&1
   MSYS_NO_PATHCONV=1 docker run -d --name "pilot08k2-v$id" --network "$NET" --network-alias "v$id" \
     -v "$run":/work -w /work "$GRADLE_IMG" java -Dedc.fs.config=/work/cfg.properties -jar /work/app.jar ${CONN_ARGS:-} >/dev/null 2>&1
