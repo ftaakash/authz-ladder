@@ -861,3 +861,46 @@ record it INVALID (rather than count it) is the correct one under the frozen ora
 **Required before INV-6 can count on any target:** implement the sanity deny-leg as the positive-enforcement
 control; INV-6 counts only where that leg provably refuses the denied party at the tested phase, else the
 cell is INVALID. Instructions sent to the KC2 session. No INV-6 result is admissible until this lands.
+
+---
+
+## Review 17 (INV-4/7 validity + claim status), 2026-10-31
+
+Validity and coverage only. No current-release authorization result is examined or implied; detail and the
+claim-logic worked example are in `private/kc2/review-inv47.md` (gitignored). Read: the INV-4 feasibility
+driver and log, `kc2/INVARIANTS.md` INV-4/INV-7, and the frozen `kill-test.md` / `SCOPE.md`.
+
+**Q1 — why INV-4/INV-7 are INVALID: a testbed setup gap on the legitimate transfer path, not a design
+limit.** Both invariants are transfer-time and well-posed. They came out INVALID because the *legitimate*
+positive-control transfer does not yet reach STARTED on the target in our testbed's data-plane
+configuration (the data-plane selector matches no instance for the requested transfer type). With no
+working legitimate path there is no positive control, so the oracle correctly yields INVALID — never a
+vacuous PASS and never a counted FAIL. The invariant definitions are sound; the honest transfer fixture is
+incomplete. This is the same family as INV-6's missing enforcement control: a setup gap, not a dead end.
+
+**Q2 — fixable within scope and timebox (recommended).** Using documented upstream configuration only
+(normal connector APIs; no crafted messages, no bypassing connector checks): align the transfer setup with
+the published e2e/system-test transfer configuration so the legitimate transfer reaches STARTED, on either
+the vanilla 0.18.1 signaling setup or — preferred/fallback — the Tractus-X 0.13.0 release image with its
+own documented e2e transfer wiring. INV-4/INV-7 then count only where the legitimate transfer is green on
+that build. Timebox: get one target's legitimate transfer working by ~11-04; if none is green by then,
+record INV-4/INV-7 as INVALID:positive-control-not-established and report the set as incomplete.
+
+**Q3 — claim status (direct answer).** The research does **not** fail, and the initial claim is not lost.
+The safe sentence has two halves. The "rediscovers known flaws" half is **already established by KC1**
+(both CVEs admitted as clean FAIL→PASS ladders). The "finds further violations in TCK-passing
+implementations" half is what KC2 tests and is **still open**, pending the transfer fix and completing the
+exercisable set. Per the frozen kill condition 2, the downgrade to a tool/workshop paper triggers **only**
+on "0 new violations after the **full** set" — i.e. the full set validly exercised and nothing found. An
+INVALID cell is an un-run test, not a zero, so:
+- ≥1 admitted new violation → KC2 does not fire → full claim stands.
+- 0 new violations with part of the set INVALID → the result must be reported as **incomplete** ("X of 8
+  invariants validly exercised; 0 among those; rest not conclusively testable in the timebox"), which is
+  honest incompleteness, **not** the KC2 downgrade and **not** a project failure.
+- Even the genuine downgrade case keeps real contributions: the validated method, the regression suite,
+  the mutation-validated invariant catalogue, and the upstream TCK/scenario contributions.
+**Integrity requirement:** an incomplete invariant set must be reported as incomplete; INVALID cells are
+listed with their reason and never folded into a "0 violations" statement.
+
+Instructions sent to the KC2 session. No INV-4/INV-7 result is admissible until a legitimate transfer is
+established on the target.
