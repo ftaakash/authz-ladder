@@ -830,3 +830,34 @@ Scope: `d60d67c` through `546e613`: the T1–T5 fixes, the vanilla 0.18.1 DCP la
 **Verdict:**
 - **Both targets:** now handshaking and TCK-baselined in the upstream configuration, with honest claim wording (D14). The invariant set is frozen and its admission rule is sound.
 - **Before phase 3 can produce countable, safely handled results:** close the publishing gap for counts (U1), put a disciplined private batch runner in place (U2), and record the Tractus-X stand-ins' fidelity (U3).
+
+---
+
+## Review 16 (INV-6 test validity), 2026-10-31
+
+A soundness check of the INV-6 probe (contract-policy evaluation at negotiation) only. No result of any
+current release is examined or implied here; any detail is in `private/kc2/review-inv6.md` (gitignored).
+Read: the uncommitted `Kc2Inv6PolicyExtension` fixture, the private INV-6 driver, and `kc2/INVARIANTS.md`
+INV-6 + amendment A1. Read-only.
+
+**Validity verdict: the INV-6 current cell is NOT yet a like-for-like test, and the KC2 session's choice to
+record it INVALID (rather than count it) is the correct one under the frozen oracle.**
+
+- The fixture is present and bound in both the sanity and the current configurations the same way, so
+  those two are like-for-like on fixture presence (check 1 of the brief).
+- But the sanity configuration as implemented is a *connectivity* control, not an *enforcement* control:
+  its expected outcome is the same one you would get if the bound constraint were never evaluated at all.
+  So "PASS on sanity" does not establish that the bound constraint is actually enforced at the tested
+  phase. Sanity and the admission mutation also differ in two variables at once (policy and binding), so
+  the pair does not isolate enforcement.
+- There is therefore no positive-enforcement control on the current build: nothing shows that a bound
+  constraint provably refuses the wrong party at this phase. Without it a negative outcome cannot be
+  distinguished from a fixture-wiring artifact (the KC1 F1 left-operand-binding class). This is exactly why
+  the cell must stay INVALID, never a counted result (check 2).
+- `kc2/INVARIANTS.md` INV-6 already *defines* the needed control (its sanity text includes a "deny policy →
+  refused → PASS" leg), but the driver implements only the admit leg. So the frozen catalogue and the
+  driver disagree, and closing the gap needs a driver change, not a freeze amendment (check 3).
+
+**Required before INV-6 can count on any target:** implement the sanity deny-leg as the positive-enforcement
+control; INV-6 counts only where that leg provably refuses the denied party at the tested phase, else the
+cell is INVALID. Instructions sent to the KC2 session. No INV-6 result is admissible until this lands.
