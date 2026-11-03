@@ -31,7 +31,7 @@ in the same spirit as the official DSP TCK's protocol tests. It is not an exploi
 
 **Changed 2026-11-03 (D16, user):** the second boundary of Paper A is now the LLM-gateway
 half ([idea 10](../../ideas/10-llm-gateway-authz/idea.md)), replacing the MCP half
-([idea 01](../../ideas/01-mcpauthfuzz/idea.md)), which moves to related work. The MCP
+(idea 01, folder deleted 2026-11-03; reason in [the killed list](../../ideas/_killed/README.md)), which moves to related work. The MCP
 scoping note ([mcp-scoping.md](mcp-scoping.md)) is kept as a record.
 
 The gateway half is **out of scope for this pilot's build phase**, like the MCP half was

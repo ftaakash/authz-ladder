@@ -1,7 +1,7 @@
 # Pilot 08: MCP half scoping (idea 01 vs. official conformance auth scenarios)
 
 **Date:** 2026-10-24. **Type:** read-only desk study (SCOPE.md, "MCP half (idea 01) — scoped separately"). No MCP harness was built, no SDK was run and no MCP server was contacted. The conformance repo was read through `gh api` (contents and commits endpoints), not cloned.
-**Inputs:** [idea 01](../../ideas/01-mcpauthfuzz/idea.md), [01 kill test](../../ideas/01-mcpauthfuzz/kill-test.md), [08 kill test](../../ideas/08-dsp-authfuzz/kill-test.md) (kill condition 3 and "Why 01 alone no longer carries Paper A").
+**Inputs:** idea 01 and its kill test (folders deleted 2026-11-03; reason in [the killed list](../../ideas/_killed/README.md)), [08 kill test](../../ideas/08-dsp-authfuzz/kill-test.md) (kill condition 3 and "Why 01 alone no longer carries Paper A").
 **Pinned source:** `modelcontextprotocol/conformance` `main` at **`c37eec888e1c6ff140af79987a40008548b7cc5f`** (commit date 2026-10-01, "bump version to 0.2.0-alpha.12"). The last commit touching `src/scenarios/client/auth/` is `0e9535048` (2026-10-01). In the tables below, `C/` stands for `https://github.com/modelcontextprotocol/conformance/blob/c37eec888e1c6ff140af79987a40008548b7cc5f/`.
 
 ## 1. Idea 01's scenario set
