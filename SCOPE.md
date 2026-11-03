@@ -27,12 +27,23 @@ in the same spirit as the official DSP TCK's protocol tests. It is not an exploi
 | Targets | **Local-only** connectors the researcher runs themselves: vanilla Eclipse EDC assembled from the released Maven Central artifacts of each pinned version, with `iam-mock`, dependencies checksum-verified (kill condition 1, D5/D6) and Tractus-X EDC images pinned by digest (kill condition 2). No live or third-party systems are ever touched. |
 | Output | **Pass/fail rows in a CSV** (build version, invariant ID, result, commit hash) plus upstream test contributions, under coordinated disclosure to the Eclipse security process. |
 
-## MCP half (idea 01) — scoped separately
+## Second boundary: LLM-gateway half (idea 10) — scoped separately
 
-The MCP half of Paper A ([idea 01](../../ideas/01-mcpauthfuzz/idea.md)) is **out of scope for
-this pilot's build phase**. It is reached only after DSP results, as a short scoping step
-(step 6 of the pilot brief): list which of 01's scenarios the MCP conformance draft auth
-scenarios already cover vs. not. The MCP harness is not built unless the user approves.
+**Changed 2026-11-03 (D16, user):** the second boundary of Paper A is now the LLM-gateway
+half ([idea 10](../../ideas/10-llm-gateway-authz/idea.md)), replacing the MCP half
+([idea 01](../../ideas/01-mcpauthfuzz/idea.md)), which moves to related work. The MCP
+scoping note ([mcp-scoping.md](mcp-scoping.md)) is kept as a record.
+
+The gateway half is **out of scope for this pilot's build phase**, like the MCP half was
+(D10): it is built only after DSP kill condition 2 has a result, and only with the user's go.
+When it is built it follows the same rules as this pilot: local-only, mock model providers
+(no traffic to OpenAI/Anthropic or any third-party gateway), pass/fail results, already-patched
+advisories as the oracle (FAIL on the affected version, PASS on the fixed one), and any
+candidate finding kept out of public git history. Any report goes to **the affected project's
+own private security channel** (GitHub private vulnerability reporting for LiteLLM, new-api,
+one-api), under the same 90-day default embargo; it is the user's call and is never auto-sent.
+Gateway images come from GHCR / Docker Hub (already-approved sources); PyPI would be a new
+download source and needs asking first.
 
 ## Pilot exit criteria (3-week timebox)
 
@@ -42,8 +53,8 @@ Kill conditions are frozen in [kill-test.md](../../ideas/08-dsp-authfuzz/kill-te
 |---|---|---|
 | 1 | Harness fails to rediscover **≥2 of the 3** EDC CVEs on affected versions | **KILL the DSP half** — method broken; record and report. |
 | 2 | On current EDC/Tractus-X, **0 new** invariant violations after the full set | **Downgrade** to a tool/workshop paper. |
-| 3 | MCP half: <2 failures beyond the conformance drafts across 10 SDKs + ≥3 hosts | **Drop MCP** to related work; Paper A becomes DSP-only. |
-| 4 | AgentRFC full version **or** a TCK release adds DSP authorization-invariant tests before the pilot ends | **Re-run Gate B** (novelty). |
+| 3 | *(amended D16, 2026-11-03; was: MCP half <2 failures beyond the conformance drafts)* Gateway half: <4 of 6 pre-selected gateway advisories flip FAIL→PASS at their fixing version, **or** 0 new invariant violations on current releases of ≥3 gateways | **Drop the gateway half** to related work; Paper A becomes DSP-only. |
+| 4 | AgentRFC full version **or** a TCK release adds DSP authorization-invariant tests before the pilot ends; *(added D16)* **or** a paper testing authorization/metering invariants across ≥3 LLM gateways appears | **Re-run Gate B** (novelty) for the affected half. |
 
 How kill condition 1 is applied on the actual testbed (D4, D5): a CVE counts as rediscovered only if its test flips FAIL→PASS exactly at its fixing version on the vanilla EDC ladder (0.6.2 → 0.6.3 → 0.9.0 → 0.9.1; see [VERSIONS.md](VERSIONS.md)). A CVE whose code is not reachable on the ladder counts as **not rediscovered**. The frozen threshold (≥2 of 3) is unchanged.
 
