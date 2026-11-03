@@ -70,7 +70,10 @@ kc2_boot_bdrs(){
     -e WEB_HTTP_PORT=8080 -e WEB_HTTP_PATH=/api \
     -e WEB_HTTP_MANAGEMENT_PORT=8081 -e WEB_HTTP_MANAGEMENT_PATH=/management \
     -e WEB_HTTP_MANAGEMENT_AUTH_KEY=bdrs-mgmt \
+    -e WEB_HTTP_DIRECTORY_PORT=8082 -e WEB_HTTP_DIRECTORY_PATH=/api/directory \
     -e EDC_IAM_DID_WEB_USE_HTTPS=false -e EDC_IAM_ISSUER_ID="$IDID" \
+    -e "EDC_IAM_TRUSTED-ISSUER_PILOT_ID=$IDID" \
+    -e 'EDC_IAM_TRUSTED-ISSUER_PILOT_SUPPORTEDTYPES=["MembershipCredential"]' \
     pilot08k2/bdrs-server-memory:0.6.0 >/dev/null 2>&1
 }
 kc2_seed_bdrs(){ kc2_drv -s -o /dev/null -w '%{http_code}' -X POST http://bdrs:8081/management/bpn-directory \
@@ -100,7 +103,7 @@ kc2_boot_conn(){
     -e EDC_IAM_STS_OAUTH_CLIENT_ID="$did" \
     -e EDC_IAM_STS_OAUTH_CLIENT_SECRET_ALIAS="$id-sts" \
     -e TX_EDC_IAM_DCP_CREDENTIALSERVICE_URL="http://$id-ih:7082/api/credentials/v1/participants/$id" \
-    -e TX_EDC_IAM_DCP_BDRS_SERVER_URL="http://bdrs:8080/api" \
+    -e TX_EDC_IAM_DCP_BDRS_SERVER_URL="http://bdrs:8082/api/directory" \
     -e EDC_IAM_TRUSTEDISSUER_PILOT_ID="$IDID" \
     "${extra_env[@]}" \
     -e EDC_TRANSFER_PROXY_TOKEN_SIGNER_PRIVATEKEY_ALIAS="$id-signer" \
@@ -143,6 +146,8 @@ web.http.control.port=8083
 web.http.control.path=/control
 web.http.public.port=8085
 web.http.public.path=/public
+edc.dataplane.api.public.baseurl=http://v$id:8085/public
+edc.dataplane.api.public.response.baseurl=http://v$id:8085/public
 edc.dsp.callback.address=http://v$id:8082/api/v1/dsp
 edc.iam.sts.oauth.token.url=http://$id-ih:7083/api/sts/token
 edc.iam.sts.oauth.client.id=$did
