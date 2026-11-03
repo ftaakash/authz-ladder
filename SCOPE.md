@@ -1,7 +1,7 @@
 # Pilot 08 — DSP AuthFuzz: scope and defensive framing
 
 **Pilot of:** Paper A core, idea [08 DSP AuthFuzz](../../ideas/08-dsp-authfuzz/idea.md) · kill test (frozen): [kill-test.md](../../ideas/08-dsp-authfuzz/kill-test.md)
-**Timebox:** 3 weeks (feasibility pilot). **Status:** started 2026-10-21.
+**Timebox:** 3 weeks (feasibility pilot), extended to 2026-11-15 (D17). **Status:** started 2026-10-21.
 
 ## What this pilot is
 

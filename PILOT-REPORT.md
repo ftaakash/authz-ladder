@@ -164,7 +164,7 @@ incl. in-container egress (`kc2/env/net-isolation.csv`); dependency-verified (57
 A1, `8479f2f`), each with source, assertion, preconditions, positive control, sanity + mutation configs,
 and PASS/FAIL/INVALID rules. `kc2/TCK-PLAN.md` gates phase 3 on an official-TCK baseline.
 
-### Dated KC2 plan (timebox ends ~2026-11-11)
+### Dated KC2 plan (timebox ends 2026-11-15, extended by D17)
 
 | Step | Target date | State |
 |---|---|---|
@@ -173,10 +173,10 @@ and PASS/FAIL/INVALID rules. `kc2/TCK-PLAN.md` gates phase 3 on an official-TCK 
 | Invariant freeze + amendment A1 | 2026-10-25/26 | DONE |
 | Handshake → DCP-authenticated 200 catalogue (both targets) | ~2026-10-28 | DONE 2026-10-27 — both targets, 3 participants each (`kc2/env/handshake-smoke.csv`) |
 | TCK baseline (DSP 1.0.2, upstream TCK config per D14) | ~2026-10-30 | DONE 2026-10-29 — both targets 65/65 (`kc2/env/tck-dsp-*.csv`) |
-| Phase 3 — run frozen invariants (private verdicts) | ~2026-11-07 | planned |
-| KC2 verdict + report | 2026-11-11 | planned |
+| Phase 3 — run frozen invariants (private verdicts) | ~2026-11-12 (D17; INV-4/7 legitimate-transfer deadline 11-08) | planned |
+| KC2 verdict + report | 2026-11-15 (D17) | planned |
 
 The handshake (planned ~10-28) and TCK baseline (planned ~10-30) milestones were both met early (10-27 and 10-29);
-phase 3 remains due ~11-07 and the report 11-11 (Review 15 U6).
+phase 3 is now due ~11-12 and the report 11-15 (D17, extended 2026-11-04; was ~11-07 / 11-11 per Review 15 U6).
 If phase 3 does not finish by the timebox, KC2 reports **"incomplete invariant set"**, never "0 violations".
 Record any slips in this table.
