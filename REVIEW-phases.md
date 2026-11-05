@@ -904,3 +904,51 @@ listed with their reason and never folded into a "0 violations" statement.
 
 Instructions sent to the KC2 session. No INV-4/INV-7 result is admissible until a legitimate transfer is
 established on the target.
+
+---
+
+## Review 18 (KC2 pre-final-batch), 2026-11-05
+
+Scope: `7090a1a` (D16), `0c356a5`, `cd4d24a` (D17), `7e4ea74` (D11 amendment 3), the committed
+`kc2/scripts/60_phase3_batch.sh`, and the private INV-6 driver's structure (design only). Validity and
+coverage only: no current-release result is examined or implied. Read-only apart from this file.
+
+**Repo state:** clean tree. Marker = HEAD `7e4ea74` (a Masters sha). The KC2 session confirmed every
+subject on the mirror after fixing the pilot-relative patch paths.
+
+**Done and correct:**
+- **D17** (user, decided before any INV-4/7 result): legitimate-transfer deadline 11-08, final batch ~11-12,
+  report 11-15. The legitimate-transfer milestone is met early.
+- **D11 amendment 3** is config-only and cites upstream sources (BdrsClientImpl, its component test,
+  TrustedIssuerConfigurationExtension at the version BDRS actually bundles). The BDRS trusted-issuer change
+  **narrows** trust (wildcard → MembershipCredential only). No verifier check is disabled. The Tractus-X
+  legitimate transfer now reaches STARTED, which supplies the positive control INV-4/INV-7 need.
+- **`60_phase3_batch.sh`** refuses a dirty tree, aborts if HEAD moves, applies a per-cell timeout, writes
+  everything under `private/kc2/` and gates each current cell on sanity PASS + mutation FAIL. This matches
+  Review 15 U2.
+- **D16** (LLM-gateway half replaces MCP) is recorded with SCOPE's KC3/KC4 amendments, and the gateway half
+  stays out of build scope.
+
+| # | where | Issue | Sev | Required change |
+|---|---|---|---|---|
+| W1 | INV-6 admission design (my Review 16 recommendation) | **Review 16 over-corrected, and I own that.** INV-6's sanity now includes a deny-leg (bound constraint, deny B, same build, same config) and requires it to refuse B. The current cell runs that **same** measurement. So a current-cell FAIL can only ever coincide with a failed admission and becomes INVALID: the current cell can no longer produce a counted violation. It is no longer falsifiable, which is the opposite of what the admission rule is for. | **H** | Make the enforcement validation **independent of the verdict measurement.** Preferred: probe with a constraint the **release itself** registers and binds for the negotiation phase (verify from each target's pinned source which constraints that is), so no pilot fixture sits in the enforcement path. Then the precondition is "the constraint is bound by the release (cited source line)". Sanity = the admit case. Mutation = a labelled test-only unbinding. Positive control = A finalizes. The verdict = B under the deny policy. Alternative: validate the fixture's wiring on a separate reference configuration, never on the cell being judged. Either way this changes INV-6's oracle mechanics, so under the freeze rule it needs a dated amendment (A2) **and the user's sign-off** before INV-6 counts. Until then INV-6 is not countable. |
+| W2 | `private/kc2/scripts/inv6.sh:18` (prebuilt-image injectability) | INV-6 records Tractus-X as `INVALID:mutation-not-injectable-on-prebuilt-image`. But the TCK baseline already ran the **Tractus-X release image plus an add-on classpath** (`tck-extension` + stand-ins). So labelled test-only add-ons **are** injectable on that image. The not-injectable claim is not established. | M | Use the same add-on mechanism to host labelled mutation fixtures on Tractus-X for INV-4/6/7. Keep two rules: (a) the **current** cell runs the pristine release image plus only the probe fixtures that are identical across sanity/mutation/current, never the mutation add-on; (b) the add-on's contents are recorded (jar sha) per cell. Re-assess INV-6 on Tractus-X after W1. |
+| W3 | private drivers vs commit stamps | **The test drivers that produce every phase-3 row live in the gitignored `private/kc2/scripts/`.** The dirty marker ignores them, so a row stamped with a clean commit was produced by driver code that commit does not contain and that nothing versions. A driver edit between batches is invisible. | **H** | Add a `driver_sha256` column to every cell row: sha256 of `inv<N>.sh` + `p3lib.sh` at run time. At the start of each batch, snapshot all private drivers to `private/kc2/batches/<commit>-<utc>/` (gitignored), and have the batch refuse to run if a driver changed after its snapshot. The final report cites the batch snapshot id alongside the commit. |
+| W4 | INV-4 / INV-7 drivers (to be built) | These are the next drivers, and they must not repeat W1. | **H** | For each, the sanity case is the legitimate scenario only (A's own agreement → transfer STARTED; A's EDR used against its own transfer). The admission mutation is a labelled add-on that breaks the specific check. The current cell's verdict measurement must **not** also be an admission requirement. Positive control on every cell: A's legitimate transfer STARTED. Coverage stays Tractus-X-only per the user (2026-10-31), stated in the report. |
+| W5 | final report (11-15) | The paper's claim depends on honest coverage. | M | Prepare an invariant × target coverage matrix **privately** (validly exercised / INVALID with reason category / not applicable). In public files, keep "phase 3 complete, results private" until the user decides disclosure and publication (Review 15 U1). The report must state the invariant set as **incomplete** if any invariant was not validly exercised (Review 17). |
+| W6 | D16 gateway half | Not to be started. | L | Build nothing for idea 10 until KC2 has a result and the user says go. PyPI is a new source and needs asking first (SCOPE). |
+
+**Order of work:** (1) W3 driver versioning, because it affects every row from now on; (2) W1: put the INV-6
+redesign options to the user (amendment A2 needs their sign-off); (3) W2 + W4: INV-4/INV-7 drivers on
+Tractus-X with add-on mutations and independent admission; (4) the final admission-gated batch ~11-12 from
+one clean commit and one driver snapshot; (5) the report on 11-15, with coverage stated honestly.
+
+**User decisions (not decided here):** (a) approve or reject the INV-6 oracle redesign as amendment A2 (W1);
+(b) whether any phase-3 numbers or coverage may be published before disclosure (W5).
+
+**Verdict:**
+- **On track under D17.** The legitimate-transfer blocker is fixed with sourced, trust-narrowing configuration.
+- **Must close before the final batch:**
+  - INV-6's admission is currently non-falsifiable (W1, my earlier error).
+  - The drivers that produce every row are unversioned (W3).
+  - INV-4/INV-7 must be built so they don't repeat W1 (W4).
