@@ -20,6 +20,10 @@ dependencies {
     compileOnly(edc("core-spi"))
     compileOnly(edc("policy-engine-spi"))
     compileOnly(edc("control-plane-spi"))
+    compileOnly(edc("participant-spi"))
+    // INV-4 mutation delegates to the release's own ContractValidationServiceImpl (+ PolicyEquality); these
+    // live in the control-plane-contract core module, provided at runtime by /app/edc-runtime.jar.
+    compileOnly(edc("control-plane-contract"))
 }
 
 tasks.shadowJar {
