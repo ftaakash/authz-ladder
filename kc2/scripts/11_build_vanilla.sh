@@ -37,5 +37,10 @@ case "$ROLE" in
     SRC="$PILOT/kc2/tck-tx"; gbuild "$SRC"
     jar="$SRC/build/libs/pilot08kc2-tck-tx-addon.jar"; [ -f "$jar" ] || { echo "build failed"; exit 1; }
     rec "$PILOT/kc2/env/tck-jars.csv" "tractusx-0.13.0-addon" "$jar" ;;
+  addon-tx)
+    # Labelled phase-3 MUTATION add-on for the Tractus-X target (INVARIANTS amendment A2). Thin jar, EDC 0.17.0.
+    SRC="$PILOT/kc2/tractusx-addon"; gbuild "$SRC" -Pedc="0.17.0"
+    jar="$SRC/build/libs/pilot08kc2-tractusx-addon.jar"; [ -f "$jar" ] || { echo "build failed"; exit 1; }
+    rec "$PILOT/kc2/env/mutation-addon-jars.csv" "tractusx-0.13.0-mutation-addon" "$jar" ;;
   *) echo "unknown ROLE=$ROLE"; exit 2;;
 esac

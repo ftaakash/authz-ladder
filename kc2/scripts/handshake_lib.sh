@@ -88,30 +88,42 @@ kc2_boot_conn(){
   local extra_env=()
   [ -n "$extra" ] && extra_env=(-e "EDC_IAM_TRUSTEDISSUER_EXTRA_ID=$extra")
   docker rm -f "pilot08k2-$id" >/dev/null 2>&1
-  MSYS_NO_PATHCONV=1 docker run -d --name "pilot08k2-$id" --network "$NET" --network-alias "$id" \
-    -e EDC_PARTICIPANT_ID="$did" \
-    -e EDC_API_AUTH_KEY="$id-mgmt" \
-    -e WEB_HTTP_PORT=8080 -e WEB_HTTP_PATH=/api \
-    -e WEB_HTTP_MANAGEMENT_PORT=8081 -e WEB_HTTP_MANAGEMENT_PATH=/management \
-    -e WEB_HTTP_PROTOCOL_PORT=8082 -e WEB_HTTP_PROTOCOL_PATH=/api/v1/dsp \
-    -e WEB_HTTP_CONTROL_PORT=8083 -e WEB_HTTP_CONTROL_PATH=/control \
-    -e WEB_HTTP_PUBLIC_PORT=8085 -e WEB_HTTP_PUBLIC_PATH=/public \
-    -e EDC_DSP_CALLBACK_ADDRESS="http://$id:8082/api/v1/dsp" \
-    -e EDC_IAM_ISSUER_ID="$did" \
-    -e EDC_IAM_DID_WEB_USE_HTTPS=false \
-    -e EDC_IAM_STS_OAUTH_TOKEN_URL="http://$id-ih:7083/api/sts/token" \
-    -e EDC_IAM_STS_OAUTH_CLIENT_ID="$did" \
-    -e EDC_IAM_STS_OAUTH_CLIENT_SECRET_ALIAS="$id-sts" \
-    -e TX_EDC_IAM_DCP_CREDENTIALSERVICE_URL="http://$id-ih:7082/api/credentials/v1/participants/$id" \
-    -e TX_EDC_IAM_DCP_BDRS_SERVER_URL="http://bdrs:8082/api/directory" \
-    -e EDC_IAM_TRUSTEDISSUER_PILOT_ID="$IDID" \
-    "${extra_env[@]}" \
-    -e EDC_TRANSFER_PROXY_TOKEN_SIGNER_PRIVATEKEY_ALIAS="$id-signer" \
-    -e EDC_TRANSFER_PROXY_TOKEN_VERIFIER_PUBLICKEY_ALIAS="$id-verifier" \
-    -e TX_EDC_VAULT_SECRETS="$secrets" \
-    -e TRACTUSX_EDC_PARTICIPANT_BPN="$bpn" \
-    -e OTEL_JAVAAGENT_ENABLED=false \
-    "$CONN_IMG" ${CONN_ARGS:-} >/dev/null 2>&1
+  local run=(docker run -d --name "pilot08k2-$id" --network "$NET" --network-alias "$id"
+    -e EDC_PARTICIPANT_ID="$did"
+    -e EDC_API_AUTH_KEY="$id-mgmt"
+    -e WEB_HTTP_PORT=8080 -e WEB_HTTP_PATH=/api
+    -e WEB_HTTP_MANAGEMENT_PORT=8081 -e WEB_HTTP_MANAGEMENT_PATH=/management
+    -e WEB_HTTP_PROTOCOL_PORT=8082 -e WEB_HTTP_PROTOCOL_PATH=/api/v1/dsp
+    -e WEB_HTTP_CONTROL_PORT=8083 -e WEB_HTTP_CONTROL_PATH=/control
+    -e WEB_HTTP_PUBLIC_PORT=8085 -e WEB_HTTP_PUBLIC_PATH=/public
+    -e EDC_DSP_CALLBACK_ADDRESS="http://$id:8082/api/v1/dsp"
+    -e EDC_IAM_ISSUER_ID="$did"
+    -e EDC_IAM_DID_WEB_USE_HTTPS=false
+    -e EDC_IAM_STS_OAUTH_TOKEN_URL="http://$id-ih:7083/api/sts/token"
+    -e EDC_IAM_STS_OAUTH_CLIENT_ID="$did"
+    -e EDC_IAM_STS_OAUTH_CLIENT_SECRET_ALIAS="$id-sts"
+    -e TX_EDC_IAM_DCP_CREDENTIALSERVICE_URL="http://$id-ih:7082/api/credentials/v1/participants/$id"
+    -e TX_EDC_IAM_DCP_BDRS_SERVER_URL="http://bdrs:8082/api/directory"
+    -e EDC_IAM_TRUSTEDISSUER_PILOT_ID="$IDID"
+    "${extra_env[@]}"
+    -e EDC_TRANSFER_PROXY_TOKEN_SIGNER_PRIVATEKEY_ALIAS="$id-signer"
+    -e EDC_TRANSFER_PROXY_TOKEN_VERIFIER_PUBLICKEY_ALIAS="$id-verifier"
+    -e TX_EDC_VAULT_SECRETS="$secrets"
+    -e TRACTUSX_EDC_PARTICIPANT_BPN="$bpn"
+    -e OTEL_JAVAAGENT_ENABLED=false)
+  if [ -n "${KC2_CONN_ADDON:-}" ]; then
+    # Labelled phase-3 MUTATION add-on on the release classpath (INVARIANTS amendment A2 / Review 18 W2), same
+    # mechanism as the DSP-TCK baseline (50_tck_baseline.sh). Keep the image's baked config, drop the otel
+    # javaagent, and swap the default `-jar edc-runtime.jar` for `-cp edc-runtime.jar:addon.jar` + BaseRuntime.
+    # The add-on's mutation is itself gated by a -D toggle in KC2_CONN_JVM_PROPS (inert otherwise).
+    MSYS_NO_PATHCONV=1 "${run[@]}" -w /app -v "$KC2_CONN_ADDON":/work/addon.jar:ro \
+      --entrypoint java "$CONN_IMG" \
+      -Dedc.fs.config=/app/configuration.properties -Djava.security.egd=file:/dev/urandom \
+      ${KC2_CONN_JVM_PROPS:-} \
+      -cp /app/edc-runtime.jar:/work/addon.jar org.eclipse.edc.boot.system.runtime.BaseRuntime >/dev/null 2>&1
+  else
+    MSYS_NO_PATHCONV=1 "${run[@]}" "$CONN_IMG" ${CONN_ARGS:-} >/dev/null 2>&1
+  fi
 }
 
 # catalogue request FROM connector $1 TO provider; prints HTTP code
