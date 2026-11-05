@@ -185,6 +185,10 @@ encodes **no undisclosed finding** — so it is tracked and pushed (per the coor
   KC1 F1 catalogue gap): B's negotiation then finalizes an agreement it should not → FAIL.
 - **PASS** B refused, A finalizes. **FAIL** B finalizes a forbidden agreement. **INVALID** A's positive
   control fails, or the deny policy was not actually in force.
+- **Oracle superseded by amendment A2 (2026-11-05):** the admission gate above made the sanity *deny-leg*
+  the same measurement as the current-release verdict (non-falsifiable). A2 rebuilds the oracle on a
+  **release-bound negotiation constraint** (admission independent of the verdict) and scopes INV-6 to
+  **Tractus-X only**. See A2 for the sanity/mutation/verdict and the source citations.
 
 ## INV-7 — Data-plane public-API audience / EDR binding
 
@@ -261,6 +265,46 @@ data-plane audience/EDR binding → INV-7, and EDR refresh scoping → INV-8.)*
   could find anything. (3) **INV-4 cross-party** requires a **third participant** with its own
   IdentityHub identity; added to the step-2 handshake plan. Mutation configs are labelled test-only,
   never used for a current-release verdict, and encode the spec rule (no finding).
+
+- **A2 — 2026-11-05 — INV-6 oracle made falsifiable (release-bound negotiation constraint).**
+  User-approved redesign (chosen option: "release-bound probe"), 2026-11-05. No current-release INV-6
+  verdict had been admitted into any tracked artifact when this was made.
+  - **Problem (Review 18 W1).** INV-6 as first built (Review 16) made the admission gate's sanity
+    *deny-leg* (bound policy, deny party B, same build+config) the **same measurement** as the
+    current-release verdict (bound policy, deny B → does B terminate?). Admission and verdict were not
+    independent: a genuine current FAIL was indistinguishable from a failed admission and collapsed to
+    INVALID, masking the finding. INV-6 was therefore non-falsifiable.
+  - **Fix — admission no longer measures the deny case.** It rests on:
+    1. **Precondition (from pinned source, not a pilot fixture):** the *release itself* registers and
+       binds a `Permission` constraint to the contract-negotiation scope.
+       - *Tractus-X 0.13.0:* **Membership** — `edc-extensions/cx-policy/src/main/java/org/eclipse/tractusx/edc/policy/cx/CxPolicyExtension.java:183`
+         registers `MembershipCredentialConstraintFunction` for `ContractNegotiationPolicyContext`
+         (leftOperand `https://w3id.org/catenax/2025/9/policy/Membership`;
+         `.../membership/MembershipCredentialConstraintFunction.java:43,51`). **BusinessPartnerNumber** —
+         `edc-extensions/bpn-validation/bpn-validation-core/src/main/java/org/eclipse/tractusx/edc/validation/businesspartner/BusinessPartnerNumberValidationExtension.java:82`
+         binds the BPN permission function to `NEGOTIATION_SCOPE` ("contract.negotiation"), registered at `:92–93`.
+    2. **Sanity (admit case; PASS by construction):** an offer whose release-bound negotiation constraint
+       party B *satisfies* → B's negotiation **FINALIZES**; positive control A **FINALIZES**. No deny case
+       is measured in sanity.
+    3. **Mutation (must FAIL — admission):** a **labelled, test-only classpath add-on** (same add-on
+       mechanism as the DSP-TCK baseline) that overrides the release's negotiation constraint function for
+       the probed leftOperand with a permissive stand-in, so the deny offer's constraint is silently
+       satisfied → B **FINALIZES** a forbidden agreement → FAIL. The add-on is **never** on a
+       current-release classpath; its jar sha256 is recorded per mutation cell.
+  - **Verdict (current release, pristine image, no add-on):** the deny offer against the unmodified
+    release: B **TERMINATES** → PASS (invariant held); B **FINALIZES** → FAIL (finding). Positive control
+    A **FINALIZES** on every cell. This is a measurement **distinct** from both sanity (admit case) and
+    mutation (unbound deny), so a current FAIL is reportable with valid admission.
+  - **Target coverage.** The probe requires the release to ship a negotiation-scope constraint.
+    Tractus-X 0.13.0 does (above). **Vanilla EDC 0.18.1** registers the negotiation scope
+    (`core/control-plane/control-plane-contract/src/main/java/org/eclipse/edc/connector/controlplane/contract/ContractCoreExtension.java:105`)
+    but ships **no** `Permission` constraint function bound to it (no
+    `registerFunction(ContractNegotiationPolicyContext, …, Permission, …)` in released core; the CEL
+    policy-core extension is not on the assembled DCP connector classpath). With nothing release-bound to
+    probe, INV-6 on vanilla is recorded **INVALID:no-release-bound-negotiation-constraint** (never a
+    vacuous PASS; the former `pilot08Member` fixture is retired as an admission basis). **INV-6 is
+    therefore Tractus-X-only**, joining INV-4/INV-7 (user direction "Invest, Tractus-X only", 2026-11-04).
+  - This amendment changes INV-6's oracle mechanics only; it adds no invariant and encodes no finding.
 
 ## Scope limitation (D13, 2026-10-26)
 
