@@ -952,3 +952,47 @@ one clean commit and one driver snapshot; (5) the report on 11-15, with coverage
   - INV-6's admission is currently non-falsifiable (W1, my earlier error).
   - The drivers that produce every row are unversioned (W3).
   - INV-4/INV-7 must be built so they don't repeat W1 (W4).
+
+---
+
+## Review 19 (INV-6 A2, INV-4 DSP scope, INV-7 NA), 2026-11-05
+
+Scope: `d845b6a` (W3 driver versioning), `ef82b3a` (A2), `a2d7b5a`/`fec7ffc` (INV-6 mutation add-on +
+provenance), `c3c991a`/`5effefe` (INV-4 add-on + provenance), and the KC2 session's INV-7 architecture
+assessment and proposed INV-4 DSP-level test. Validity, coverage and scope only — no current-release
+verdict is examined or implied; detail is in `private/kc2/review-inv47-dsp.md` (gitignored). Read-only
+apart from this file.
+
+**Repo state:** clean tree; marker = HEAD `5effefe` (a Masters sha). No tracked result/verdict files
+(only the batch runner and fixtures are tracked under `kc2/`).
+
+**Done and correct:**
+- **W3 (driver versioning):** the private phase-3 drivers are now versioned per Review 18.
+- **A2 (my Review 18 W1 fix) is sound.** INV-6's admission (a labelled classpath add-on that neuters the
+  release's own negotiation constraint) is now a different measurement from the verdict (pristine release,
+  deny offer). The precondition — that the release itself binds a negotiation-scope constraint — is cited
+  from pinned source; vanilla has none, so INV-6 is correctly recorded INVALID there and is Tractus-X-only.
+  INV-6 is falsifiable again. The admission add-ons carry recorded jar provenance and never sit on a
+  current-release classpath.
+
+| # | item | Assessment | Sev | Action |
+|---|---|---|---|---|
+| X1 | INV-7 = NA by architecture | **Sound.** Both frozen clauses dissolve against how EDC resolves the data address and against a documented allow-all access-control default; INV-7's own oracle permits NA-with-reason, so no catalogue amendment is needed. Correctly **not** scored as a finding (documented default, not a hidden flaw). | — | Record INV-7 NA with its reasons in `private/kc2/`. The documented default is worth noting as a coverage/TCK-gap observation, not a Paper-A violation. **User's KC2 interpretation call**, stated in the report; do not score it FAIL unilaterally. |
+| X2 | INV-4 DSP-level counterparty test | **In defensive scope as TCK-style negative conformance testing — IF bounded.** The honest consumer refuses client-side, so the provider's `validateAgreement` boundary is only reachable by a counterparty sending the DSP message directly, which is what the DSP TCK's protocol tests do and what SCOPE's "DSP client fixture" contemplates. It does **not** bypass the provider's checks — it tests them. | H (user go) | Bounds (all required): B uses **B's own** legitimately-issued DCP credential/token (A's agreement id is a non-secret reference, not forgery); the provider keeps **all** checks on; local provider only; pass/fail only; a FAIL is private → Eclipse disclosure. Positive control = A's own transfer STARTED; admission mutation = a skip-`validateAgreement` provider add-on (must FAIL), never on the current classpath. **Hard stop:** if any step needs fabricating A's signed token/VP or reading A's key, STOP (out of scope; a forged input yields no readable verdict). It is a methodology step (a DSP protocol driver), so the **user authorizes it before it is built**, and it is a test fixture, never a reusable exploit. |
+| X3 | INV-4/INV-7 coverage as a result | INV-4 and INV-7 target enforcement points EDC structures away or leaves as a documented optional no-op. That they are not honestly mountable as PASS/FAIL on current EDC is itself a reportable coverage result. | M | Report NA/structural with reasons; never fold into "0 violations". The invariant set is **incomplete** (INV-6 TX-countable, INV-5 countable, INV-4 pending the DSP test, INV-7 NA, INV-1/2 = KC1 rediscoveries not "new", INV-3 NA, INV-8 partial). State this plainly; how it reads against the claim is the user's call. |
+| X4 | confidentiality | Holding so far: no tracked result files, no verdict wording in commit messages. | L | Keep it. Phase-3 numbers/coverage are published only on the user's go (Review 15 U1). |
+
+**Order:** (1) put X2 (the DSP-level INV-4 test) and X1 (INV-7 NA interpretation) to the **user**, with the
+X2 bounds and the hard stop stated; (2) on the user's go, build the INV-4 DSP driver as a bounded fixture;
+(3) run the final admission-gated batch (~11-12) from one clean commit + one driver snapshot, all output
+private; (4) the report (11-15) states coverage honestly and the set as incomplete.
+
+**User decisions (not decided here):** (a) authorize the bounded INV-4 DSP-level test (X2); (b) whether the
+documented allow-all default (INV-7) is reported as a coverage observation vs anything stronger (X1);
+(c) publishing any phase-3 numbers/coverage before disclosure.
+
+**Verdict:** INV-6 is sound and falsifiable again (A2 closes my earlier error). INV-7 NA is correctly
+reasoned and correctly not a finding. The INV-4 DSP-level test is the one remaining path to a second clean
+Tractus-X verdict and is within defensive scope **as a bounded TCK-style negative test**, but it is a
+methodology step the user must authorize, with a hard no-forgery boundary. The honest headline is that part
+of the frozen set is structurally NA on current EDC, which must be reported as incomplete, not as zero.
