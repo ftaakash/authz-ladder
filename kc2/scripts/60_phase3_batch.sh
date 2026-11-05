@@ -8,6 +8,11 @@
 # FAIL; only then is the current-release cell run and counted. Otherwise the current cell is INVALID(admission)
 # and is NOT run. A missing runner gives INVALID(no-runner); NA is reachability-not-applicable (e.g. INV-3).
 #
+# Driver versioning (Review 18 W3): the rows are produced by the gitignored private runners, which the clean
+# commit stamp does NOT cover. So at start the batch snapshots every private driver to
+# private/kc2/batches/<commit>-<utc>/ (with a sha256 MANIFEST), stamps each row with driver_sha256 (sha256 of
+# inv<N>.sh + p3lib.sh as run) and the snapshot id, and REFUSES to continue if any driver changes after the
+# snapshot. The final report cites the snapshot id alongside the clean commit.
 # Rules: refuses a dirty tree; aborts if HEAD moves mid-batch; never starts Docker (run
 # kc2/scripts/00_ensure_docker.ps1 by hand first); per-cell timeout; EVERY log and row goes under
 # private/kc2/ via kc2_private_out; nothing is printed that is meant for a tracked file; do NOT commit or push
@@ -24,13 +29,24 @@ for net in pilot08k2_dsp pilot08v; do
   fi
 done
 HEAD0="$(git -C "$PILOT" rev-parse HEAD)"
+# W3: snapshot the gitignored private drivers (commit stamp does not cover them) and pin their shas.
+SNAP_ID="${COMMIT}-$(date -u +%Y%m%dT%H%M%SZ)"
+snapdir="$(dirname "$(kc2_private_out "batches/$SNAP_ID/.keep")")"; mkdir -p "$snapdir"
+cp "$RUNNERS"/*.sh "$snapdir"/ 2>/dev/null || true
+( cd "$RUNNERS" && for f in *.sh; do sha256sum "$f"; done ) > "$snapdir/MANIFEST.sha256" 2>/dev/null || true
+echo "driver snapshot: private/kc2/batches/$SNAP_ID/ ($(ls "$RUNNERS"/*.sh 2>/dev/null | wc -l) private drivers; sha manifest inside)"
 out="$(kc2_private_out phase3-cells.csv)"
-[ -f "$out" ] || echo "invariant,target,config,result,detail,commit,started" > "$out"
+[ -f "$out" ] || echo "invariant,target,config,result,detail,commit,driver_sha256,snapshot,started" > "$out"
 logdir="$(dirname "$(kc2_private_out logs/.keep)")"; mkdir -p "$logdir"
 clean(){ docker ps -aq --filter name=pilot08k2- --filter name=pilot08v- | xargs -r docker rm -f >/dev/null 2>&1 || true; }
 echo "KC2 phase-3 batch @ $COMMIT (HEAD ${HEAD0:0:7}); INVS=[$INVS] TARGETS=[$TARGETS]; ${CELL_TIMEOUT}s/cell; output private only"
 
 headcheck(){ [ "$(git -C "$PILOT" rev-parse HEAD)" = "$HEAD0" ] || { echo "refusing: HEAD moved mid-batch — aborting (rows must cite one commit)"; exit 1; }; }
+# W3 driver versioning: sha of the gitignored code that produces a row, and a guard that aborts if it drifts.
+driversha(){ local inv="$1"; [ -f "$RUNNERS/inv$inv.sh" ] || { echo ""; return; }; cat "$RUNNERS/inv$inv.sh" "$RUNNERS/p3lib.sh" | sha256sum | cut -d' ' -f1; }
+drivercheck(){ local inv="$1" f; for f in "inv$inv.sh" p3lib.sh; do [ -f "$RUNNERS/$f" ] || continue
+    cmp -s "$RUNNERS/$f" "$snapdir/$f" || { echo "refusing: private driver $f changed after snapshot $SNAP_ID — restart the batch so every row cites the code that produced it"; exit 1; }
+  done; }
 cell(){ # inv target config -> echoes result token, appends a private row (runs in $(...): never exit here)
   local inv="$1" t="$2" c="$3" r log res detail rc
   r="$RUNNERS/inv$inv.sh"; log="$logdir/inv$inv-$t-$c.log"
@@ -43,21 +59,22 @@ cell(){ # inv target config -> echoes result token, appends a private row (runs 
     else res="${line#RESULT=}"; detail="${res#*:}"; res="${res%%:*}"; [ "$detail" = "$res" ] && detail=""
          case "$res" in PASS|FAIL|INVALID|NA) ;; *) detail="bad-token:$res"; res=INVALID;; esac; fi
   fi
-  echo "INV-$inv,$t,$c,$res,$detail,$COMMIT,$(date -u +%FT%TZ)" >> "$out"
+  echo "INV-$inv,$t,$c,$res,$detail,$COMMIT,$dsha,$SNAP_ID,$(date -u +%FT%TZ)" >> "$out"
   echo "$res"
 }
 
 for t in $TARGETS; do
   for inv in $INVS; do
-    headcheck; s="$(cell "$inv" "$t" sanity)"
-    if [ "$s" = NA ]; then echo "INV-$inv,$t,current,NA,not-applicable(sanity),$COMMIT,$(date -u +%FT%TZ)" >> "$out"; continue; fi
-    headcheck; m="$(cell "$inv" "$t" mutation)"
+    dsha="$(driversha "$inv")"
+    headcheck; drivercheck "$inv"; s="$(cell "$inv" "$t" sanity)"
+    if [ "$s" = NA ]; then echo "INV-$inv,$t,current,NA,not-applicable(sanity),$COMMIT,$dsha,$SNAP_ID,$(date -u +%FT%TZ)" >> "$out"; continue; fi
+    headcheck; drivercheck "$inv"; m="$(cell "$inv" "$t" mutation)"
     if [ "$s" = PASS ] && [ "$m" = FAIL ]; then
-      headcheck; cell "$inv" "$t" current >/dev/null
+      headcheck; drivercheck "$inv"; cell "$inv" "$t" current >/dev/null
     else
-      echo "INV-$inv,$t,current,INVALID,admission(sanity=$s;mutation=$m),$COMMIT,$(date -u +%FT%TZ)" >> "$out"
+      echo "INV-$inv,$t,current,INVALID,admission(sanity=$s;mutation=$m),$COMMIT,$dsha,$SNAP_ID,$(date -u +%FT%TZ)" >> "$out"
     fi
   done
 done
 clean
-echo "phase-3 batch finished; rows in private/kc2/$(basename "$out"), logs in private/kc2/logs/ (not for tracked files)"
+echo "phase-3 batch finished; snapshot private/kc2/batches/$SNAP_ID/; rows in private/kc2/$(basename "$out") (driver_sha256 + snapshot per row), logs in private/kc2/logs/ (not for tracked files)"
