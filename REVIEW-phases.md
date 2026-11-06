@@ -996,3 +996,46 @@ reasoned and correctly not a finding. The INV-4 DSP-level test is the one remain
 Tractus-X verdict and is within defensive scope **as a bounded TCK-style negative test**, but it is a
 methodology step the user must authorize, with a hard no-forgery boundary. The honest headline is that part
 of the frozen set is structurally NA on current EDC, which must be reported as incomplete, not as zero.
+
+---
+
+## Review 20 (INV-4 client fixture + amendment A3), 2026-11-06
+
+Scope: `b0f1e3c` (INV-4 DSP client fixture, amendment A3, batch-runner admission path) and `80903b6`
+(add-on jar provenance). Commits only; no transcript read. Validity, coverage and confidentiality only;
+no current-release verdict is stated or implied here. Read-only apart from this file.
+
+**Repo state:** clean tree; marker = HEAD `80903b6` (a Masters sha); both commits are on the mirror.
+
+**Done and correct:**
+- The user authorized the bounded INV-4 DSP-level test and A3 (recorded in A3 as user-approved,
+  2026-11-06). The fixture follows the Review 19 bounds as stated in the commit: B uses its own DCP token,
+  A's token, VP and keys are not touched, the provider stays pristine for the verdict, and the fixture is
+  off by default.
+- The add-on jar provenance is recorded per build (sha256, bytes, commit), as Review 18 W2 asked.
+- The INV-4 verdict definition (PASS / FAIL / INVALID) is well-posed. INVALID covers "attack not
+  delivered", so a non-delivery cannot read as a PASS.
+
+| # | where | Issue | Sev | Required change |
+|---|---|---|---|---|
+| Y1 | `kc2/INVARIANTS.md` A3 ("Finding — defense-in-depth" bullet) | **Confidentiality.** This bullet records how the current release behaved when INV-4 was run against it. That is a current-release observation, and it is now in tracked history and on the mirror. It contradicts the "no current-release result in tracked files" rule (Review 15 U1) and the commit's own "No phase-3 result or number recorded". It is not an undisclosed weakness, so the disclosure risk is low. It is still a phase-3 result published before the user's publication decision. | **H** | Forward commit: replace that bullet with a mechanics-only statement (the enforcement is layered, so the admission is not a single-check mutation), and move the observed behaviour to `private/kc2/`. Do the same for the A3 "Admission" bullet's description of the specific refusal. **Never force-push or rewrite history.** Whether the already-pushed text warrants anything further is the **user's call**. Run the tracked-file leak check before every future commit. |
+| Y2 | `60_phase3_batch.sh` new `elif s=PASS && m=NA` branch | **Admission loophole.** The new branch admits **any** invariant on any target whose mutation cell returns NA, for any reason. A mutation that is NA because it was not injectable, or because its driver broke, now admits the current cell with no falsifiability check. A3 justifies the exception for INV-4 on Tractus-X only. | **H** | Restrict the branch to an explicit allow-list (`INV-4` × `tractusx`). Also require the mutation cell's NA reason to be the specific layering observation. Every other `PASS + NA` stays `INVALID:admission`. Record the admission path (`A1` or `A3`) as a column on the row. |
+| Y3 | A3 admission basis | **Weaker evidence tier, and misattributed.** Review 17 required a positive control before INV-4 could count at all. It did not offer positive-control + attack-refused as a **substitute** for a mutation FAIL. Without a FAIL-capable mutation, INV-4 never shows its driver can detect a violation. A refusal could also come from something unrelated to agreement binding. A3's check of the specific refusal type mitigates this but does not replace a mutation. | **M** | Preferred: a labelled two-layer mutation add-on that neutralizes **both** layered checks on the provider. It must FAIL with A's control intact, which restores A1. It stays off every current-release classpath. If that is not feasible in the timebox, keep A3, but the report must list INV-4 as **admitted without a mutation (weaker tier)**, next to the A1-admitted invariants and never pooled with them. Correct A3's wording so it does not attribute this rule to Review 17. |
+| Y4 | add-on jar packaging | One jar now holds the provider mutations (INV-6, INV-4) **and** the consumer client fixture. In the current cell B needs the jar and the provider must have **none** of it. A shared jar makes it easy to put a mutation where it shouldn't be. | **M** | Split into a consumer-fixture jar and a provider-mutation jar, with provenance recorded for each. The batch asserts, per current cell, that the provider classpath contains no add-on jar (sha check) and that B carries only the fixture jar. |
+
+**Order:** (1) Y1 (forward-commit scrub; ask the user about anything further); (2) Y2 (allow-list the
+A3 path); (3) Y4 (split the jars and add the classpath assertion); (4) Y3 (attempt the two-layer mutation,
+otherwise label the tier); (5) the final admission-gated batch ~11-12 from one clean commit and one driver
+snapshot; (6) the report on 11-15, with the set reported as incomplete and the admission tiers stated.
+
+**User decisions (not decided here):** (a) whether the already-pushed A3 text needs anything beyond a
+forward scrub (Y1); (b) whether INV-4 is reported on the A3 tier if the two-layer mutation is not built
+(Y3); (c) publishing any phase-3 numbers before disclosure (unchanged).
+
+**Verdict:**
+- **The INV-4 build is in scope and was authorized.**
+- **Before the final batch:**
+  - Scrub the current-release observation from tracked A3 (Y1).
+  - Close the general NA-admission loophole (Y2).
+  - Separate the fixture jar from the mutation jar (Y4).
+- **INV-4 sits on a weaker evidence tier than INV-6** until a two-layer mutation FAILs (Y3).
