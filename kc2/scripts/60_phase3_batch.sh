@@ -37,10 +37,11 @@ cp "$RUNNERS"/*.sh "$snapdir"/ 2>/dev/null || true
 echo "driver snapshot: private/kc2/batches/$SNAP_ID/ ($(ls "$RUNNERS"/*.sh 2>/dev/null | wc -l) private drivers; sha manifest inside)"
 out="$(kc2_private_out phase3-cells.csv)"
 [ -f "$out" ] || echo "invariant,target,config,result,detail,commit,driver_sha256,snapshot,started,admission" > "$out"
-# A3 (Review-17) admission allow-list (Review 20 Y2): ONLY these (invariant:target) may be admitted via the
-# weaker sanity-PASS + mutation-NA path, and ONLY when the mutation's NA reason matches A3_REASON. Every other
-# PASS+NA is INVALID:admission. INV-4 on tractusx is the only such cell (amendment A3).
-A3_ALLOW="${A3_ALLOW:-4:tractusx}"; A3_REASON="${A3_REASON:-defense-in-depth}"
+# A3 (weaker, mutation-NA) admission allow-list (Review 20 Y2). It is EMPTY by default: with INV-4 now admitted
+# at the A1 tier (two-layer mutation FAILs by construction, amendment A3 rev. 2026-11-06), no invariant uses the
+# NA-admission path, so every sanity-PASS + mutation-NA is INVALID:admission. The mechanism is retained (set
+# A3_ALLOW="<inv>:<target>" + A3_REASON) only if a future invariant genuinely has no single-check mutation.
+A3_ALLOW="${A3_ALLOW:-}"; A3_REASON="${A3_REASON:-__never__}"
 logdir="$(dirname "$(kc2_private_out logs/.keep)")"; mkdir -p "$logdir"
 clean(){ docker ps -aq --filter name=pilot08k2- --filter name=pilot08v- | xargs -r docker rm -f >/dev/null 2>&1 || true; }
 echo "KC2 phase-3 batch @ $COMMIT (HEAD ${HEAD0:0:7}); INVS=[$INVS] TARGETS=[$TARGETS]; ${CELL_TIMEOUT}s/cell; output private only"

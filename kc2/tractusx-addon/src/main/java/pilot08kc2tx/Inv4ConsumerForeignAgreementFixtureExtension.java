@@ -46,6 +46,11 @@ public class Inv4ConsumerForeignAgreementFixtureExtension implements ServiceExte
 
     static final String TOGGLE = "pilot08.kc2.attack.inv4.allow-foreign-agreement";
     static final String PROVIDER_ID = "pilot08.kc2.attack.inv4.provider-id";
+    // Provider second layer of the INV-4 two-layer mutation (Review 20 Y3): on the PROVIDER, make the agreement
+    // lookup ignore its participant scoping so that, combined with the validateAgreement bypass, BOTH
+    // agreement-binding layers are neutralized and a foreign-agreement transfer is accepted (A1 mutation FAIL).
+    // Labelled test-only; never on a current-release (verdict) classpath.
+    static final String UNSCOPE = "pilot08.kc2.mutation.inv4.unscope-agreement-lookup";
 
     @Inject
     private Clock clock;
@@ -54,6 +59,7 @@ public class Inv4ConsumerForeignAgreementFixtureExtension implements ServiceExte
 
     private Monitor monitor;
     private boolean active;
+    private boolean unscope;
     private String providerId;
 
     @Override
@@ -65,9 +71,10 @@ public class Inv4ConsumerForeignAgreementFixtureExtension implements ServiceExte
     public void initialize(ServiceExtensionContext context) {
         monitor = context.getMonitor();
         active = Boolean.parseBoolean(context.getSetting(TOGGLE, "false"));
+        unscope = Boolean.parseBoolean(context.getSetting(UNSCOPE, "false"));
         providerId = context.getSetting(PROVIDER_ID, "");
-        monitor.warning("[pilot08-kc2][INV-4 ATTACK] consumer fixture loaded; active=" + active
-                + " providerId='" + providerId + "' (toggle " + TOGGLE + ")");
+        monitor.warning("[pilot08-kc2][INV-4 ATTACK] store fixture loaded; active=" + active
+                + " unscope=" + unscope + " providerId='" + providerId + "' (toggle " + TOGGLE + ")");
     }
 
     @Provider
@@ -121,6 +128,10 @@ public class Inv4ConsumerForeignAgreementFixtureExtension implements ServiceExte
 
         @Override
         public Stream<ContractAgreement> queryAgreements(QuerySpec querySpec) {
+            if (unscope) {
+                monitor.warning("[pilot08-kc2][INV-4 MUTATION] unscoped agreement lookup (ignoring query scoping) -- probe");
+                return delegate.queryAgreements(QuerySpec.Builder.newInstance().build());
+            }
             return delegate.queryAgreements(querySpec);
         }
 

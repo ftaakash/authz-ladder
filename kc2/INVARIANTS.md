@@ -143,9 +143,10 @@ encodes **no undisclosed finding** — so it is tracked and pushed (per the coor
 - **Admission/mechanics refined by amendment A3 (2026-11-06):** because the honest consumer will not emit a
   transfer for an agreement it does not hold, the assertion is delivered by a DSP client fixture on the
   attacker (its own token); the provider is pristine. The release **layers** the agreement-binding (a
-  participant-scoped agreement lookup, then a consumer-identity check), so a single-check mutation cannot by
-  itself realize the violation. INV-4 is admitted at a **weaker tier than A1** (positive control + assertion,
-  not a mutation FAIL), Tractus-X only. See A3 (source-level mechanics; no run observation here).
+  participant-scoped agreement lookup, then a consumer-identity check), so the mutation is a labelled
+  **two-layer** add-on that neutralises both gates at once (restoring a standard A1 mutation FAIL). INV-4 is
+  admitted at the **A1 tier** (sanity PASS + mutation FAIL), Tractus-X only. See A3 (source-level mechanics;
+  no run observation here).
 
 ## INV-5 — Credential issuer trust (presentation accepted only from a trusted issuer)
 
@@ -312,9 +313,10 @@ data-plane audience/EDR binding → INV-7, and EDR refresh scoping → INV-8.)*
     therefore Tractus-X-only**, joining INV-4/INV-7 (user direction "Invest, Tractus-X only", 2026-11-04).
   - This amendment changes INV-6's oracle mechanics only; it adds no invariant and encodes no finding.
 
-- **A3 — 2026-11-06 — INV-4 delivery + admission (DSP client fixture; defense-in-depth).** User-approved
-  (chosen option: "admit per Review 17"), 2026-11-06. No current-release INV-4 verdict had been admitted
-  into any tracked artifact when this was made. Tractus-X only.
+- **A3 — 2026-11-06 — INV-4 delivery + admission (DSP client fixture; layered enforcement; two-layer A1
+  mutation).** User-approved (deliver via a DSP client fixture; admit at A1 via a two-layer mutation — Review
+  20 Y3), 2026-11-06. No current-release INV-4 verdict had been admitted into any tracked artifact when this
+  was made. Tractus-X only.
   - **Delivery (why a client fixture is needed).** The provider binds a transfer to a valid agreement for
     the requesting counterparty on the DSP transfer-request path. EDC's honest consumer refuses to even
     emit a transfer for an agreement it does not hold locally
@@ -334,21 +336,21 @@ data-plane audience/EDR binding → INV-7, and EDR refresh scoping → INV-8.)*
     two are **independent layers**, so a labelled add-on that neutralizes only `validateAgreement` cannot by
     itself realize the INV-4 violation. This is source-structural only; **no run observation is recorded in
     tracked files** — any observed behaviour lives under `private/kc2/`.
-  - **Admission tier.** Because the enforcement is layered, a single-check A1 mutation (neutralize one check
-    → violation) is not available. INV-4 is therefore admitted at a **distinct, weaker tier than A1**: the
-    **positive control** (A's own transfer reaches STARTED, in both the sanity and current cells) must hold,
-    and the **assertion** is that B's DSP transfer citing A's agreement is refused. This is **not** a
-    substitute for an A1 mutation FAIL; the report names INV-4's admission tier explicitly and separately
-    from the A1-admitted invariants. The `validateAgreement`-neutralizing add-on is retained only as a
-    labelled mechanics probe (its batch cell returns `NA` with the layering reason), never as an A1 gate;
-    the batch admits this A3 path only for the allow-listed (invariant, target) carrying that specific
-    reason (`60_phase3_batch.sh`).
-  - **Verdict (oracle).** PASS = the assertion holds with the positive control intact; FAIL = B's
-    foreign-agreement transfer is accepted; INVALID = the attack was not delivered or the positive control
-    fails.
-  - **Preferred upgrade (Review 20 Y3).** A two-layer mutation add-on that neutralizes **both** provider
-    checks (restoring an A1 mutation FAIL with A's positive control intact, never on a current-release
-    classpath) would supersede this weaker tier; it is pending the user's decision and the timebox.
+  - **Admission (A1 tier; two-layer mutation, Review 20 Y3; user-approved 2026-11-06).** Because the
+    enforcement is layered, a *single*-check mutation cannot realise the violation, so the mutation is a
+    labelled **two-layer** add-on that neutralises **both** provider gates at once: a provider
+    `ContractNegotiationStore` wrapper whose agreement lookup ignores its participant scoping, **plus** the
+    `validateAgreement` bypass. With both neutralised a foreign-agreement transfer request is accepted, which
+    is the INV-4 violation by construction — a standard A1 mutation FAIL. INV-4 is therefore admitted at the
+    **same A1 tier as the other invariants** (sanity PASS + mutation FAIL), Tractus-X only. The two-layer
+    add-on is labelled test-only and **never** on a current-release (verdict) classpath; the batch's
+    mutation-NA admission path is disabled by default (`60_phase3_batch.sh`, empty `A3_ALLOW`).
+  - **Oracle.** The agreement-binding decision is taken at request **acceptance**: a transfer request that is
+    **refused** on binding grounds terminates with the agreement-binding error, whereas one **accepted** past
+    the binding advances (requested/started/completed). So, with A's positive control (its own transfer
+    reaching STARTED) intact: **PASS** = B's foreign-agreement transfer is refused; **FAIL** = it is accepted
+    past the binding; **INVALID** = the attack was not delivered or the positive control fails. (The
+    downstream data-plane state is not part of the binding decision.)
   - This amendment refines INV-4's delivery and admission mechanics only; it adds no invariant and records no
     finding or run observation.
 
