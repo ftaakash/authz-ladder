@@ -144,9 +144,8 @@ encodes **no undisclosed finding** — so it is tracked and pushed (per the coor
   transfer for an agreement it does not hold, the assertion is delivered by a DSP client fixture on the
   attacker (its own token); the provider is pristine. The release **layers** the agreement-binding (a
   participant-scoped agreement lookup, then a consumer-identity check), so the mutation is a labelled
-  **two-layer** add-on that neutralises both gates at once (restoring a standard A1 mutation FAIL). INV-4 is
-  admitted at the **A1 tier** (sanity PASS + mutation FAIL), Tractus-X only. See A3 (source-level mechanics;
-  no run observation here).
+  **two-layer** add-on that neutralises both gates at once (a standard A1 mutation). INV-4 follows the **A1
+  admission path**, Tractus-X only. See A3 (source-level mechanics; no run observation here).
 
 ## INV-5 — Credential issuer trust (presentation accepted only from a trusted issuer)
 
@@ -341,16 +340,24 @@ data-plane audience/EDR binding → INV-7, and EDR refresh scoping → INV-8.)*
     labelled **two-layer** add-on that neutralises **both** provider gates at once: a provider
     `ContractNegotiationStore` wrapper whose agreement lookup ignores its participant scoping, **plus** the
     `validateAgreement` bypass. With both neutralised a foreign-agreement transfer request is accepted, which
-    is the INV-4 violation by construction — a standard A1 mutation FAIL. INV-4 is therefore admitted at the
-    **same A1 tier as the other invariants** (sanity PASS + mutation FAIL), Tractus-X only. The two-layer
-    add-on is labelled test-only and **never** on a current-release (verdict) classpath; the batch's
-    mutation-NA admission path is disabled by default (`60_phase3_batch.sh`, empty `A3_ALLOW`).
+    is the INV-4 violation by construction. INV-4 therefore follows the **standard A1 admission path** (the
+    freeze-rule sanity control holding by construction, the two-layer mutation violating by construction), the
+    **same tier as the other invariants**, Tractus-X only. The two-layer add-on is labelled test-only and
+    **never** on a current-release (verdict) classpath; the batch's mutation-NA admission path is disabled by
+    default (`60_phase3_batch.sh`, empty `A3_ALLOW`), and each verdict cell asserts the provider classpath
+    carries no add-on (Review 20 Y4).
   - **Oracle.** The agreement-binding decision is taken at request **acceptance**: a transfer request that is
     **refused** on binding grounds terminates with the agreement-binding error, whereas one **accepted** past
     the binding advances (requested/started/completed). So, with A's positive control (its own transfer
     reaching STARTED) intact: **PASS** = B's foreign-agreement transfer is refused; **FAIL** = it is accepted
     past the binding; **INVALID** = the attack was not delivered or the positive control fails. (The
     downstream data-plane state is not part of the binding decision.)
+  - **Oracle refinement (recorded per the pre-batch review).** An initial draft keyed the verdict on the
+    transfer reaching STARTED. Per DSP (Transfer Process Protocol) the agreement↔transfer binding is validated
+    when the provider **processes** the transfer request (acceptance), not at data-plane delivery: a request
+    failing the binding is refused at that step, one passing it advances. The criterion was therefore refined
+    to key on acceptance-vs-refusal (above). This follows from the spec **independent of any run outcome** and
+    was settled **before any current-release cell was counted**; flagged for the next review checkpoint.
   - This amendment refines INV-4's delivery and admission mechanics only; it adds no invariant and records no
     finding or run observation.
 

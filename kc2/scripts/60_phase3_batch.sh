@@ -38,7 +38,7 @@ echo "driver snapshot: private/kc2/batches/$SNAP_ID/ ($(ls "$RUNNERS"/*.sh 2>/de
 out="$(kc2_private_out phase3-cells.csv)"
 [ -f "$out" ] || echo "invariant,target,config,result,detail,commit,driver_sha256,snapshot,started,admission" > "$out"
 # A3 (weaker, mutation-NA) admission allow-list (Review 20 Y2). It is EMPTY by default: with INV-4 now admitted
-# at the A1 tier (two-layer mutation FAILs by construction, amendment A3 rev. 2026-11-06), no invariant uses the
+# at the A1 tier (its two-layer mutation violates by construction, amendment A3 rev. 2026-11-06), no invariant uses the
 # NA-admission path, so every sanity-PASS + mutation-NA is INVALID:admission. The mechanism is retained (set
 # A3_ALLOW="<inv>:<target>" + A3_REASON) only if a future invariant genuinely has no single-check mutation.
 A3_ALLOW="${A3_ALLOW:-}"; A3_REASON="${A3_REASON:-__never__}"
