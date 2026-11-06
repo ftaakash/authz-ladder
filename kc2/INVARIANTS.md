@@ -140,6 +140,11 @@ encodes **no undisclosed finding** — so it is tracked and pushed (per the coor
 - **PASS** unbound/mismatched transfer refused, bound transfer works. **FAIL** unbound or
   cross-party/cross-asset transfer proceeds. **INVALID** the bound positive-control transfer fails, or
   no agreement could be finalized.
+- **Admission/mechanics refined by amendment A3 (2026-11-06):** the honest consumer refuses to emit the
+  attack client-side, so it is delivered by a DSP client fixture on the attacker (its own token); the
+  provider is pristine. The agreement-binding turned out to be **defense-in-depth** (a participant-scoped
+  agreement lookup, then a consumer-identity check), so no single-check mutation flips the outcome. INV-4
+  is therefore admitted on **positive-control + attack-refused** (Review 17), Tractus-X only. See A3.
 
 ## INV-5 — Credential issuer trust (presentation accepted only from a trusted issuer)
 
@@ -305,6 +310,35 @@ data-plane audience/EDR binding → INV-7, and EDR refresh scoping → INV-8.)*
     vacuous PASS; the former `pilot08Member` fixture is retired as an admission basis). **INV-6 is
     therefore Tractus-X-only**, joining INV-4/INV-7 (user direction "Invest, Tractus-X only", 2026-11-04).
   - This amendment changes INV-6's oracle mechanics only; it adds no invariant and encodes no finding.
+
+- **A3 — 2026-11-06 — INV-4 delivery + admission (DSP client fixture; defense-in-depth).** User-approved
+  (chosen option: "admit per Review 17"), 2026-11-06. No current-release INV-4 verdict had been admitted
+  into any tracked artifact when this was made. Tractus-X only.
+  - **Delivery (why a client fixture is needed).** The provider binds a transfer to a valid agreement for
+    the requesting counterparty on the DSP transfer-request path. EDC's honest consumer refuses to even
+    emit a transfer for an agreement it does not hold locally
+    (`TransferProcessServiceImpl.initiateTransfer` → badRequest when
+    `contractNegotiationStore.findContractAgreement(contractId) == null`), so the attack can only be
+    delivered to the provider's boundary by a **DSP client fixture** on the attacker (B) that removes that
+    client-side precondition. B authenticates with its **own** legitimately-issued DCP token; A's token/VP
+    and private keys are never touched; the provider under test keeps **all** checks on and is pristine for
+    the verdict. This is a TCK-style negative conformance test (SCOPE's "DSP client fixture"), not a bypass
+    of the provider.
+  - **Finding — defense-in-depth.** The provider refuses B at the **first** gate,
+    `TransferProcessProtocolServiceImpl.fetchNotifyRequestContext` → `findAgreement` (a participant-scoped
+    agreement query: `queryByParticipantContextId(provider) + agreementId`), returning DSP `TransferError`
+    **404** "agreement not found or not valid" — *before* `ContractValidationService.validateAgreement`
+    (the consumer-identity check, which would be a 409). So a labelled add-on that bypasses only
+    `validateAgreement` does **not** flip the outcome (B is still refused): the two checks are layered.
+  - **Admission (Review 17).** Because no single-check mutation can flip a defense-in-depth enforcement, INV-4
+    is admitted on **positive control** (A's own transfer reaches STARTED, in both the sanity and current
+    cells) **+ attack-refused** (B's DSP transfer citing A's agreement is refused with the specific
+    agreement-binding error). The `validateAgreement`-bypass add-on is retained as **evidence of the
+    layering** (its cell returns NA with that observation, which the batch admits as the Review-17 path;
+    `60_phase3_batch.sh`), not as an A1 gate. A current-cell result counts iff the positive control holds.
+  - **Verdict.** PASS = B's foreign-agreement transfer refused and A's positive control STARTED; FAIL = B's
+    foreign-agreement transfer reaches STARTED; INVALID = attack not delivered or positive control fails.
+  - This amendment refines INV-4's delivery and admission mechanics only; it adds no invariant and encodes no finding.
 
 ## Scope limitation (D13, 2026-10-26)
 

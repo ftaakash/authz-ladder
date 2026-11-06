@@ -24,6 +24,10 @@ dependencies {
     // INV-4 mutation delegates to the release's own ContractValidationServiceImpl (+ PolicyEquality); these
     // live in the control-plane-contract core module, provided at runtime by /app/edc-runtime.jar.
     compileOnly(edc("control-plane-contract"))
+    // INV-4 consumer fixture wraps the release's own InMemoryContractNegotiationStore (control-plane-core),
+    // whose superclass InMemoryStatefulEntityStore lives in store-lib.
+    compileOnly(edc("control-plane-core"))
+    compileOnly(edc("store-lib"))
 }
 
 tasks.shadowJar {

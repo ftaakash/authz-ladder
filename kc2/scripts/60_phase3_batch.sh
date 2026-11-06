@@ -70,6 +70,11 @@ for t in $TARGETS; do
     if [ "$s" = NA ]; then echo "INV-$inv,$t,current,NA,not-applicable(sanity),$COMMIT,$dsha,$SNAP_ID,$(date -u +%FT%TZ)" >> "$out"; continue; fi
     headcheck; drivercheck "$inv"; m="$(cell "$inv" "$t" mutation)"
     if [ "$s" = PASS ] && [ "$m" = FAIL ]; then
+      # A1 admission: sanity holds + mutation reveals the violation -> current counts.
+      headcheck; drivercheck "$inv"; cell "$inv" "$t" current >/dev/null
+    elif [ "$s" = PASS ] && [ "$m" = NA ]; then
+      # Review-17 / amendment A3 admission: no single-check A1 mutation is possible (e.g. defense-in-depth
+      # enforcement), so the invariant is admitted on positive-control-holds (sanity) + attack-refused (current).
       headcheck; drivercheck "$inv"; cell "$inv" "$t" current >/dev/null
     else
       echo "INV-$inv,$t,current,INVALID,admission(sanity=$s;mutation=$m),$COMMIT,$dsha,$SNAP_ID,$(date -u +%FT%TZ)" >> "$out"
