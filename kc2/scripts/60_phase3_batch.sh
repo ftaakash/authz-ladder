@@ -36,7 +36,11 @@ cp "$RUNNERS"/*.sh "$snapdir"/ 2>/dev/null || true
 ( cd "$RUNNERS" && for f in *.sh; do sha256sum "$f"; done ) > "$snapdir/MANIFEST.sha256" 2>/dev/null || true
 echo "driver snapshot: private/kc2/batches/$SNAP_ID/ ($(ls "$RUNNERS"/*.sh 2>/dev/null | wc -l) private drivers; sha manifest inside)"
 out="$(kc2_private_out phase3-cells.csv)"
-[ -f "$out" ] || echo "invariant,target,config,result,detail,commit,driver_sha256,snapshot,started" > "$out"
+[ -f "$out" ] || echo "invariant,target,config,result,detail,commit,driver_sha256,snapshot,started,admission" > "$out"
+# A3 (Review-17) admission allow-list (Review 20 Y2): ONLY these (invariant:target) may be admitted via the
+# weaker sanity-PASS + mutation-NA path, and ONLY when the mutation's NA reason matches A3_REASON. Every other
+# PASS+NA is INVALID:admission. INV-4 on tractusx is the only such cell (amendment A3).
+A3_ALLOW="${A3_ALLOW:-4:tractusx}"; A3_REASON="${A3_REASON:-defense-in-depth}"
 logdir="$(dirname "$(kc2_private_out logs/.keep)")"; mkdir -p "$logdir"
 clean(){ docker ps -aq --filter name=pilot08k2- --filter name=pilot08v- | xargs -r docker rm -f >/dev/null 2>&1 || true; }
 echo "KC2 phase-3 batch @ $COMMIT (HEAD ${HEAD0:0:7}); INVS=[$INVS] TARGETS=[$TARGETS]; ${CELL_TIMEOUT}s/cell; output private only"
@@ -47,8 +51,8 @@ driversha(){ local inv="$1"; [ -f "$RUNNERS/inv$inv.sh" ] || { echo ""; return; 
 drivercheck(){ local inv="$1" f; for f in "inv$inv.sh" p3lib.sh; do [ -f "$RUNNERS/$f" ] || continue
     cmp -s "$RUNNERS/$f" "$snapdir/$f" || { echo "refusing: private driver $f changed after snapshot $SNAP_ID — restart the batch so every row cites the code that produced it"; exit 1; }
   done; }
-cell(){ # inv target config -> echoes result token, appends a private row (runs in $(...): never exit here)
-  local inv="$1" t="$2" c="$3" r log res detail rc
+cell(){ # inv target config [admission] -> echoes result token, appends a private row (runs in $(...): never exit here)
+  local inv="$1" t="$2" c="$3" adm="${4:--}" r log res detail rc
   r="$RUNNERS/inv$inv.sh"; log="$logdir/inv$inv-$t-$c.log"
   if [ ! -f "$r" ]; then res=INVALID; detail=no-runner
   else
@@ -59,7 +63,7 @@ cell(){ # inv target config -> echoes result token, appends a private row (runs 
     else res="${line#RESULT=}"; detail="${res#*:}"; res="${res%%:*}"; [ "$detail" = "$res" ] && detail=""
          case "$res" in PASS|FAIL|INVALID|NA) ;; *) detail="bad-token:$res"; res=INVALID;; esac; fi
   fi
-  echo "INV-$inv,$t,$c,$res,$detail,$COMMIT,$dsha,$SNAP_ID,$(date -u +%FT%TZ)" >> "$out"
+  echo "INV-$inv,$t,$c,$res,$detail,$COMMIT,$dsha,$SNAP_ID,$(date -u +%FT%TZ),$adm" >> "$out"
   echo "$res"
 }
 
@@ -67,17 +71,18 @@ for t in $TARGETS; do
   for inv in $INVS; do
     dsha="$(driversha "$inv")"
     headcheck; drivercheck "$inv"; s="$(cell "$inv" "$t" sanity)"
-    if [ "$s" = NA ]; then echo "INV-$inv,$t,current,NA,not-applicable(sanity),$COMMIT,$dsha,$SNAP_ID,$(date -u +%FT%TZ)" >> "$out"; continue; fi
+    if [ "$s" = NA ]; then echo "INV-$inv,$t,current,NA,not-applicable(sanity),$COMMIT,$dsha,$SNAP_ID,$(date -u +%FT%TZ),-" >> "$out"; continue; fi
     headcheck; drivercheck "$inv"; m="$(cell "$inv" "$t" mutation)"
+    mdetail="$(grep -E "^INV-$inv,$t,mutation," "$out" | tail -1 | cut -d, -f5)"
     if [ "$s" = PASS ] && [ "$m" = FAIL ]; then
       # A1 admission: sanity holds + mutation reveals the violation -> current counts.
-      headcheck; drivercheck "$inv"; cell "$inv" "$t" current >/dev/null
-    elif [ "$s" = PASS ] && [ "$m" = NA ]; then
-      # Review-17 / amendment A3 admission: no single-check A1 mutation is possible (e.g. defense-in-depth
-      # enforcement), so the invariant is admitted on positive-control-holds (sanity) + attack-refused (current).
-      headcheck; drivercheck "$inv"; cell "$inv" "$t" current >/dev/null
+      headcheck; drivercheck "$inv"; cell "$inv" "$t" current A1 >/dev/null
+    elif [ "$s" = PASS ] && [ "$m" = NA ] && printf '%s' " $A3_ALLOW " | grep -q " $inv:$t " && printf '%s' "$mdetail" | grep -q "$A3_REASON"; then
+      # A3 admission (amendment A3), allow-listed only: layered enforcement means no single-check mutation is
+      # possible, so this (invariant:target) is admitted on positive-control (sanity) + assertion (current).
+      headcheck; drivercheck "$inv"; cell "$inv" "$t" current A3 >/dev/null
     else
-      echo "INV-$inv,$t,current,INVALID,admission(sanity=$s;mutation=$m),$COMMIT,$dsha,$SNAP_ID,$(date -u +%FT%TZ)" >> "$out"
+      echo "INV-$inv,$t,current,INVALID,admission(sanity=$s;mutation=$m),$COMMIT,$dsha,$SNAP_ID,$(date -u +%FT%TZ),-" >> "$out"
     fi
   done
 done

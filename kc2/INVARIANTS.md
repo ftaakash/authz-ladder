@@ -140,11 +140,12 @@ encodes **no undisclosed finding** — so it is tracked and pushed (per the coor
 - **PASS** unbound/mismatched transfer refused, bound transfer works. **FAIL** unbound or
   cross-party/cross-asset transfer proceeds. **INVALID** the bound positive-control transfer fails, or
   no agreement could be finalized.
-- **Admission/mechanics refined by amendment A3 (2026-11-06):** the honest consumer refuses to emit the
-  attack client-side, so it is delivered by a DSP client fixture on the attacker (its own token); the
-  provider is pristine. The agreement-binding turned out to be **defense-in-depth** (a participant-scoped
-  agreement lookup, then a consumer-identity check), so no single-check mutation flips the outcome. INV-4
-  is therefore admitted on **positive-control + attack-refused** (Review 17), Tractus-X only. See A3.
+- **Admission/mechanics refined by amendment A3 (2026-11-06):** because the honest consumer will not emit a
+  transfer for an agreement it does not hold, the assertion is delivered by a DSP client fixture on the
+  attacker (its own token); the provider is pristine. The release **layers** the agreement-binding (a
+  participant-scoped agreement lookup, then a consumer-identity check), so a single-check mutation cannot by
+  itself realize the violation. INV-4 is admitted at a **weaker tier than A1** (positive control + assertion,
+  not a mutation FAIL), Tractus-X only. See A3 (source-level mechanics; no run observation here).
 
 ## INV-5 — Credential issuer trust (presentation accepted only from a trusted issuer)
 
@@ -324,21 +325,32 @@ data-plane audience/EDR binding → INV-7, and EDR refresh scoping → INV-8.)*
     and private keys are never touched; the provider under test keeps **all** checks on and is pristine for
     the verdict. This is a TCK-style negative conformance test (SCOPE's "DSP client fixture"), not a bypass
     of the provider.
-  - **Finding — defense-in-depth.** The provider refuses B at the **first** gate,
-    `TransferProcessProtocolServiceImpl.fetchNotifyRequestContext` → `findAgreement` (a participant-scoped
-    agreement query: `queryByParticipantContextId(provider) + agreementId`), returning DSP `TransferError`
-    **404** "agreement not found or not valid" — *before* `ContractValidationService.validateAgreement`
-    (the consumer-identity check, which would be a 409). So a labelled add-on that bypasses only
-    `validateAgreement` does **not** flip the outcome (B is still refused): the two checks are layered.
-  - **Admission (Review 17).** Because no single-check mutation can flip a defense-in-depth enforcement, INV-4
-    is admitted on **positive control** (A's own transfer reaches STARTED, in both the sanity and current
-    cells) **+ attack-refused** (B's DSP transfer citing A's agreement is refused with the specific
-    agreement-binding error). The `validateAgreement`-bypass add-on is retained as **evidence of the
-    layering** (its cell returns NA with that observation, which the batch admits as the Review-17 path;
-    `60_phase3_batch.sh`), not as an A1 gate. A current-cell result counts iff the positive control holds.
-  - **Verdict.** PASS = B's foreign-agreement transfer refused and A's positive control STARTED; FAIL = B's
-    foreign-agreement transfer reaches STARTED; INVALID = attack not delivered or positive control fails.
-  - This amendment refines INV-4's delivery and admission mechanics only; it adds no invariant and encodes no finding.
+  - **Mechanics — layered enforcement (from pinned source).** On the DSP transfer-request path the release
+    resolves the cited agreement at `TransferProcessProtocolServiceImpl.fetchNotifyRequestContext` →
+    `findAgreement`, a **participant-scoped** query (`queryByParticipantContextId(...) + agreementId`) whose
+    miss yields a DSP `TransferError` with status **404**; the consumer-identity check
+    `ContractValidationService.validateAgreement` (`ContractValidationServiceImpl`: the agent identity must
+    be the agreement's consumer or provider) is a **separate, later** step whose failure is a **409**. The
+    two are **independent layers**, so a labelled add-on that neutralizes only `validateAgreement` cannot by
+    itself realize the INV-4 violation. This is source-structural only; **no run observation is recorded in
+    tracked files** — any observed behaviour lives under `private/kc2/`.
+  - **Admission tier.** Because the enforcement is layered, a single-check A1 mutation (neutralize one check
+    → violation) is not available. INV-4 is therefore admitted at a **distinct, weaker tier than A1**: the
+    **positive control** (A's own transfer reaches STARTED, in both the sanity and current cells) must hold,
+    and the **assertion** is that B's DSP transfer citing A's agreement is refused. This is **not** a
+    substitute for an A1 mutation FAIL; the report names INV-4's admission tier explicitly and separately
+    from the A1-admitted invariants. The `validateAgreement`-neutralizing add-on is retained only as a
+    labelled mechanics probe (its batch cell returns `NA` with the layering reason), never as an A1 gate;
+    the batch admits this A3 path only for the allow-listed (invariant, target) carrying that specific
+    reason (`60_phase3_batch.sh`).
+  - **Verdict (oracle).** PASS = the assertion holds with the positive control intact; FAIL = B's
+    foreign-agreement transfer is accepted; INVALID = the attack was not delivered or the positive control
+    fails.
+  - **Preferred upgrade (Review 20 Y3).** A two-layer mutation add-on that neutralizes **both** provider
+    checks (restoring an A1 mutation FAIL with A's positive control intact, never on a current-release
+    classpath) would supersede this weaker tier; it is pending the user's decision and the timebox.
+  - This amendment refines INV-4's delivery and admission mechanics only; it adds no invariant and records no
+    finding or run observation.
 
 ## Scope limitation (D13, 2026-10-26)
 
