@@ -6,7 +6,7 @@
 
 ![status](https://img.shields.io/badge/status-feasibility%20pilot-orange)
 ![KC1](https://img.shields.io/badge/kill%20condition%201-passed-success)
-![KC2](https://img.shields.io/badge/kill%20condition%202-tests%20frozen%2C%20counting%20run%2011%20Nov-yellow)
+![KC2](https://img.shields.io/badge/kill%20condition%202-run%20complete%2C%20results%20private-yellow)
 ![scope](https://img.shields.io/badge/scope-local%20testbed%20only-blue)
 ![output](https://img.shields.io/badge/output-pass%2Ffail%20only-lightgrey)
 ![SUT](https://img.shields.io/badge/SUT-Eclipse%20EDC%20%7C%20Tractus--X%20EDC-6f42c1)
@@ -55,7 +55,7 @@ CVE-2024-8642 does not count: its module is removed rather than fixed, so a PASS
 | [CVE-2024-4536](https://osv.dev/vulnerability/CVE-2024-4536) | **Vault scoping**: a counterparty cannot choose which provider secret is dereferenced | ≤ 0.6.2 → **0.6.3** | [`results/cve-2024-4536.csv`](results/cve-2024-4536.csv) |
 | [CVE-2024-9202](https://osv.dev/vulnerability/CVE-2024-9202) | **Catalogue visibility**: a single-dataset request obeys the catalogue policy (CWE-862) | ≤ 0.9.0 → **0.9.1** | [`results/cve-2024-9202.csv`](results/cve-2024-9202.csv) |
 
-### Kill condition 2: new violations on current releases 🟡 in progress
+### Kill condition 2: new violations on current releases 🟡 run complete, results private
 
 | Step | State | Evidence |
 |---|---|---|
@@ -68,7 +68,9 @@ CVE-2024-8642 does not count: its module is removed rather than fixed, so a PASS
 | Oracle amendments, each made before any current-release result was admitted: **A2** (INV-6 bound to the release's own negotiation constraint), **A3/A4** (INV-4 agreement binding: DSP client fixture, two-layer mutation, binding-specific refusal, single-gate controls) | ✅ | [`kc2/INVARIANTS.md`](kc2/INVARIANTS.md) §Amendments |
 | INV-4 admission evidence, mutated builds only (sanity PASS, two-layer mutation FAIL, each single gate still refuses) | ✅ | [`kc2/env/inv4-admission-extract.csv`](kc2/env/inv4-admission-extract.csv), [`kc2/env/mutation-addon-jars.csv`](kc2/env/mutation-addon-jars.csv) |
 | Test design independently reviewed and cleared for counting (Reviews 18–22) | ✅ | [`REVIEW-phases.md`](REVIEW-phases.md) |
-| Phase 3: admission-gated counting run on one clean commit and one driver snapshot | ⏳ scheduled 2026-11-11/12 | results private until disclosure (see below) |
+| Phase 3: admission-gated counting run, once, on one clean commit and one driver snapshot (D18) | ✅ ran 2026-11-07 | results private until disclosure (see below) |
+| Results-blind compliance review of the counting run (Review 23) | ✅ compliant | [`REVIEW-phases.md`](REVIEW-phases.md) |
+| Pilot report (D19) | ✅ 2026-11-08 | [`PILOT-REPORT.md`](PILOT-REPORT.md) (results held privately pending the author's disclosure decision) |
 
 An invariant that cannot be validly exercised on a target is reported as **INVALID** or **NA** with its reason.
 An incomplete set is reported as incomplete, never as "0 violations".
@@ -78,7 +80,7 @@ An incomplete set is reported as incomplete, never as "0 violations".
 ```
 .
 ├── SCOPE.md            binding scope, defensive framing, standing approvals
-├── DECISIONS.md        decision log (D1–D17)
+├── DECISIONS.md        decision log (D1–D19)
 ├── VERSIONS.md         CVE pinning and the version ladder, with sources
 ├── ENV.md              every pinned image, digest, download and toolchain version
 ├── PILOT-REPORT.md     running results log
