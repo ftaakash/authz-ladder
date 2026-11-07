@@ -1039,3 +1039,66 @@ forward scrub (Y1); (b) whether INV-4 is reported on the A3 tier if the two-laye
   - Close the general NA-admission loophole (Y2).
   - Separate the fixture jar from the mutation jar (Y4).
 - **INV-4 sits on a weaker evidence tier than INV-6** until a two-layer mutation FAILs (Y3).
+
+---
+
+## Review 21 (INV-4 oracle refinement), 2026-11-07
+
+Scope: INV-4 entry and amendment A3 in `kc2/INVARIANTS.md` (rev. 2026-11-06), `kc2/scripts/60_phase3_batch.sh`, and local commits `8f5411a`, `6854fbd`, `925fdfa` (mirror `3e16222`, `65a9a19`, `9b46bb1`).
+
+Read-only. From `private/kc2/` I read only:
+- file names and timestamps;
+- the cell file's invariant, config and timestamp columns;
+- the verdict-assignment lines of the INV-4 driver.
+
+No result, count or finding is stated here. Test design only.
+
+### Q1. Is the acceptance-vs-refusal criterion grounded in the spec?
+
+**Yes.**
+- In the DSP Transfer Process Protocol, the provider decides whether to honour a `TransferRequestMessage` when it **processes the request**. It either acknowledges with a transfer process in state REQUESTED or answers with an error. STARTED is a later, provider-initiated transition (`TransferStartMessage`) that depends on data-plane provisioning, not on the agreement binding.
+- Keying the verdict on STARTED would conflate a data-plane failure with a binding refusal. That would be a false-negative path, so the refinement removes a confounder rather than adding one.
+- **Section numbering is UNVERIFIED:** cite "Transfer Process Protocol: TransferRequestMessage; Transfer Process States (REQUESTED / STARTED)" against the DSP version the TCK baseline used (TCK ≤ 1.0.2, `kc2/TCK-PLAN.md:12`) before quoting a section number in the paper.
+- The tracked text already keyed on refused vs accepted before `8f5411a`. The refinement only fixed what counts as **accepted**: acknowledged past the binding, instead of reaching STARTED.
+
+### Q2. Was it settled before any current-release cell counted?
+
+**Yes, as far as the record shows.**
+- The criterion entered tracked files at `8f5411a` (2026-11-06 19:21) and `925fdfa` (19:42).
+- The private INV-4 driver was last modified at 19:39, between those two commits.
+- `private/kc2/` holds **no** admission-gated batch snapshot (`batches/` is absent) and **no** INV-4 row in the cell file. The only INV-4 artefacts on disk are feasibility logs from 2026-10-31 and 2026-11-04, which predate both the client fixture and the refinement.
+- **Caveat:** the driver is unversioned, and the development runs on 11-06 left no log. "Changed while chasing the mutation FAIL" therefore cannot be audited run by run.
+- **Direction of the change:** it only **widens FAIL** (acknowledged-but-not-STARTED now reads FAIL). It cannot turn a violation into PASS.
+
+### Q3. Do the controls hold by construction?
+
+**Mutation FAILs by construction (OK).**
+- With both provider gates neutralised (the participant-scoped lookup and `validateAgreement`), a well-formed, authenticated foreign-agreement request has no remaining binding check.
+- The driver correctly refuses to read FAIL unless three things hold: the provider add-on is active (`mutation-not-applied`), delivery happened (`attack-not-delivered`), and A's control is STARTED. A refusal under the mutation is INVALID (`mutation-did-not-violate`), never PASS.
+
+**Sanity PASSes only vacuously (gap).**
+- The sanity cell PASSes iff A's own transfer STARTs. It never sends B's request, so the **PASS branch of the verdict** (refusal classified as PASS) is first exercised in the current cell itself.
+- A1 admission is therefore genuine for FAIL-detection but untested for PASS-classification. See Z3.
+
+### Q4. Can the oracle produce false negatives or spurious FAILs?
+
+| # | where | Issue | Sev | Required change |
+|---|---|---|---|---|
+| Z1 | INV-4 driver, verdict line "B TERMINATED ⇒ PASS" | **False-negative path.** PASS is keyed on B's transfer process ending TERMINATED, whatever the reason. A schema error (400), auth failure (401), provider error (500) or dispatch failure also ends TERMINATED, so a fixture or setup artefact reads **PASS**. The comment says "refused on agreement-binding grounds", but the code does not check the grounds. | **H** | PASS only if the provider's refusal is one of the two binding layers: the agreement-lookup miss (404 `TransferError`) or the identity check (409). Capture the provider-side status or error and record it in the observations. Any other termination is `INVALID:refused-non-binding(<status>)`. |
+| Z2 | current and mutation cells | **Spurious-FAIL path.** If B's identity resolves to A's, the request is legitimately accepted and reads FAIL. Examples: a shared participant context, or a stand-in BPN mapping like the TCK stand-ins in `kc2/env/tck-tx-standins.md`. | M | Per cell, assert and record that B's authenticated identity ≠ A's and that the cited agreement's consumer = A. Otherwise INVALID. |
+| Z3 | sanity / admission | The PASS branch is never exercised before the current cell (see Q3). | M | Add two **single-layer control cells** on mutated builds: neutralise only gate 1, then only gate 2. The other gate still refuses, so each must PASS with the specific binding status from Z1. This exercises the PASS branch and the refusal-reason check on a known-refusing provider, and confirms the layering claim in A3. Off every current classpath, as now. |
+| Z4 | acceptance evidence | "Accepted" is read from B's **consumer-side** state (REQUESTED / STARTING / STARTED / COMPLETED). | M | Corroborate with provider-side evidence: a provider transfer process exists for B's request id. Read it via the provider management API in the evidence step only, never as the assertion path. Disagreement between the two sides → INVALID. |
+| Z5 | provenance | The criterion lives in the unversioned driver, changed at 19:39 after `8f5411a`. | L | Record the INV-4 driver sha in A3's refinement note. The batch snapshot and manifest already pin it per run. |
+
+### Verdict
+
+**INV-4 is cleared for the 11-12 batch, on two conditions:**
+- **Z1:** a binding-specific refusal is required for PASS.
+- **Z3:** the single-layer control cells PASS. They must run before the batch and be committed as admission evidence.
+
+**Should land as well:** Z2 and Z4. Without them, a FAIL needs manual corroboration before it counts.
+
+**What holds now:**
+- The refinement itself is spec-grounded and outcome-independent in direction, and nothing was counted before it.
+- The two-layer mutation is a genuine A1 FAIL control.
+- If Z1 or Z3 is not done by the batch, report INV-4 as INVALID:oracle-unverified rather than counting a PASS.
