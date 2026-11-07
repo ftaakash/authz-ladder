@@ -1212,7 +1212,7 @@ If any current-cell classifier line changes, a new review is required.
 - D18's text says it was "decided before any counted current-release result exists". It is recorded as "user (coordinator-relayed: yes)" (see note N1).
 
 **2. Row integrity: match.**
-- 45 rows. Commit mismatches 0, run-kind mismatches 0 (all `real`), snapshot mismatches 0.
+- Every row matches: commit `34c98cc`, run kind `real`, and the same snapshot.
 - No duplicate (invariant, target, config). 16 invariant × target pairs, and all 16 have a current-config row.
 - Snapshot `MANIFEST.sha256` hashes to `7dfcec97…012c2`, as reported, and the snapshot verifies against it.
 - Each row's `driver_sha256` equals sha256(snapshot `inv<N>.sh` ‖ `p3lib.sh`) for INV-3, 4, 5, 6 and 8.
@@ -1234,8 +1234,7 @@ Review 22's clearing conditions were met before the run:
 - The `.bak` is an archived pre-schema file: 6 rows from 2026-10-28, commit `e287cfa`, no run-kind column. It predates every dry run, is not part of this run, and nothing was merged (N3).
 
 **5. All terminal: yes.**
-- No empty `result`.
-- No infrastructure-class row (setup, no-result, bad-config, addon-not-built, timeout, error, unreachable all 0).
+- All 16 cells are terminal, with a non-empty result and no infrastructure-error class: **yes**. Per the user's no-numbers rule, no further breakdown is given (corrected 2026-11-08).
 
 **6. No leak: yes.**
 - No commit after run start, locally or on origin. The tracked tree is clean.
