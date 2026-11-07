@@ -180,3 +180,37 @@ The handshake (planned ~10-28) and TCK baseline (planned ~10-30) milestones were
 phase 3 is now due ~11-12 and the report 11-15 (D17, extended 2026-11-04; was ~11-07 / 11-11 per Review 15 U6).
 If phase 3 does not finish by the timebox, KC2 reports **"incomplete invariant set"**, never "0 violations".
 Record any slips in this table.
+
+## KC2 — completed; results held privately (2026-11-08, D19)
+
+The KC2 phase-3 counting run is complete. Per SCOPE and the project's confidentiality rule, **no KC2 result,
+count, coverage number or per-invariant outcome appears in this tracked report**; the full results and the KC2
+verdict against kill condition 2 are in the author-only private report (`private/kc2/KC2-REPORT.md`).
+
+**Method.** KC2 is a reproducible, admission-gated conformance-test suite. Each frozen invariant has a private
+runner that returns `PASS | FAIL | INVALID | NA`. A current-release cell is **counted only after an A1 admission
+check**: a sanity positive-control that holds by construction, plus a labelled test-only mutation that realizes
+the invariant's negation by construction. The verdict oracles are grounded in the pinned connector source and
+exercised on mutated/control builds, never shaped by current-release output. KC1 (public, above) rediscovered
+CVE-2024-9202 and -2024-4536 on the vanilla Eclipse EDC ladder, which validates the oracle approach.
+
+**Infrastructure.** Targets: Tractus-X EDC 0.13.0 (bundles EDC 0.17.0) and vanilla Eclipse EDC 0.18.1, pinned by
+digest/version (ENV.md §KC2). A local DCP handshake yields an authenticated 200 catalogue on both targets, and
+both pass the DSP TCK in the upstream mock-identity configuration (D14). All phase-3 output is local and private.
+
+**Admission discipline and reviews.** W3 driver versioning (each row cites a driver sha + snapshot); labelled
+test-only add-ons never on a verdict classpath; the batch refuses a dirty tree, a moved HEAD, driver drift, or an
+output-schema mismatch. The invariant catalogue and its amendments (A2/A3/A4) and the harness were reviewed across
+**Reviews 18–23**, including a results-blind compliance review of the counting run.
+
+**Run compliance.** The counting batch ran **once**, end-to-end, from a single clean, reviewed commit with a
+fresh driver snapshot, all output private. **Review 23 (results-blind) found the run COMPLIANT.**
+
+**Confidentiality slips (detailed privately).** Two methodology/structural items briefly reached the public mirror
+history and were removed from the live tip by forward commits (history not rewritten — force-push is forbidden):
+an early A3 wording that stated a current-release observation, and a later structural row/integrity count in a
+review note. Neither discloses a vulnerability. Both are recorded in the private disclosure record
+and will be stated in full in the private report.
+
+**KC2 results are held privately pending the author's disclosure decision.** Any disclosure goes to the Eclipse
+security process only, under the default embargo, and is the author's call (SCOPE).
