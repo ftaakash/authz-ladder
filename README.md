@@ -4,9 +4,9 @@
 
 **Regression-testing authorization invariants in Dataspace Protocol connectors,<br>using already-patched CVEs as a correctness oracle.**
 
-![status](https://img.shields.io/badge/status-feasibility%20pilot-orange)
+![status](https://img.shields.io/badge/status-pilot%20complete-success)
 ![KC1](https://img.shields.io/badge/kill%20condition%201-passed-success)
-![KC2](https://img.shields.io/badge/kill%20condition%202-run%20complete%2C%20results%20private-yellow)
+![KC2](https://img.shields.io/badge/kill%20condition%202-no%20new%20violation%2C%20set%20incomplete-yellow)
 ![scope](https://img.shields.io/badge/scope-local%20testbed%20only-blue)
 ![output](https://img.shields.io/badge/output-pass%2Ffail%20only-lightgrey)
 ![SUT](https://img.shields.io/badge/SUT-Eclipse%20EDC%20%7C%20Tractus--X%20EDC-6f42c1)
@@ -55,7 +55,7 @@ CVE-2024-8642 does not count: its module is removed rather than fixed, so a PASS
 | [CVE-2024-4536](https://osv.dev/vulnerability/CVE-2024-4536) | **Vault scoping**: a counterparty cannot choose which provider secret is dereferenced | ≤ 0.6.2 → **0.6.3** | [`results/cve-2024-4536.csv`](results/cve-2024-4536.csv) |
 | [CVE-2024-9202](https://osv.dev/vulnerability/CVE-2024-9202) | **Catalogue visibility**: a single-dataset request obeys the catalogue policy (CWE-862) | ≤ 0.9.0 → **0.9.1** | [`results/cve-2024-9202.csv`](results/cve-2024-9202.csv) |
 
-### Kill condition 2: new violations on current releases 🟡 run complete, results private
+### Kill condition 2: new violations on current releases 🟡 none found, set incomplete (2026-11-08)
 
 | Step | State | Evidence |
 |---|---|---|
@@ -70,17 +70,22 @@ CVE-2024-8642 does not count: its module is removed rather than fixed, so a PASS
 | Test design independently reviewed and cleared for counting (Reviews 18–22) | ✅ | [`REVIEW-phases.md`](REVIEW-phases.md) |
 | Phase 3: admission-gated counting run, once, on one clean commit and one driver snapshot (D18) | ✅ ran 2026-11-07 | results private until disclosure (see below) |
 | Results-blind compliance review of the counting run (Review 23) | ✅ compliant | [`REVIEW-phases.md`](REVIEW-phases.md) |
-| Pilot report (D19) | ✅ 2026-11-08 | [`PILOT-REPORT.md`](PILOT-REPORT.md) (results held privately pending the author's disclosure decision) |
+| Pilot report (D19) and outcome (D20) | ✅ 2026-11-08 | [`PILOT-REPORT.md`](PILOT-REPORT.md) §KC2 outcome, [`DECISIONS.md`](DECISIONS.md) D20 |
 
 An invariant that cannot be validly exercised on a target is reported as **INVALID** or **NA** with its reason.
 An incomplete set is reported as incomplete, never as "0 violations".
+
+> **Outcome (D20):** no new violation on the validly tested invariants; 3 of 16 invariant × target cells produced
+> a valid verdict, all PASS; invariant set incomplete; no disclosure required. Per the frozen kill condition 2,
+> the DSP half is a tool/workshop contribution: the admission-gated suite, the KC1 rediscoveries, and gaps in the
+> official DSP TCK's coverage. The per-cell table stays private.
 
 ## Repository layout
 
 ```
 .
 ├── SCOPE.md            binding scope, defensive framing, standing approvals
-├── DECISIONS.md        decision log (D1–D19)
+├── DECISIONS.md        decision log (D1–D20)
 ├── VERSIONS.md         CVE pinning and the version ladder, with sources
 ├── ENV.md              every pinned image, digest, download and toolchain version
 ├── PILOT-REPORT.md     running results log
@@ -139,8 +144,8 @@ Full rules: [SCOPE.md](SCOPE.md).
 ## Part of
 
 Paper A of a Masters research project, *securing the agent/software supply chain: intermediaries nobody verifies*.
-The second boundary is **LLM-gateway authorization** (D16, replacing the earlier MCP half). It is built only
-after kill condition 2 has a result, under the same rules: local only, mock model providers, pass/fail,
+The second boundary is **LLM-gateway authorization** (D16, replacing the earlier MCP half), which now decides whether
+Paper A is a full paper (D20). It is a separate pilot under the same rules: local only, mock model providers, pass/fail,
 already-patched advisories as the oracle.
 Some links in the docs point to planning files kept outside this repository.
 
