@@ -1194,3 +1194,67 @@ INV-4 becomes **CLEARED**, with no further review needed, once:
 - the coordinator confirms by diff that the driver change is confined to the mutation branch and the PASS line.
 
 If any current-cell classifier line changes, a new review is required.
+
+---
+
+## Review 23 (phase-3 counting run: results-blind compliance), 2026-11-08
+
+**Scope:** the RUN_KIND=real phase-3 run of 2026-11-07, snapshot `private/kc2/batches/34c98cc-20261107T181054Z`.
+
+**Method:** results-blind. Every check below was done with scripts that print only match/mismatch, counts of structural columns, timestamps, or code line numbers. **No `result` or `detail` value of the run was read, printed or stated.** No PASS/FAIL, count or finding detail appears here.
+
+### Checks
+
+**1. D18 before the run: yes.**
+- D18 local commit `34c98cc`: 2026-11-07T18:09:43Z.
+- Mirror `51ca8fe`: pushed at 18:09:56Z (origin reflog).
+- Run start (snapshot id and first row): 18:10:54Z / 18:10:55Z.
+- D18's text says it was "decided before any counted current-release result exists". It is recorded as "user (coordinator-relayed: yes)" (see note N1).
+
+**2. Row integrity: match.**
+- 45 rows. Commit mismatches 0, run-kind mismatches 0 (all `real`), snapshot mismatches 0.
+- No duplicate (invariant, target, config). 16 invariant × target pairs, and all 16 have a current-config row.
+- Snapshot `MANIFEST.sha256` hashes to `7dfcec97…012c2`, as reported, and the snapshot verifies against it.
+- Each row's `driver_sha256` equals sha256(snapshot `inv<N>.sh` ‖ `p3lib.sh`) for INV-3, 4, 5, 6 and 8.
+- INV-1, 2 and 7 have no driver file and an empty driver sha. That is consistent with them being fixed-class or NA by design (N2).
+- The INV-4 snapshot driver sha is `11e56a4e…`, equal to A4 Z5 (`kc2/INVARIANTS.md:405`).
+
+**3. Frozen state: yes.**
+- No local or mirror commit after 18:10:00Z, and the tracked tree is clean.
+- Every live private driver is byte-identical to its snapshot copy.
+
+Review 22's clearing conditions were met before the run:
+- the INV-4 driver diff from the dry-run-2 driver (`b641f94a`) touches only the mutation branch (snapshot lines 139–166) and the PASS line (182); `classify_refusal` is unchanged;
+- the new sha is recorded in A4 Z5;
+- the mutated-builds-only re-verification is committed as `kc2/env/inv4-admission-extract.csv` (5 rows: sanity, mutation, two single-gate controls and the two-layer control, all on driver `11e56a4e`), in `2f5a77b`, before the run.
+
+**4. Exactly one real run: yes.**
+- `batches/` holds this snapshot plus the two `dryrun-8a0599f-*` snapshots.
+- One real cells file exists, plus the dry-run file and `phase3-cells.pre-review21-…csv.bak`.
+- The `.bak` is an archived pre-schema file: 6 rows from 2026-10-28, commit `e287cfa`, no run-kind column. It predates every dry run, is not part of this run, and nothing was merged (N3).
+
+**5. All terminal: yes.**
+- No empty `result`.
+- No infrastructure-class row (setup, no-result, bad-config, addon-not-built, timeout, error, unreachable all 0).
+
+**6. No leak: yes.**
+- No commit after run start, locally or on origin. The tracked tree is clean.
+- The last pre-run tracked edits (`2f5a77b` admission extract, `d98434b` README, `34c98cc` D18) all predate the run and carry no current-release data. The admission extract holds mutated-build cells only, as Review 22 permitted.
+
+### Notes (non-blocking)
+
+| # | Note | Sev |
+|---|---|---|
+| N1 | D18 cites the user's decision as coordinator-relayed. That is acceptable for a scheduling change made before results existed. For the report, cite where the user's own "yes" is recorded. | L |
+| N2 | Cells with no driver carry an empty `driver_sha256`. The report should state that INV-1, 2 and 7 are by-design fixed-class or NA rows, not driver output. | L |
+| N3 | Rename or annotate the `.bak` as "pre-schema exploratory, not counted", so a later reader cannot mistake it for a second run. | L |
+| N4 | The D18 commit landed 71 s before the run started. That satisfies the order, but the margin is thin. Keep the run-start timestamp in the report next to the D18 push time. | L |
+
+### Verdict
+
+**COMPLIANT.** The phase-3 counting run was a single, clean, frozen-state run:
+- at commit `34c98cc`, decided and pushed before it started;
+- on the Review-22-cleared INV-4 driver;
+- with every driver matching the snapshot manifest;
+- with all 16 invariant × target cells terminal;
+- with nothing from it in tracked history or on the mirror.
