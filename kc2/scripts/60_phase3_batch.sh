@@ -41,7 +41,13 @@ cp "$RUNNERS"/*.sh "$snapdir"/ 2>/dev/null || true
 ( cd "$RUNNERS" && for f in *.sh; do sha256sum "$f"; done ) > "$snapdir/MANIFEST.sha256" 2>/dev/null || true
 echo "driver snapshot: private/kc2/batches/$SNAP_ID/ ($(ls "$RUNNERS"/*.sh 2>/dev/null | wc -l) private drivers; sha manifest inside)"
 out="$(kc2_private_out "phase3-cells$([ "$RUN_KIND" = dryrun ] && echo -dryrun).csv")"
-[ -f "$out" ] || echo "invariant,target,config,result,detail,commit,driver_sha256,snapshot,started,admission,run_kind" > "$out"
+EXPECT_HDR="invariant,target,config,result,detail,commit,driver_sha256,snapshot,started,admission,run_kind"
+if [ -f "$out" ]; then
+  cur_hdr="$(head -1 "$out" 2>/dev/null)"
+  [ "$cur_hdr" = "$EXPECT_HDR" ] || { echo "refusing: $out exists with a different header schema — archive/remove it so this run starts on the current schema"; echo "  expected: $EXPECT_HDR"; echo "  found:    $cur_hdr"; exit 1; }
+else
+  echo "$EXPECT_HDR" > "$out"
+fi
 # A3 (weaker, mutation-NA) admission allow-list (Review 20 Y2). It is EMPTY by default: with INV-4 now admitted
 # at the A1 tier (its two-layer mutation violates by construction, amendment A3 rev. 2026-11-06), no invariant uses the
 # NA-admission path, so every sanity-PASS + mutation-NA is INVALID:admission. The mechanism is retained (set
