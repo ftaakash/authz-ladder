@@ -181,11 +181,11 @@ phase 3 is now due ~11-12 and the report 11-15 (D17, extended 2026-11-04; was ~1
 If phase 3 does not finish by the timebox, KC2 reports **"incomplete invariant set"**, never "0 violations".
 Record any slips in this table.
 
-## KC2 — completed; results held privately (2026-11-08, D19)
+## KC2 — completed; summary published, per-cell detail private (2026-11-08, D19/D20)
 
-The KC2 phase-3 counting run is complete. Per SCOPE and the project's confidentiality rule, **no KC2 result,
-count, coverage number or per-invariant outcome appears in this tracked report**; the full results and the KC2
-verdict against kill condition 2 are in the author-only private report (`private/kc2/KC2-REPORT.md`).
+The KC2 phase-3 counting run is complete. The author-approved outcome summary is published below (§ "KC2 outcome");
+the **per-cell table and admission detail remain private** in the author-only report (`private/kc2/KC2-REPORT.md`),
+and no number beyond that summary appears in this tracked report.
 
 **Method.** KC2 is a reproducible, admission-gated conformance-test suite. Each frozen invariant has a private
 runner that returns `PASS | FAIL | INVALID | NA`. A current-release cell is **counted only after an A1 admission
@@ -212,5 +212,12 @@ an early A3 wording that stated a current-release observation, and a later struc
 review note. Neither discloses a vulnerability. Both are recorded in the private disclosure record
 and will be stated in full in the private report.
 
-**KC2 results are held privately pending the author's disclosure decision.** Any disclosure goes to the Eclipse
-security process only, under the default embargo, and is the author's call (SCOPE).
+**KC2 outcome (published per the author's decision, 2026-11-08; see DECISIONS.md D20).** KC2: no new violation
+on the validly tested invariants; 3 of 16 invariant × target cells produced a valid verdict, all PASS; invariant
+set incomplete; no disclosure required. The remaining cells did not produce a valid verdict, by reason class:
+no-runner (invariants covered by KC1), token-validity path removed on current releases, Tractus-X-only invariants
+on the vanilla target, NA by architecture, mutation positive control not established, and a break fixture not
+built. No further number or per-invariant outcome is published here; the per-cell table and admission detail
+stay private (`private/kc2/KC2-REPORT.md`). Per frozen kill condition 2 the DSP half is a tool/workshop
+contribution (admission-gated suite, the KC1 rediscoveries, and TCK coverage-gap observations); Paper A's
+full-paper status now rests on the LLM-gateway half (D16, D20).
