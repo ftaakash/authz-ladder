@@ -1102,3 +1102,95 @@ No result, count or finding is stated here. Test design only.
 - The refinement itself is spec-grounded and outcome-independent in direction, and nothing was counted before it.
 - The two-layer mutation is a genuine A1 FAIL control.
 - If Z1 or Z3 is not done by the batch, report INV-4 as INVALID:oracle-unverified rather than counting a PASS.
+
+---
+
+## Review 22 (INV-4 Z1–Z5 implementation and classifier provenance), 2026-11-07
+
+Scope: amendment A4 (`24e0508`), the batch header-schema guard (`e72f686`), and the gitignored INV-4 driver `private/kc2/scripts/inv4.sh`. The driver's sha256 together with `p3lib.sh` is `b641f94a…`; it is byte-identical to the dry-run-2 snapshot and matches A4 Z5.
+
+Read-only. From `private/kc2/` I read only:
+- driver code;
+- snapshot names, times and manifest presence;
+- the dry-run cell file's invariant, target, config, commit, driver sha, snapshot and timestamp columns;
+- for **mutated-build cells only**, their result and gate-control lines.
+
+No current-release cell's result, detail or log was read for this review, and none is stated.
+
+### 1. Provenance of every classifier element
+
+| Element | Where it is used | Provenance | OK? |
+|---|---|---|---|
+| Reason text "agreement not found or not valid" | `classify_refusal`, `inv4.sh:60` | EDC 0.17.0 `TransferProcessProtocolServiceImpl.java:276` (agreement-lookup miss → `ServiceResult.notFound`) and `:264` (`validateAgreement` failure → `ServiceResult.conflict`), with the same reason text on both paths | yes, source |
+| Codes 404 and 409 | `inv4.sh:60,158-159,179` | `DspRequestHandlerImpl.java:300-301` (`CONFLICT → 409`, `NOT_FOUND → 404`) applied to the two lines above | yes, source |
+| Exclusion of the bare "Not found" | A4 Z1 | `TransferProcessProtocolServiceImpl.java:294` (a different, non-binding path) | yes, source |
+| Parse shape: `errorDetail` as a JSON string carrying `dspace:code` / `dspace:reason` | `inv4.sh:58-59` | **Mixed.** The parser was written at 18:12:04 IST, after dry run 1 (snapshot `…T121754Z`, driver `450fe6…`, which had no such classifier) executed its INV-4 cells. In dry run 1 the mutation cell was the two-layer build, which **accepts** B, so no refusal `errorDetail` came from a mutated build in that run. A4 also cites "the dry run's captured errorDetail". The parse shape was therefore **probably informed by dry run 1's current-release cell**. | **no, as recorded** |
+| The same parse shape, re-observed | dry run 2 (`…T124248Z`, driver `b641f94a…`), mutation cell | Gate-2-off control → `dspace:code` 404 plus the binding reason. Gate-1-off control → 409 plus the binding reason. Two-layer → accepted, with a provider transfer process present. The mutation cell reads FAIL (admission) only because both controls were classified `binding:404` / `binding:409` by the same parser. | yes, mutated builds |
+
+**Assessment:**
+- One element, the `errorDetail` parse shape, was first fitted after a current-release cell was seen. That is the contamination this check exists to catch.
+- **Its effect is neutralised on the record:**
+  - every value the classifier matches is fixed by source;
+  - the shape is now independently confirmed on mutated builds with the frozen driver;
+  - a shape mismatch fails safe (it falls to `nonbinding` and then INVALID, never PASS).
+- **What still needs correcting is the provenance claim**, not the classifier (R1).
+
+### 2. Specificity
+
+**A real violation cannot read PASS:**
+- PASS (`inv4.sh:179`) requires a parsed DSP `TransferError` whose code is 404 or 409 **and** whose reason is the binding text. An accepted request carries no `TransferError`.
+- Any other termination is `INVALID:refused-non-binding` (`:180`).
+- Residual edge: PASS does not also require that the provider holds **no** transfer process for B. That is low risk, but the guard is cheap (R3).
+
+**A setup artefact cannot read FAIL:**
+- FAIL (`:184`) requires A's positive control to be STARTED, B to be delivered, B to be in an accepted state, **and** a provider-side transfer process for B's `correlationId` (Z4).
+- In the current cell, identity preconditions (Z2, `:173`) are checked first.
+- The mutation cell does not call `identity_ok`. The 409 gate-1-off control does prove that B ≠ A there (an identity collision would pass the identity check), but A4 says "each mutation/current cell asserts" (R4).
+
+### 3. Z2–Z5 as described in A4
+
+- **Z2:** present in the current cell. In the mutation cell it is implied by the 409 control, not asserted (R4).
+- **Z3:** implemented and verified on mutated builds (dry run 2). **Not stored as admission evidence:**
+  - the per-gate classes appear only in `logs/inv4-tractusx-mutation.log`, which is overwritten each run and not snapshotted;
+  - the dry-run row's `detail` column is empty.
+
+  The batch row is therefore not self-standing admission evidence (R2).
+- **Z4:** present in both the mutation path (`:162`) and the current path (`:184`).
+- **Z5:** the sha is recorded in A4 and matches the live driver and the dry-run-2 snapshot.
+- **Header guard (`e72f686`):** correct. It refuses to append to a cells file with a different schema and never rewrites one.
+
+### 4. Is the frozen state fit for counting?
+
+**Not yet:**
+- The provenance record is wrong (R1).
+- The admission evidence is not stored with the row (R2).
+
+R2 needs a driver change, so the freeze moves.
+
+| # | Fix | Sev |
+|---|---|---|
+| R1 | Correct A4 Z1 (tracked): provenance = `TransferProcessProtocolServiceImpl.java:264,276,294` and `DspRequestHandlerImpl.java:300-301` (EDC 0.17.0), plus the parse shape as confirmed on the **mutated-build** gate controls (dry run 2). Remove "the dry run's captured errorDetail". State that the parser was first written after a dry run that included a current cell, and that it is confirmed on mutated builds only. | **H** (blocking) |
+| R2 | In the mutation branch, write the gate outcomes into the row's `detail`: `c1=<class>;c2=<class>;tl=<class>;provtp=<yes/no>`. These are mutated-build data, so they are safe to track. Commit an admission-evidence extract (mutation rows only) with commit, driver sha, snapshot and add-on jar shas. | **H** (blocking) |
+| R3 | PASS also requires the provider to hold no transfer process for B (`B_PROVTP` empty). Otherwise `INVALID:acceptance-contradiction`. | M |
+| R4 | Either call `identity_ok` in the mutation branch, or reword A4 Z2 to "current cell asserts; mutation cell implied by the 409 control". | M |
+
+**Freeze rules for the fixes:**
+- R2 and R3 may touch **only** the mutation branch (`inv4.sh:126-163`) and the PASS condition at `:179`. `classify_refusal` (`:56-60`) and every other current-cell line stay byte-identical.
+- After the change, re-verify by running **sanity and mutation cells only** (no current cell).
+- Record the new driver sha in A4, and commit before the batch.
+
+**The batch:**
+- After this review is committed, the counting batch runs from the resulting clean HEAD, not from `e72f686`. Only `REVIEW-phases.md` and the R1–R4 files may differ from it.
+- The current-release cell was already run with the final classifier in dry run 2. That is acceptable for a dry run, but from here on **no** classifier change is allowed before counting.
+
+### Verdict
+
+**NOT CLEARED for 11-12 as frozen at `e72f686`.**
+
+INV-4 becomes **CLEARED**, with no further review needed, once:
+- R1 and R2 are committed;
+- R3 and R4 are committed or explicitly deferred in A4;
+- a sanity-and-mutation-only re-run on the new driver reads mutation FAIL with gate classes `binding:404` / `binding:409`;
+- the coordinator confirms by diff that the driver change is confined to the mutation branch and the PASS line.
+
+If any current-cell classifier line changes, a new review is required.
