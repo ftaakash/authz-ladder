@@ -1,0 +1,6 @@
+cell,result,detail,driver_sha256,addon_jar_sha256,refines_frozen,produced_utc
+sanity,PASS,positive-control-A-transfer-STARTED,11e56a4ea8648ba50a4047af7fb56ad4c8f7a8f8b3ee76e07049cf568cfe4817,,e72f686,2026-11-07
+mutation,FAIL,c1=binding:404/TERMINATED;c2=binding:409/TERMINATED;tl=none/REQUESTED;provtp=present;ident=ok,11e56a4ea8648ba50a4047af7fb56ad4c8f7a8f8b3ee76e07049cf568cfe4817,58d1b024fffd66dcd3de7387c6e4934add02828b1c7e722841a359c109fd19a3,e72f686,2026-11-07
+control-gate2off,binding:404,skip-validateAgreement-only;B-refused-at-lookup;A=STARTED;ident=ok,11e56a4ea8648ba50a4047af7fb56ad4c8f7a8f8b3ee76e07049cf568cfe4817,58d1b024fffd66dcd3de7387c6e4934add02828b1c7e722841a359c109fd19a3,e72f686,2026-11-07
+control-gate1off,binding:409,unscope-lookup-only;B-refused-at-validateAgreement;A=STARTED;ident=ok,11e56a4ea8648ba50a4047af7fb56ad4c8f7a8f8b3ee76e07049cf568cfe4817,58d1b024fffd66dcd3de7387c6e4934add02828b1c7e722841a359c109fd19a3,e72f686,2026-11-07
+control-twolayer,admitted,both-gates-neutralised;B-REQUESTED;provtp=present;A=STARTED;ident=ok,11e56a4ea8648ba50a4047af7fb56ad4c8f7a8f8b3ee76e07049cf568cfe4817,58d1b024fffd66dcd3de7387c6e4934add02828b1c7e722841a359c109fd19a3,e72f686,2026-11-07

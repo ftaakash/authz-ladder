@@ -368,8 +368,21 @@ data-plane audience/EDR binding → INV-7, and EDR refresh scoping → INV-8.)*
     B's transfer process carries a DSP `TransferError` with `dspace:code` in {**404**, **409**} and reason
     "agreement not found or not valid" (the agreement-lookup miss, resp. the consumer-identity check). Any other
     termination — schema 400, auth 401, provider 500, the token/policy verification "Not found", or a dispatch
-    artefact — is **`INVALID:refused-non-binding(<code>)`**, never PASS. The grounds are read from B's own
-    transfer-process `errorDetail` (`dspace:code`/`dspace:reason`), which the DSP error response carries.
+    artefact — is **`INVALID:refused-non-binding(<code>)`**, never PASS.
+    - **Provenance (source-fixed, EDC 0.17.0; not derived from a current-release run).** The codes and reason
+      are fixed in source: `TransferProcessProtocolServiceImpl.java:276` returns `ServiceResult.notFound("… agreement
+      not found or not valid")` for the participant-scoped agreement-lookup miss, `:264` returns
+      `ServiceResult.conflict(…)` for the consumer-identity check, and `:294`'s token/policy failure returns the
+      distinct "Not found" (excluded); `DspRequestHandlerImpl.java:300-301` maps `CONFLICT → 409`,
+      `NOT_FOUND → 404`. The `dspace:code`/`dspace:reason` keys are the DSP error-serialization contract (EDC's
+      bundled DSP JSON-LD context). The gate order (a pristine provider refuses at the lookup → 404 first) follows
+      the `notifyRequested` composition (`:103-106`).
+    - **Ordering honesty.** The driver's `errorDetail` parse shape (`inv4.sh:58-59`) was written after the first
+      dry run, when the only refusal `errorDetail` available came from a current cell. The matched **values** are
+      the source-fixed ones above, and the parse **shape** (`dspace:code`/`dspace:reason`) is independently
+      exercised by the mutated single-gate control cells (gate-2-off → 404, gate-1-off → 409); a shape or value
+      that does not match falls to `INVALID`, never PASS, so a current-release observation cannot shape a PASS.
+      Full provenance ledger: `private/kc2/review22-inv4-provenance.md`.
   - **Z2 — identity preconditions.** Each mutation/current cell asserts B's authenticated identity ≠ A's and
     that the cited agreement's consumer resolves to A; otherwise `INVALID:identity-precondition`. This rules out
     an identity collision (shared context or a stand-in BPN) reading a legitimate acceptance as a violation.
@@ -380,14 +393,17 @@ data-plane audience/EDR binding → INV-7, and EDR refresh scoping → INV-8.)*
     only if both single-gate controls refuse at their binding code **and** the two-layer build admits B. This
     exercises the PASS-classification branch on a known-refusing provider (the sanity cell never sends B, so it
     exercises the positive control only) and confirms the two independent layers claimed in A3. All add-ons are
-    labelled test-only and never on a current-release (verdict) classpath.
+    labelled test-only and never on a current-release (verdict) classpath. The control classes (c1/c2) and the
+    two-layer class + provider-TP presence are written into the mutation row's detail, and a mutation-rows-only
+    admission extract (sanity/mutation/control rows on mutated builds; **no** current cell) is committed at
+    `kc2/env/inv4-admission-extract.csv` with the driver sha and add-on jar sha (Review 22 R2).
   - **Z4 — provider-side corroboration of acceptance.** An "accepted" B is only read as a violation if the
     **provider** holds a transfer process for B's request id (`correlationId == consumerPid`), read via the
     provider management API in the evidence step. Consumer-side state disagreeing with the provider side is
     `INVALID:acceptance-unconfirmed`, never a FAIL on consumer state alone.
   - **Z5 — driver provenance.** INV-4 driver sha256 (sha256 of `inv4.sh` ‖ `p3lib.sh` as run) at this amendment:
-    `b641f94aa762ed83c6126c84d172a9538eb1ac60fb4418bd24d929056d78f5be`. The per-run batch snapshot + MANIFEST pin
-    the exact driver authoritatively per run.
+    `11e56a4ea8648ba50a4047af7fb56ad4c8f7a8f8b3ee76e07049cf568cfe4817` (Review 22 R2/R3/R4). The per-run batch
+    snapshot + MANIFEST pin the exact driver authoritatively per run.
   - **Spec citation (section numbers UNVERIFIED).** The acceptance-vs-refusal criterion and the binding codes
     rest on the DSP **Transfer Process Protocol** (`TransferRequestMessage`; Transfer Process States
     REQUESTED / STARTED). Cite against the DSP version the TCK baseline used (DSP TCK ≤ 1.0.2, `kc2/TCK-PLAN.md`;
