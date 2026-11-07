@@ -60,6 +60,8 @@ echo "KC2 phase-3 batch @ $COMMIT (HEAD ${HEAD0:0:7}); run_kind=$RUN_KIND; INVS=
 
 headcheck(){ [ "$(git -C "$PILOT" rev-parse HEAD)" = "$HEAD0" ] || { echo "refusing: HEAD moved mid-batch — aborting (rows must cite one commit)"; exit 1; }; }
 # W3 driver versioning: sha of the gitignored code that produces a row, and a guard that aborts if it drifts.
+# Invariants with no private runner (INV-1/2 = KC1 rediscoveries; INV-7 = NA by architecture) produce no driver
+# output, so their rows carry an EMPTY driver_sha256 by design — not a missing/omitted value (Review 23 N2).
 driversha(){ local inv="$1"; [ -f "$RUNNERS/inv$inv.sh" ] || { echo ""; return; }; cat "$RUNNERS/inv$inv.sh" "$RUNNERS/p3lib.sh" | sha256sum | cut -d' ' -f1; }
 drivercheck(){ local inv="$1" f; for f in "inv$inv.sh" p3lib.sh; do [ -f "$RUNNERS/$f" ] || continue
     cmp -s "$RUNNERS/$f" "$snapdir/$f" || { echo "refusing: private driver $f changed after snapshot $SNAP_ID — restart the batch so every row cites the code that produced it"; exit 1; }
