@@ -360,6 +360,40 @@ data-plane audience/EDR binding → INV-7, and EDR refresh scoping → INV-8.)*
     was settled **before any current-release cell was counted**; flagged for the next review checkpoint.
   - This amendment refines INV-4's delivery and admission mechanics only; it adds no invariant and records no
     finding or run observation.
+- **A4 — 2026-11-07 — INV-4 oracle hardening (Review 21).** Refines A3's oracle to remove a false-negative path
+  and add admission evidence and corroboration. Mechanics only; records no finding or run observation. See the
+  review record in `REVIEW-phases.md` (Review 21). Tractus-X only. No current-release INV-4 verdict had been
+  admitted into any tracked artifact when this was made.
+  - **Z1 — binding-specific PASS.** A refusal counts as a held invariant only when it is a **binding** refusal:
+    B's transfer process carries a DSP `TransferError` with `dspace:code` in {**404**, **409**} and reason
+    "agreement not found or not valid" (the agreement-lookup miss, resp. the consumer-identity check). Any other
+    termination — schema 400, auth 401, provider 500, the token/policy verification "Not found", or a dispatch
+    artefact — is **`INVALID:refused-non-binding(<code>)`**, never PASS. The grounds are read from B's own
+    transfer-process `errorDetail` (`dspace:code`/`dspace:reason`), which the DSP error response carries.
+  - **Z2 — identity preconditions.** Each mutation/current cell asserts B's authenticated identity ≠ A's and
+    that the cited agreement's consumer resolves to A; otherwise `INVALID:identity-precondition`. This rules out
+    an identity collision (shared context or a stand-in BPN) reading a legitimate acceptance as a violation.
+  - **Z3 — single-layer controls = A1 admission evidence.** The mutation cell runs two single-gate controls plus
+    the two-layer build: neutralise only `validateAgreement` → B must still be refused by the participant-scoped
+    lookup at **404**; neutralise only the lookup scoping → B must still be refused by `validateAgreement` at
+    **409**; neutralise **both** → B is admitted past the binding. mutation reads **FAIL** (admission granted)
+    only if both single-gate controls refuse at their binding code **and** the two-layer build admits B. This
+    exercises the PASS-classification branch on a known-refusing provider (the sanity cell never sends B, so it
+    exercises the positive control only) and confirms the two independent layers claimed in A3. All add-ons are
+    labelled test-only and never on a current-release (verdict) classpath.
+  - **Z4 — provider-side corroboration of acceptance.** An "accepted" B is only read as a violation if the
+    **provider** holds a transfer process for B's request id (`correlationId == consumerPid`), read via the
+    provider management API in the evidence step. Consumer-side state disagreeing with the provider side is
+    `INVALID:acceptance-unconfirmed`, never a FAIL on consumer state alone.
+  - **Z5 — driver provenance.** INV-4 driver sha256 (sha256 of `inv4.sh` ‖ `p3lib.sh` as run) at this amendment:
+    `b641f94aa762ed83c6126c84d172a9538eb1ac60fb4418bd24d929056d78f5be`. The per-run batch snapshot + MANIFEST pin
+    the exact driver authoritatively per run.
+  - **Spec citation (section numbers UNVERIFIED).** The acceptance-vs-refusal criterion and the binding codes
+    rest on the DSP **Transfer Process Protocol** (`TransferRequestMessage`; Transfer Process States
+    REQUESTED / STARTED). Cite against the DSP version the TCK baseline used (DSP TCK ≤ 1.0.2, `kc2/TCK-PLAN.md`;
+    the pinned connectors carry the DSP `v0.8` namespace). **Section numbers are UNVERIFIED** and must be checked
+    against that exact DSP release before any number is quoted in the paper.
+  - This amendment refines INV-4's oracle mechanics only; it adds no invariant and records no finding.
 
 ## Scope limitation (D13, 2026-10-26)
 
