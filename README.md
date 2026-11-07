@@ -6,7 +6,7 @@
 
 ![status](https://img.shields.io/badge/status-feasibility%20pilot-orange)
 ![KC1](https://img.shields.io/badge/kill%20condition%201-passed-success)
-![KC2](https://img.shields.io/badge/kill%20condition%202-phase%203%20in%20progress-yellow)
+![KC2](https://img.shields.io/badge/kill%20condition%202-tests%20frozen%2C%20counting%20run%2011%20Nov-yellow)
 ![scope](https://img.shields.io/badge/scope-local%20testbed%20only-blue)
 ![output](https://img.shields.io/badge/output-pass%2Ffail%20only-lightgrey)
 ![SUT](https://img.shields.io/badge/SUT-Eclipse%20EDC%20%7C%20Tractus--X%20EDC-6f42c1)
@@ -65,19 +65,25 @@ CVE-2024-8642 does not count: its module is removed rather than fixed, so a PASS
 | **Official DSP TCK 1.0.2** (upstream TCK configuration) | ✅ **65/65 on both targets** | [`kc2/env/tck-dsp-tractusx.csv`](kc2/env/tck-dsp-tractusx.csv), [`kc2/env/tck-dsp-vanilla.csv`](kc2/env/tck-dsp-vanilla.csv) |
 | DCP TCK on the identity stack | ⏸ deferred (D15) | [`kc2/TCK-PLAN.md`](kc2/TCK-PLAN.md) |
 | Invariant catalogue frozen before any test: **INV-1…INV-8**, each with a sanity config (must PASS) and a mutation (must FAIL) | ✅ | [`kc2/INVARIANTS.md`](kc2/INVARIANTS.md) |
-| Phase 3: frozen invariants against the current releases | 🟡 in progress | results private until disclosure (see below) |
+| Oracle amendments, each made before any current-release result was admitted: **A2** (INV-6 bound to the release's own negotiation constraint), **A3/A4** (INV-4 agreement binding: DSP client fixture, two-layer mutation, binding-specific refusal, single-gate controls) | ✅ | [`kc2/INVARIANTS.md`](kc2/INVARIANTS.md) §Amendments |
+| INV-4 admission evidence, mutated builds only (sanity PASS, two-layer mutation FAIL, each single gate still refuses) | ✅ | [`kc2/env/inv4-admission-extract.csv`](kc2/env/inv4-admission-extract.csv), [`kc2/env/mutation-addon-jars.csv`](kc2/env/mutation-addon-jars.csv) |
+| Test design independently reviewed and cleared for counting (Reviews 18–22) | ✅ | [`REVIEW-phases.md`](REVIEW-phases.md) |
+| Phase 3: admission-gated counting run on one clean commit and one driver snapshot | ⏳ scheduled 2026-11-11/12 | results private until disclosure (see below) |
+
+An invariant that cannot be validly exercised on a target is reported as **INVALID** or **NA** with its reason.
+An incomplete set is reported as incomplete, never as "0 violations".
 
 ## Repository layout
 
 ```
 .
 ├── SCOPE.md            binding scope, defensive framing, standing approvals
-├── DECISIONS.md        decision log (D1–D15)
+├── DECISIONS.md        decision log (D1–D17)
 ├── VERSIONS.md         CVE pinning and the version ladder, with sources
 ├── ENV.md              every pinned image, digest, download and toolchain version
 ├── PILOT-REPORT.md     running results log
 ├── REVIEW-*.md         independent read-only reviews of every phase
-├── mcp-scoping.md      MCP half (second protocol): conformance-coverage desk study, deferred (D10)
+├── mcp-scoping.md      MCP conformance-coverage desk study (kept as a record; MCP moved to related work, D16)
 ├── env/  results/      kill condition 1 evidence and verdicts
 ├── scripts/            kill condition 1: build, boot, tests, one-batch runner (bash + curl + jq)
 ├── testbed/            vanilla EDC + iam-mock launcher, receiver, Tractus-X compose
@@ -85,8 +91,9 @@ CVE-2024-8642 does not count: its module is removed rather than fixed, so a PASS
     ├── INVARIANTS.md   frozen invariant catalogue
     ├── TCK-PLAN.md, HANDSHAKE-PLAN.md
     ├── identity/ vanilla/ tck*/   dependency-verified launchers
+    ├── tractusx-addon/ test-only fixtures and mutation add-ons (never on a verdict classpath)
     ├── scripts/        targets, identity stack, handshake, TCK, phase-3 runner
-    └── env/            KC2 infrastructure evidence (no test results)
+    └── env/            KC2 infrastructure and admission evidence (no current-release results)
 ```
 
 ## Running it
@@ -130,7 +137,9 @@ Full rules: [SCOPE.md](SCOPE.md).
 ## Part of
 
 Paper A of a Masters research project, *securing the agent/software supply chain: intermediaries nobody verifies*.
-A second protocol (MCP authorization) is scoped and deferred until kill condition 2 has a result (D10).
+The second boundary is **LLM-gateway authorization** (D16, replacing the earlier MCP half). It is built only
+after kill condition 2 has a result, under the same rules: local only, mock model providers, pass/fail,
+already-patched advisories as the oracle.
 Some links in the docs point to planning files kept outside this repository.
 
 <div align="center"><sub>Built on <a href="https://github.com/eclipse-edc/Connector">Eclipse EDC</a>, <a href="https://github.com/eclipse-edc/IdentityHub">Eclipse IdentityHub</a> and <a href="https://github.com/eclipse-tractusx/tractusx-edc">Tractus-X EDC</a>. Not affiliated with the Eclipse Foundation.</sub></div>
