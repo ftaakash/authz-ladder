@@ -17,9 +17,14 @@
 # kc2/scripts/00_ensure_docker.ps1 by hand first); per-cell timeout; EVERY log and row goes under
 # private/kc2/ via kc2_private_out; nothing is printed that is meant for a tracked file; do NOT commit or push
 # while this runs. Tracked files never receive any phase-3 number (Review 15 U1).
-# Usage: [INVS="1 2 ... 8"] [TARGETS="tractusx vanilla"] [CELL_TIMEOUT=1500] ./60_phase3_batch.sh
+# RUN_KIND=dryrun marks a NON-COUNTING rehearsal: it writes to a separate output file (phase3-cells-dryrun.csv),
+# prefixes the driver-snapshot dir with "dryrun-", and stamps every row run_kind=dryrun, so a rehearsal can never
+# be cited, merged into, or mistaken for the counting batch (default RUN_KIND=real). A dry run shakes out
+# end-to-end orchestration only; its rows are discarded/archived separately before the counting run.
+# Usage: [INVS="1 2 ... 8"] [TARGETS="tractusx vanilla"] [CELL_TIMEOUT=1500] [RUN_KIND=real|dryrun] ./60_phase3_batch.sh
 source "$(dirname "$0")/kc2lib.sh"   # lib.sh: set -euo pipefail, require_docker (check only), COMMIT, PILOT
 INVS="${INVS:-1 2 3 4 5 6 7 8}"; TARGETS="${TARGETS:-tractusx vanilla}"; CELL_TIMEOUT="${CELL_TIMEOUT:-1500}"
+RUN_KIND="${RUN_KIND:-real}"; case "$RUN_KIND" in real|dryrun) ;; *) echo "refusing: RUN_KIND must be real|dryrun (got '$RUN_KIND')"; exit 1;; esac
 RUNNERS="$PILOT/private/kc2/scripts"
 
 case "$COMMIT" in *-dirty) echo "refusing: tree is dirty ($COMMIT) — commit first so every row cites a clean commit"; exit 1;; esac
@@ -30,13 +35,13 @@ for net in pilot08k2_dsp pilot08v; do
 done
 HEAD0="$(git -C "$PILOT" rev-parse HEAD)"
 # W3: snapshot the gitignored private drivers (commit stamp does not cover them) and pin their shas.
-SNAP_ID="${COMMIT}-$(date -u +%Y%m%dT%H%M%SZ)"
+SNAP_ID="${COMMIT}-$(date -u +%Y%m%dT%H%M%SZ)"; [ "$RUN_KIND" = dryrun ] && SNAP_ID="dryrun-$SNAP_ID"
 snapdir="$(dirname "$(kc2_private_out "batches/$SNAP_ID/.keep")")"; mkdir -p "$snapdir"
 cp "$RUNNERS"/*.sh "$snapdir"/ 2>/dev/null || true
 ( cd "$RUNNERS" && for f in *.sh; do sha256sum "$f"; done ) > "$snapdir/MANIFEST.sha256" 2>/dev/null || true
 echo "driver snapshot: private/kc2/batches/$SNAP_ID/ ($(ls "$RUNNERS"/*.sh 2>/dev/null | wc -l) private drivers; sha manifest inside)"
-out="$(kc2_private_out phase3-cells.csv)"
-[ -f "$out" ] || echo "invariant,target,config,result,detail,commit,driver_sha256,snapshot,started,admission" > "$out"
+out="$(kc2_private_out "phase3-cells$([ "$RUN_KIND" = dryrun ] && echo -dryrun).csv")"
+[ -f "$out" ] || echo "invariant,target,config,result,detail,commit,driver_sha256,snapshot,started,admission,run_kind" > "$out"
 # A3 (weaker, mutation-NA) admission allow-list (Review 20 Y2). It is EMPTY by default: with INV-4 now admitted
 # at the A1 tier (its two-layer mutation violates by construction, amendment A3 rev. 2026-11-06), no invariant uses the
 # NA-admission path, so every sanity-PASS + mutation-NA is INVALID:admission. The mechanism is retained (set
@@ -44,7 +49,8 @@ out="$(kc2_private_out phase3-cells.csv)"
 A3_ALLOW="${A3_ALLOW:-}"; A3_REASON="${A3_REASON:-__never__}"
 logdir="$(dirname "$(kc2_private_out logs/.keep)")"; mkdir -p "$logdir"
 clean(){ docker ps -aq --filter name=pilot08k2- --filter name=pilot08v- | xargs -r docker rm -f >/dev/null 2>&1 || true; }
-echo "KC2 phase-3 batch @ $COMMIT (HEAD ${HEAD0:0:7}); INVS=[$INVS] TARGETS=[$TARGETS]; ${CELL_TIMEOUT}s/cell; output private only"
+[ "$RUN_KIND" = dryrun ] && echo "*** DRY RUN (run_kind=dryrun): NON-COUNTING rehearsal — rows are never cited/merged into the counting batch ***"
+echo "KC2 phase-3 batch @ $COMMIT (HEAD ${HEAD0:0:7}); run_kind=$RUN_KIND; INVS=[$INVS] TARGETS=[$TARGETS]; ${CELL_TIMEOUT}s/cell; output private only"
 
 headcheck(){ [ "$(git -C "$PILOT" rev-parse HEAD)" = "$HEAD0" ] || { echo "refusing: HEAD moved mid-batch — aborting (rows must cite one commit)"; exit 1; }; }
 # W3 driver versioning: sha of the gitignored code that produces a row, and a guard that aborts if it drifts.
@@ -64,7 +70,7 @@ cell(){ # inv target config [admission] -> echoes result token, appends a privat
     else res="${line#RESULT=}"; detail="${res#*:}"; res="${res%%:*}"; [ "$detail" = "$res" ] && detail=""
          case "$res" in PASS|FAIL|INVALID|NA) ;; *) detail="bad-token:$res"; res=INVALID;; esac; fi
   fi
-  echo "INV-$inv,$t,$c,$res,$detail,$COMMIT,$dsha,$SNAP_ID,$(date -u +%FT%TZ),$adm" >> "$out"
+  echo "INV-$inv,$t,$c,$res,$detail,$COMMIT,$dsha,$SNAP_ID,$(date -u +%FT%TZ),$adm,$RUN_KIND" >> "$out"
   echo "$res"
 }
 
@@ -72,7 +78,7 @@ for t in $TARGETS; do
   for inv in $INVS; do
     dsha="$(driversha "$inv")"
     headcheck; drivercheck "$inv"; s="$(cell "$inv" "$t" sanity)"
-    if [ "$s" = NA ]; then echo "INV-$inv,$t,current,NA,not-applicable(sanity),$COMMIT,$dsha,$SNAP_ID,$(date -u +%FT%TZ),-" >> "$out"; continue; fi
+    if [ "$s" = NA ]; then echo "INV-$inv,$t,current,NA,not-applicable(sanity),$COMMIT,$dsha,$SNAP_ID,$(date -u +%FT%TZ),-,$RUN_KIND" >> "$out"; continue; fi
     headcheck; drivercheck "$inv"; m="$(cell "$inv" "$t" mutation)"
     mdetail="$(grep -E "^INV-$inv,$t,mutation," "$out" | tail -1 | cut -d, -f5)"
     if [ "$s" = PASS ] && [ "$m" = FAIL ]; then
@@ -83,7 +89,7 @@ for t in $TARGETS; do
       # possible, so this (invariant:target) is admitted on positive-control (sanity) + assertion (current).
       headcheck; drivercheck "$inv"; cell "$inv" "$t" current A3 >/dev/null
     else
-      echo "INV-$inv,$t,current,INVALID,admission(sanity=$s;mutation=$m),$COMMIT,$dsha,$SNAP_ID,$(date -u +%FT%TZ),-" >> "$out"
+      echo "INV-$inv,$t,current,INVALID,admission(sanity=$s;mutation=$m),$COMMIT,$dsha,$SNAP_ID,$(date -u +%FT%TZ),-,$RUN_KIND" >> "$out"
     fi
   done
 done
