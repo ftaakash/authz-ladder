@@ -149,4 +149,26 @@ Paper A is a full paper (D20). It is a separate pilot under the same rules: loca
 already-patched advisories as the oracle.
 Some links in the docs point to planning files kept outside this repository.
 
+## Where this method can go next
+
+The method here does not depend on Dataspace Protocol connectors:
+- an invariant catalogue;
+- already-patched advisories as the oracle (FAIL on the affected release, PASS on the fixed one);
+- a local, no-egress testbed with mock upstreams;
+- decision-first changes, independent review, and private handling of current-release results.
+
+It has since been reused for LLM gateways ([llm-gateway-authz](https://github.com/ftaakash/llm-gateway-authz)),
+and extracted into a reusable testbed kit. A discovery pass on 2026-11-25 looked for other domains where the
+kit applies. The deciding factor was **oracle supply**: enough already-patched, locally runnable advisories to
+calibrate the tests.
+
+| Direction | Question | Status |
+|---|---|---|
+| **Incomplete fixes in supply-chain servers** (container/package registries, CI and GitOps servers) | Does a security-rule test written only from the first advisory catch the incomplete fixes and regressions that replaying the original exploit misses? Maintainers already label such chains, e.g. a cosign regression of an earlier fix (GHSA-whqx-f9j3-ch6m), an Argo CD advisory marked as an incomplete fix (GHSA-jj8j-82j2-7ph7) | candidate, conditional go |
+| **Conformance suites vs security advisories** (Sigstore, TUF clients) | Would the official conformance suites, which clients pass at 100%, have caught the clients' own verification-bypass advisories at the affected versions? This generalises this pilot's observation that passing the official test kit does not by itself show that authorization invariants hold | candidate, conditional go |
+| **Company boundaries in multi-company ERPs** (business informatics) | Do open-source ERPs keep one company's records out of another company's reach, measured against their patched cross-company advisories? | needs rework (overlap check with recent access-control detectors) |
+| Game backends, mod platforms, EPCIS/DPP repositories | — | not pursued with this method: too few patched, locally runnable advisories (game backends, EPCIS/DPP), or incidents only on closed platforms (mods) |
+
+These are research directions, not results. Nothing in this section reports a test run.
+
 <div align="center"><sub>Built on <a href="https://github.com/eclipse-edc/Connector">Eclipse EDC</a>, <a href="https://github.com/eclipse-edc/IdentityHub">Eclipse IdentityHub</a> and <a href="https://github.com/eclipse-tractusx/tractusx-edc">Tractus-X EDC</a>. Not affiliated with the Eclipse Foundation.</sub></div>
